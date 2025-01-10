@@ -1,0 +1,18 @@
+{
+  "name": "eval",
+  "module": "index.ts",
+  "type": "module",
+  "devDependencies": {
+    "@biomejs/biome": "^1.9.4",
+    "@tscircuit/core": "^0.0.261",
+    "@types/bun": "latest",
+    "@types/debug": "^4.1.12",
+    "@types/react": "^19.0.4",
+    "circuit-json": "^0.0.130",
+    "debug": "^4.4.0",
+    "react": "^19.0.0"
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  }
+}
