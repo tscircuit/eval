@@ -1,6 +1,8 @@
+import type { RootCircuit } from "@tscircuit/core"
 import type { AnyCircuitElement } from "circuit-json"
 import * as React from "react"
 import { createExecutionContext } from "./execution-context"
+import { normalizeFsMap } from "./normalize-fs-map"
 import type {
   CircuitEvaluatorConfig,
   CircuitEvaluator as ICircuitEvaluator,
@@ -11,7 +13,7 @@ const defaultCircuitEvaluatorConfig: CircuitEvaluatorConfig = {
   verbose: false,
 }
 
-export class CircuitEvaluator implements ICircuitEvaluator {
+export class CircuitEvaluator {
   private config: CircuitEvaluatorConfig
   private executionContext: ReturnType<typeof createExecutionContext> | null =
     null
@@ -21,7 +23,7 @@ export class CircuitEvaluator implements ICircuitEvaluator {
     this.config = { ...defaultCircuitEvaluatorConfig, ...config }
   }
 
-  private bindEventListeners(circuit: any) {
+  private bindEventListeners(circuit: RootCircuit) {
     for (const event in this.eventListeners) {
       for (const listener of this.eventListeners[event]) {
         circuit.on(event as any, listener as any)
@@ -38,7 +40,8 @@ export class CircuitEvaluator implements ICircuitEvaluator {
     }
     this.executionContext = createExecutionContext(this.config, {})
     this.bindEventListeners(this.executionContext.circuit)
-    this.executionContext.fsMap["entrypoint.tsx"] = code
+    // Use normalized paths consistently
+    this.executionContext.fsMap = normalizeFsMap({ "entrypoint.tsx": code })
     ;(globalThis as any).__tscircuit_circuit = this.executionContext.circuit
 
     await this.importEvalPath("./entrypoint.tsx")
@@ -61,23 +64,17 @@ export class CircuitEvaluator implements ICircuitEvaluator {
     })
     this.bindEventListeners(this.executionContext.circuit)
 
-    // Normalize fsMap paths
-    const normalizedFsMap: Record<string, string> = {}
-    for (const [path, content] of Object.entries(opts.fsMap)) {
-      normalizedFsMap[path.startsWith("./") ? path : `./${path}`] = content
-    }
-    this.executionContext.fsMap = normalizedFsMap
+    // Normalize fsMap paths using the standard normalizer
+    this.executionContext.fsMap = normalizeFsMap(opts.fsMap)
 
-    if (!this.executionContext.fsMap[opts.entrypoint]) {
+    // Normalize entrypoint path
+    const entrypoint = opts.entrypoint.replace(/^\.?\//, "")
+    if (!this.executionContext.fsMap[entrypoint]) {
       throw new Error(`Entrypoint "${opts.entrypoint}" not found`)
     }
     ;(globalThis as any).__tscircuit_circuit = this.executionContext.circuit
 
-    const entrypoint = opts.entrypoint.startsWith("./")
-      ? opts.entrypoint
-      : `./${opts.entrypoint}`
-
-    await this.importEvalPath(entrypoint)
+    await this.importEvalPath(`./${entrypoint}`)
   }
 
   async renderUntilSettled(): Promise<void> {
