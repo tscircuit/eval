@@ -1,17 +1,15 @@
-import { test, expect } from "bun:test"
-import { createCircuitWebWorker } from "lib/index"
+import { expect, test } from "bun:test"
+import { CircuitEvaluator } from "lib/index"
 
 test("example5-event-recording", async () => {
-  const circuitWebWorker = await createCircuitWebWorker({
-    webWorkerUrl: new URL("../webworker/index.ts", import.meta.url),
-  })
+  const circuitEvaluator = new CircuitEvaluator()
 
   const events: any[] = []
-  circuitWebWorker.on("renderable:renderLifecycle:anyEvent", (event) => {
+  circuitEvaluator.on("renderable:renderLifecycle:anyEvent", (event) => {
     events.push(event)
   })
 
-  await circuitWebWorker.execute(`
+  await circuitEvaluator.execute(`
     circuit.add(
       <board width="10mm" height="10mm">
         <resistor name="R1" resistance="1k" footprint="0402" />
@@ -19,16 +17,16 @@ test("example5-event-recording", async () => {
     )
     `)
 
-  await circuitWebWorker.renderUntilSettled()
+  await circuitEvaluator.renderUntilSettled()
 
   expect(events.length).toBeGreaterThan(0)
   const initialEventCount = events.length
 
   // Clear event listeners
-  circuitWebWorker.clearEventListeners()
+  circuitEvaluator.clearEventListeners()
 
   // Add another component to trigger more events
-  await circuitWebWorker.execute(`
+  await circuitEvaluator.execute(`
     circuit.add(
       <board width="10mm" height="10mm">
         <resistor name="R2" resistance="2k" footprint="0402" />
@@ -36,7 +34,7 @@ test("example5-event-recording", async () => {
     )
     `)
 
-  await circuitWebWorker.renderUntilSettled()
+  await circuitEvaluator.renderUntilSettled()
 
   // Verify no new events were recorded after clearing listeners
   expect(events.length).toBe(initialEventCount)

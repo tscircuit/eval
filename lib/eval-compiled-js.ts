@@ -2,14 +2,25 @@ export function evalCompiledJs(
   compiledCode: string,
   preSuppliedImports: Record<string, any>,
 ) {
+  // Ensure React is globally available
+  if (
+    typeof (globalThis as any).React === "undefined" &&
+    preSuppliedImports.react
+  ) {
+    ;(globalThis as any).React = preSuppliedImports.react
+  }
   ;(globalThis as any).__tscircuit_require = (name: string) => {
-    if (name.startsWith("./") && preSuppliedImports[name.slice(2)]) {
-      return preSuppliedImports[name.slice(2)]
+    // Try both with and without ./ prefix
+    const normalizedName = name.startsWith("./") ? name.slice(2) : name
+    const prefixedName = name.startsWith("./") ? name : `./${name}`
+
+    if (preSuppliedImports[normalizedName]) {
+      return preSuppliedImports[normalizedName]
     }
-    if (!preSuppliedImports[name]) {
-      throw new Error(`Import "${name}" not found`)
+    if (preSuppliedImports[prefixedName]) {
+      return preSuppliedImports[prefixedName]
     }
-    return preSuppliedImports[name]
+    throw new Error(`Import "${name}" not found`)
   }
   const functionBody = `
   var exports = {};

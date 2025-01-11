@@ -1,15 +1,13 @@
-import { createCircuitWebWorker } from "lib"
 import { expect, test } from "bun:test"
+import { CircuitEvaluator } from "lib"
 
 test("circuit-web-worker-events", async () => {
   // Track events for verification
   const capturedEvents: string[] = []
 
-  const circuitWebWorker = await createCircuitWebWorker({
-    webWorkerUrl: new URL("../webworker/index.ts", import.meta.url),
-  })
+  const circuitEvaluator = new CircuitEvaluator()
 
-  await circuitWebWorker.execute(`
+  await circuitEvaluator.execute(`
   import { RedLed } from "@tsci/seveibar.red-led"
   circuit.add(
     <board width="10mm" height="10mm">
@@ -19,14 +17,14 @@ test("circuit-web-worker-events", async () => {
   `)
 
   // Listen to events
-  circuitWebWorker.on(
+  circuitEvaluator.on(
     "renderable:renderLifecycle:PcbComponentRender:start",
     (eventData) => {
       capturedEvents.push("pcbComponentRenderStart")
     },
   )
 
-  circuitWebWorker.on(
+  circuitEvaluator.on(
     "renderable:renderLifecycle:PcbComponentRender:end",
     (eventData) => {
       capturedEvents.push("pcbComponentRenderEnd")
@@ -34,7 +32,7 @@ test("circuit-web-worker-events", async () => {
   )
 
   // Render until settled to trigger events
-  await circuitWebWorker.renderUntilSettled()
+  await circuitEvaluator.renderUntilSettled()
 
   // Verify that some expected events were captured
   expect(capturedEvents.length).toBeGreaterThan(0)
