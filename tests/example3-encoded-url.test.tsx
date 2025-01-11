@@ -2,9 +2,7 @@ import { CircuitEvaluator } from "lib"
 import { expect, test } from "bun:test"
 
 test("example3-encoded-worker-url", async () => {
-  const circuitEvaluator = new CircuitEvaluator({
-    snippetsApiBaseUrl: "https://registry-api.tscircuit.com",
-  })
+  const circuitEvaluator = new CircuitEvaluator()
 
   await circuitEvaluator.execute(`
   import { RedLed } from "@tsci/seveibar.red-led"

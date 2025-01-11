@@ -10,12 +10,12 @@
     "@types/react": "^19.0.4",
     "circuit-json": "^0.0.130",
     "debug": "^4.4.0",
-    "react": "^19.0.0"
+    "react": "^19.0.0",
+    "jscad-fiber": "^0.0.76"
   },
   "peerDependencies": {
-    "typescript": "^5.0.0"
-  },
-  "dependencies": {
-    "jscad-fiber": "^0.0.76"
+    "typescript": "*",
+    "react": "*",
+    "jscad-fiber": "*"
   }
 }

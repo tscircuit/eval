@@ -2,9 +2,7 @@ import { test, expect } from "bun:test"
 import { CircuitEvaluator } from "lib/index"
 
 test("example5-event-recording", async () => {
-  const circuitEvaluator = new CircuitEvaluator({
-    snippetsApiBaseUrl: "https://registry-api.tscircuit.com",
-  })
+  const circuitEvaluator = new CircuitEvaluator()
 
   const events: any[] = []
   circuitEvaluator.on("renderable:renderLifecycle:anyEvent", (event) => {

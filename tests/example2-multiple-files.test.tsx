@@ -2,9 +2,7 @@ import { CircuitEvaluator } from "lib"
 import { expect, test } from "bun:test"
 
 test("virtual filesystem with components", async () => {
-  const circuitEvaluator = new CircuitEvaluator({
-    snippetsApiBaseUrl: "https://registry-api.tscircuit.com",
-  })
+  const circuitEvaluator = new CircuitEvaluator()
 
   await circuitEvaluator.executeWithFsMap({
     fsMap: {

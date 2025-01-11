@@ -12,9 +12,7 @@ const example4 = {
 }
 
 test("example4-root-child-issue", async () => {
-  const circuitEvaluator = new CircuitEvaluator({
-    snippetsApiBaseUrl: "https://registry-api.tscircuit.com",
-  })
+  const circuitEvaluator = new CircuitEvaluator()
 
   await circuitEvaluator.executeWithFsMap({
     fsMap: example4.fsMap,
