@@ -2,6 +2,12 @@
   "name": "eval",
   "module": "index.ts",
   "type": "module",
+  "scripts": {
+    "test": "bun test",
+    "format": "biome format . --write",
+    "format:check": "biome format .",
+    "check": "biome check ."
+  },
   "devDependencies": {
     "@biomejs/biome": "^1.9.4",
     "@tscircuit/core": "^0.0.261",
@@ -14,8 +20,7 @@
     "jscad-fiber": "^0.0.76"
   },
   "peerDependencies": {
-    "typescript": "*",
-    "react": "*",
+    "typescript": "^5.7.3",
     "jscad-fiber": "*"
   }
 }

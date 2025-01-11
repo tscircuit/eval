@@ -1,8 +1,8 @@
 import { RootCircuit } from "@tscircuit/core"
-import type { CircuitEvaluatorConfig } from "lib/shared/types"
 import * as tscircuitCore from "@tscircuit/core"
-import * as React from "react"
 import * as jscadFiber from "jscad-fiber"
+import type { CircuitEvaluatorConfig } from "lib/shared/types"
+import * as React from "react"
 
 export interface ExecutionContext extends CircuitEvaluatorConfig {
   fsMap: Record<string, string>

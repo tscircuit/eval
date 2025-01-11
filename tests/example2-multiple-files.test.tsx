@@ -1,5 +1,5 @@
-import { CircuitEvaluator } from "lib"
 import { expect, test } from "bun:test"
+import { CircuitEvaluator } from "lib"
 
 test("virtual filesystem with components", async () => {
   const circuitEvaluator = new CircuitEvaluator()

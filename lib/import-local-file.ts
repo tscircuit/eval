@@ -1,8 +1,8 @@
+import * as Babel from "@babel/standalone"
 import { getImportsFromCode } from "@tscircuit/prompt-benchmarks/code-runner-utils"
+import { evalCompiledJs } from "./eval-compiled-js"
 import type { ExecutionContext } from "./execution-context"
 import { importEvalPath } from "./import-eval-path"
-import * as Babel from "@babel/standalone"
-import { evalCompiledJs } from "./eval-compiled-js"
 
 export const importLocalFile = async (
   importName: string,

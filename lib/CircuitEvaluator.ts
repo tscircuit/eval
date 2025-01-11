@@ -1,7 +1,10 @@
 import type { AnyCircuitElement } from "circuit-json"
-import type { CircuitEvaluatorConfig, CircuitEvaluator as ICircuitEvaluator } from "./shared/types"
-import { createExecutionContext } from "./execution-context"
 import * as React from "react"
+import { createExecutionContext } from "./execution-context"
+import type {
+  CircuitEvaluatorConfig,
+  CircuitEvaluator as ICircuitEvaluator,
+} from "./shared/types"
 
 const defaultCircuitEvaluatorConfig: CircuitEvaluatorConfig = {
   snippetsApiBaseUrl: "https://registry-api.tscircuit.com",
@@ -10,7 +13,8 @@ const defaultCircuitEvaluatorConfig: CircuitEvaluatorConfig = {
 
 export class CircuitEvaluator implements ICircuitEvaluator {
   private config: CircuitEvaluatorConfig
-  private executionContext: ReturnType<typeof createExecutionContext> | null = null
+  private executionContext: ReturnType<typeof createExecutionContext> | null =
+    null
   private eventListeners: Record<string, ((...args: any[]) => void)[]> = {}
 
   constructor(config?: Partial<CircuitEvaluatorConfig>) {
@@ -27,7 +31,10 @@ export class CircuitEvaluator implements ICircuitEvaluator {
 
   async execute(code: string): Promise<void> {
     if (this.config.verbose) {
-      console.log("[CircuitEvaluator] execute called with code length:", code.length)
+      console.log(
+        "[CircuitEvaluator] execute called with code length:",
+        code.length,
+      )
     }
     this.executionContext = createExecutionContext(this.config, {})
     this.bindEventListeners(this.executionContext.circuit)
@@ -53,7 +60,7 @@ export class CircuitEvaluator implements ICircuitEvaluator {
       name: opts.name,
     })
     this.bindEventListeners(this.executionContext.circuit)
-    
+
     // Normalize fsMap paths
     const normalizedFsMap: Record<string, string> = {}
     for (const [path, content] of Object.entries(opts.fsMap)) {
@@ -66,8 +73,8 @@ export class CircuitEvaluator implements ICircuitEvaluator {
     }
     ;(globalThis as any).__tscircuit_circuit = this.executionContext.circuit
 
-    const entrypoint = opts.entrypoint.startsWith("./") 
-      ? opts.entrypoint 
+    const entrypoint = opts.entrypoint.startsWith("./")
+      ? opts.entrypoint
       : `./${opts.entrypoint}`
 
     await this.importEvalPath(entrypoint)
@@ -93,7 +100,7 @@ export class CircuitEvaluator implements ICircuitEvaluator {
       | `asyncEffect:start`
       | `asyncEffect:end`
       | `renderable:renderLifecycle:${string}`,
-    callback: (...args: any[]) => void
+    callback: (...args: any[]) => void,
   ): void {
     this.eventListeners[event] ??= []
     this.eventListeners[event].push(callback)
@@ -106,7 +113,10 @@ export class CircuitEvaluator implements ICircuitEvaluator {
       for (const event in this.eventListeners) {
         for (const listener of this.eventListeners[event]) {
           const circuit = this.executionContext.circuit as unknown as {
-            removeListener?: (event: string, listener: Function) => void
+            removeListener?: (
+              event: string,
+              listener: (...args: any[]) => void,
+            ) => void
           }
           if (typeof circuit.removeListener === "function") {
             circuit.removeListener(event, listener)

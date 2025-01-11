@@ -1,4 +1,4 @@
-import { test, expect } from "bun:test"
+import { expect, test } from "bun:test"
 import { CircuitEvaluator } from "lib/index"
 
 test("example5-event-recording", async () => {
