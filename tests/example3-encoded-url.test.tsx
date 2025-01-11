@@ -1,14 +1,12 @@
-import { createCircuitWebWorker } from "lib"
+import { CircuitEvaluator } from "lib"
 import { expect, test } from "bun:test"
-// @ts-ignore
-import blobUrl from "dist/blob-url"
 
 test("example3-encoded-worker-url", async () => {
-  const circuitWebWorker = await createCircuitWebWorker({
-    webWorkerUrl: blobUrl,
+  const circuitEvaluator = new CircuitEvaluator({
+    snippetsApiBaseUrl: "https://registry-api.tscircuit.com",
   })
 
-  await circuitWebWorker.execute(`
+  await circuitEvaluator.execute(`
   import { RedLed } from "@tsci/seveibar.red-led"
 
   circuit.add(
@@ -18,9 +16,9 @@ test("example3-encoded-worker-url", async () => {
   )
   `)
 
-  await circuitWebWorker.renderUntilSettled()
+  await circuitEvaluator.renderUntilSettled()
 
-  const circuitJson = await circuitWebWorker.getCircuitJson()
+  const circuitJson = await circuitEvaluator.getCircuitJson()
 
   const led = circuitJson.find((el: any) => el.name === "LED1")
   expect(led).toBeDefined()

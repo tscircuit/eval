@@ -1,5 +1,5 @@
 import { test, expect } from "bun:test"
-import { createCircuitWebWorker } from "lib/index"
+import { CircuitEvaluator } from "lib/index"
 
 const example4 = {
   entrypoint: "entrypoint.tsx",
@@ -12,18 +12,18 @@ const example4 = {
 }
 
 test("example4-root-child-issue", async () => {
-  const circuitWebWorker = await createCircuitWebWorker({
-    webWorkerUrl: new URL("../webworker/index.ts", import.meta.url),
+  const circuitEvaluator = new CircuitEvaluator({
+    snippetsApiBaseUrl: "https://registry-api.tscircuit.com",
   })
 
-  await circuitWebWorker.executeWithFsMap({
+  await circuitEvaluator.executeWithFsMap({
     fsMap: example4.fsMap,
     entrypoint: example4.entrypoint,
   })
 
-  await circuitWebWorker.renderUntilSettled()
+  await circuitEvaluator.renderUntilSettled()
 
-  const circuitJson = await circuitWebWorker.getCircuitJson()
+  const circuitJson = await circuitEvaluator.getCircuitJson()
 
   const led = circuitJson.find((el: any) => el.name === "LED")
   expect(led).toBeDefined()

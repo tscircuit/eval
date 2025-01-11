@@ -1,12 +1,12 @@
-import { createCircuitWebWorker } from "lib"
+import { CircuitEvaluator } from "lib"
 import { expect, test } from "bun:test"
 
 test("virtual filesystem with components", async () => {
-  const circuitWebWorker = await createCircuitWebWorker({
-    webWorkerUrl: new URL("../webworker/index.ts", import.meta.url),
+  const circuitEvaluator = new CircuitEvaluator({
+    snippetsApiBaseUrl: "https://registry-api.tscircuit.com",
   })
 
-  await circuitWebWorker.executeWithFsMap({
+  await circuitEvaluator.executeWithFsMap({
     fsMap: {
       "entrypoint.tsx": `
         import { MyLed } from "./myled.tsx"
@@ -34,9 +34,9 @@ test("virtual filesystem with components", async () => {
     entrypoint: "entrypoint.tsx",
   })
 
-  await circuitWebWorker.renderUntilSettled()
+  await circuitEvaluator.renderUntilSettled()
 
-  const circuitJson = await circuitWebWorker.getCircuitJson()
+  const circuitJson = await circuitEvaluator.getCircuitJson()
 
   const led = circuitJson.find((el: any) => el.name === "LED1")
   expect(led?.type).toBe("source_component")

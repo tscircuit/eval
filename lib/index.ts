@@ -11,112 +11,67 @@ import { importEvalPath } from "./import-eval-path"
 import { normalizeFsMap } from "./normalize-fs-map"
 import type { RootCircuit } from "@tscircuit/core"
 import Debug from "debug"
+import { CircuitEvaluator } from "./CircuitEvaluator"
 
 const debug = Debug("tscircuit:eval:index")
 
 globalThis.React = React
 
-let executionContext: ExecutionContext | null = null
+// Re-export CircuitEvaluator as the main public API
+export { CircuitEvaluator }
 
-const defaultCircuitEvaluatorConfig: CircuitEvaluatorConfig = {
+// Configuration used by CircuitEvaluator
+export const defaultCircuitEvaluatorConfig: CircuitEvaluatorConfig = {
   snippetsApiBaseUrl: "https://registry-api.tscircuit.com",
   verbose: false,
 }
 
-const eventListeners: Record<string, ((...args: any[]) => void)[]> = {}
+// Legacy web worker API, kept for backward compatibility
+// New code should use CircuitEvaluator class instead
+const webWorkerApi = (() => {
+  let evaluator: CircuitEvaluator | null = null
 
-function bindEventListeners(circuit: RootCircuit) {
-  for (const event in eventListeners) {
-    for (const listener of eventListeners[event]) {
-      circuit.on(event as any, listener as any)
+  const getEvaluator = (): CircuitEvaluator => {
+    if (!evaluator) {
+      evaluator = new CircuitEvaluator(defaultCircuitEvaluatorConfig)
     }
+    return evaluator
   }
-}
 
-const webWorkerApi = {
-  setSnippetsApiBaseUrl: async (baseUrl: string) => {
-    defaultCircuitEvaluatorConfig.snippetsApiBaseUrl = baseUrl
-  },
+  return {
+    setSnippetsApiBaseUrl: async (baseUrl: string) => {
+      defaultCircuitEvaluatorConfig.snippetsApiBaseUrl = baseUrl
+    },
 
-  async executeWithFsMap(opts: {
-    entrypoint: string
-    fsMap: Record<string, string>
-    name?: string
-  }): Promise<void> {
-    if (defaultCircuitEvaluatorConfig.verbose) {
-      debug("executeWithFsMap called with:", {
-        entrypoint: opts.entrypoint,
-        fsMapKeys: Object.keys(opts.fsMap),
-        name: opts.name,
-      })
-    }
-    executionContext = createExecutionContext(defaultCircuitEvaluatorConfig, {
-      name: opts.name,
-    })
-    bindEventListeners(executionContext.circuit)
-    executionContext.fsMap = normalizeFsMap(opts.fsMap)
-    if (!executionContext.fsMap[opts.entrypoint]) {
-      throw new Error(`Entrypoint "${opts.entrypoint}" not found`)
-    }
-    ;(globalThis as any).__tscircuit_circuit = executionContext.circuit
+    executeWithFsMap: async (opts: {
+      entrypoint: string
+      fsMap: Record<string, string>
+      name?: string
+    }): Promise<void> => {
+      await getEvaluator().executeWithFsMap(opts)
+    },
 
-    if (!opts.entrypoint.startsWith("./")) {
-      opts.entrypoint = `./${opts.entrypoint}`
-    }
+    execute: async (code: string, opts: { name?: string } = {}): Promise<void> => {
+      await getEvaluator().execute(code)
+    },
 
-    await importEvalPath(opts.entrypoint, executionContext)
-  },
+    on: (event: string, callback: (...args: any[]) => void): void => {
+      getEvaluator().on(event as any, callback)
+    },
 
-  async execute(code: string, opts: { name?: string } = {}) {
-    if (defaultCircuitEvaluatorConfig.verbose) {
-      console.log("[Worker] execute called with code length:", code.length)
-    }
-    executionContext = createExecutionContext(defaultCircuitEvaluatorConfig, opts)
-    bindEventListeners(executionContext.circuit)
-    executionContext.fsMap["entrypoint.tsx"] = code
-    ;(globalThis as any).__tscircuit_circuit = executionContext.circuit
+    renderUntilSettled: async (): Promise<void> => {
+      await getEvaluator().renderUntilSettled()
+    },
 
-    await importEvalPath("./entrypoint.tsx", executionContext)
-  },
+    getCircuitJson: async (): Promise<AnyCircuitElement[]> => {
+      return getEvaluator().getCircuitJson()
+    },
 
-  on: (event: string, callback: (...args: any[]) => void) => {
-    eventListeners[event] ??= []
-    eventListeners[event].push(callback)
-    executionContext?.circuit.on(event as any, callback)
-  },
-
-  renderUntilSettled: async (): Promise<void> => {
-    if (!executionContext) {
-      throw new Error("No circuit has been created")
-    }
-    await executionContext.circuit.renderUntilSettled()
-  },
-
-  getCircuitJson: async (): Promise<AnyCircuitElement[]> => {
-    if (!executionContext) {
-      throw new Error("No circuit has been created")
-    }
-    return executionContext.circuit.getCircuitJson()
-  },
-
-  clearEventListeners: () => {
-    // If there's an active circuit, try to unbind all listeners
-    if (executionContext?.circuit) {
-      for (const event in eventListeners) {
-        for (const listener of eventListeners[event]) {
-          const circuit = executionContext.circuit as unknown as {
-            removeListener?: (event: string, listener: Function) => void
-          }
-          if (typeof circuit.removeListener === "function") {
-            circuit.removeListener(event, listener)
-          }
-        }
+    clearEventListeners: (): void => {
+      if (evaluator) {
+        evaluator.clearEventListeners()
+        evaluator = null
       }
-    }
-
-    // Clear all stored event listeners
-    for (const event in eventListeners) {
-      delete eventListeners[event]
-    }
-  },
-}
+    },
+  }
+})()
