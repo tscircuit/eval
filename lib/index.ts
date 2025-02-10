@@ -1,5 +1,6 @@
 import type { AnyCircuitElement } from "circuit-json"
 import * as Comlink from "comlink"
+export * from "./utils/index"
 import type {
   InternalWebWorkerApi,
   WebWorkerConfiguration,
