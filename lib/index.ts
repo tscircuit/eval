@@ -36,11 +36,25 @@ export const createCircuitWebWorker = async (
     await comlinkWorker.setSnippetsApiBaseUrl(configuration.snippetsApiBaseUrl)
   }
 
+  let isTerminated = false
+
   // Create a wrapper that handles events directly through circuit instance
   const wrapper: CircuitWebWorker = {
     clearEventListeners: comlinkWorker.clearEventListeners.bind(comlinkWorker),
-    execute: comlinkWorker.execute.bind(comlinkWorker),
-    executeWithFsMap: comlinkWorker.executeWithFsMap.bind(comlinkWorker),
+    execute: async (...args) => {
+      if (isTerminated) {
+        throw new Error("CircuitWebWorker was terminated, can't execute")
+      }
+      return comlinkWorker.execute.bind(comlinkWorker)(...args)
+    },
+    executeWithFsMap: async (...args) => {
+      if (isTerminated) {
+        throw new Error(
+          "CircuitWebWorker was terminated, can't executeWithFsMap",
+        )
+      }
+      return comlinkWorker.executeWithFsMap.bind(comlinkWorker)(...args)
+    },
     renderUntilSettled: comlinkWorker.renderUntilSettled.bind(comlinkWorker),
     getCircuitJson: comlinkWorker.getCircuitJson.bind(comlinkWorker),
     on: (event: string, callback: (...args: any[]) => void) => {
@@ -50,6 +64,7 @@ export const createCircuitWebWorker = async (
     kill: async () => {
       comlinkWorker[Comlink.releaseProxy]()
       rawWorker.terminate()
+      isTerminated = true
     },
   }
 
