@@ -43,10 +43,11 @@ export interface CircuitRunnerApi {
 export type InternalWebWorkerApi = CircuitRunnerApi
 
 export type CircuitWebWorker = {
-  execute: (code: string) => Promise<void>
+  execute: (code: string, opts?: { name?: string }) => Promise<void>
   executeWithFsMap: (opts: {
     entrypoint: string
     fsMap: Record<string, string>
+    name?: string
   }) => Promise<void>
   renderUntilSettled: () => Promise<void>
   getCircuitJson: () => Promise<AnyCircuitElement[]>
