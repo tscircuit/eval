@@ -1,4 +1,3 @@
-import { getImportsFromCode } from "@tscircuit/prompt-benchmarks/code-runner-utils"
 import { evalCompiledJs } from "./eval-compiled-js"
 import type { ExecutionContext } from "./execution-context"
 import * as Babel from "@babel/standalone"

@@ -5,7 +5,7 @@ another project.
 
 ```tsx
 import * as tscircuitCore from "@tscircuit/core"
-import { getImportsFromCode } from "@tscircuit/prompt-benchmarks/code-runner-utils"
+import { getImportsFromCode } from "lib/utils/get-imports-from-code"
 import type { AnyCircuitElement } from "circuit-json"
 import * as jscadFiber from "jscad-fiber"
 import * as React from "react"
