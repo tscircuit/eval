@@ -10,7 +10,7 @@
         "@types/babel__standalone": "^7.1.9",
         "@types/bun": "latest",
         "@types/react": "^18.3.12",
-        "circuit-json": "^0.0.134",
+        "circuit-json": "^0.0.137",
         "comlink": "^4.4.2",
         "jscad-fiber": "^0.0.77",
         "react": "^18.3.1",
@@ -248,7 +248,7 @@
 
     "chokidar": ["chokidar@4.0.3", "", { "dependencies": { "readdirp": "^4.0.1" } }, "sha512-Qgzu8kfBvo+cA4962jnP1KkS6Dop5NS6g7R5LFYJr4b8Ub94PPQXUksCw9PvXoeXPRRddRNC5C1JQUR2SMGtnA=="],
 
-    "circuit-json": ["circuit-json@0.0.134", "", { "dependencies": { "nanoid": "^5.0.7", "zod": "^3.23.6" } }, "sha512-guGLYrvducP6hquR/kyTA+3tOfvpo9vb7e42fUqukpcnbdq/irzxrbbukHSy4Op9MlqjdASKekjnBUmg8xO2pQ=="],
+    "circuit-json": ["circuit-json@0.0.137", "", { "dependencies": { "nanoid": "^5.0.7", "zod": "^3.23.6" } }, "sha512-yPF9ASKm3LWa3yG5Xph+IKtY90oCIg/qODervDClRzhDEOHDRLe/XOFdCfN6UqbywzkVI46mmp9/jdsp0u1nlA=="],
 
     "circuit-json-to-connectivity-map": ["circuit-json-to-connectivity-map@0.0.17", "", { "dependencies": { "@tscircuit/math-utils": "^0.0.4" }, "peerDependencies": { "typescript": "^5.0.0" } }, "sha512-0IlFTwGWFXzlrYSvXQocXi6pYriF/JKnfihfvnVZ4p60kMC+1QvtJdivW9C4I0VNXEe922xak70v3YZNJrjI1g=="],
 
