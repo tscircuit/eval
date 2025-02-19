@@ -1,6 +1,6 @@
 export const getImportsFromCode = (code: string): string[] => {
   const importRegex =
-    /import\s+(?:(?:(?:\*\s+as\s+\w+)|(?:[\w\s,{}]+))\s+from\s+)?['"](.+?)['"]/g
+    /import\s+(?:(?:[\w\s]+,\s*)?(?:\*\s+as\s+[\w\s]+|\{[\s\w,]+\}|\w+)\s+from\s+)?['"](.+?)['"]/g
   const imports: string[] = []
   let match: RegExpExecArray | null
 

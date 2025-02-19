@@ -17,13 +17,27 @@ export const importLocalFile = async (
   }
   const fileContent = fsMap[fsPath]
   if (fsPath.endsWith(".json")) {
-    preSuppliedImports[fsPath] = JSON.parse(fileContent)
+    const parsed = JSON.parse(fileContent)
+    preSuppliedImports[fsPath] = parsed
+    preSuppliedImports[importName] = parsed
   } else if (fsPath.endsWith(".tsx")) {
+    // Set placeholders for the module to handle circular dependencies
+    preSuppliedImports[fsPath] = {}
+    preSuppliedImports[importName] = preSuppliedImports[fsPath]
+    preSuppliedImports[`* as ${fsPath}`] = preSuppliedImports[fsPath]
+    preSuppliedImports[`* as ${importName}`] = preSuppliedImports[fsPath]
+
     const importNames = getImportsFromCode(fileContent)
 
-    for (const importName of importNames) {
-      if (!preSuppliedImports[importName]) {
-        await importEvalPath(importName, ctx, depth + 1)
+    for (const depImportName of importNames) {
+      if (
+        !preSuppliedImports[depImportName] &&
+        !(
+          depImportName.startsWith("./") &&
+          preSuppliedImports[depImportName.slice(2)]
+        )
+      ) {
+        await importEvalPath(depImportName, ctx, depth + 1)
       }
     }
 
@@ -39,19 +53,28 @@ export const importLocalFile = async (
 
     try {
       const importRunResult = evalCompiledJs(result.code, preSuppliedImports)
+      // Update the cache with the evaluated exports
       preSuppliedImports[fsPath] = importRunResult.exports
+      preSuppliedImports[importName] = importRunResult.exports
+      preSuppliedImports[`* as ${fsPath}`] = importRunResult.exports
+      preSuppliedImports[`* as ${importName}`] = importRunResult.exports
     } catch (error: any) {
       throw new Error(
         `Eval compiled js error for "${importName}": ${error.message}`,
       )
     }
   } else if (fsPath.endsWith(".js")) {
-    // TODO get imports from js?
+    // Similar placeholder technique for .js files
+    preSuppliedImports[fsPath] = {}
+    preSuppliedImports[importName] = preSuppliedImports[fsPath]
+    preSuppliedImports[`* as ${fsPath}`] = preSuppliedImports[fsPath]
+    preSuppliedImports[`* as ${importName}`] = preSuppliedImports[fsPath]
 
-    preSuppliedImports[importName] = evalCompiledJs(
-      fileContent,
-      preSuppliedImports,
-    ).exports
+    const importRunResult = evalCompiledJs(fileContent, preSuppliedImports)
+    preSuppliedImports[fsPath] = importRunResult.exports
+    preSuppliedImports[importName] = importRunResult.exports
+    preSuppliedImports[`* as ${fsPath}`] = importRunResult.exports
+    preSuppliedImports[`* as ${importName}`] = importRunResult.exports
   } else {
     throw new Error(
       `Unsupported file extension "${fsPath.split(".").pop()}" for "${fsPath}"`,

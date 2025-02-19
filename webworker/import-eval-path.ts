@@ -14,9 +14,13 @@ export async function importEvalPath(
   }
   const { preSuppliedImports } = ctx
 
+  // Check all possible variations of the import path
   if (preSuppliedImports[importName]) return
   if (importName.startsWith("./") && preSuppliedImports[importName.slice(2)])
     return
+  if (!importName.startsWith("./") && preSuppliedImports[`./${importName}`])
+    return
+  if (preSuppliedImports[`* as ${importName}`]) return
 
   if (depth > 5) {
     console.log("Max depth for imports reached")

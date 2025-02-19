@@ -3,13 +3,17 @@ export function evalCompiledJs(
   preSuppliedImports: Record<string, any>,
 ) {
   ;(globalThis as any).__tscircuit_require = (name: string) => {
+    // Check both relative and non-relative paths
+    if (preSuppliedImports[name]) {
+      return preSuppliedImports[name]
+    }
     if (name.startsWith("./") && preSuppliedImports[name.slice(2)]) {
       return preSuppliedImports[name.slice(2)]
     }
-    if (!preSuppliedImports[name]) {
-      throw new Error(`Import "${name}" not found`)
+    if (!name.startsWith("./") && preSuppliedImports[`./${name}`]) {
+      return preSuppliedImports[`./${name}`]
     }
-    return preSuppliedImports[name]
+    throw new Error(`Import "${name}" not found`)
   }
   const functionBody = `
   var exports = {};
