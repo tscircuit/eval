@@ -14,7 +14,6 @@ export async function importEvalPath(
   }
   const { preSuppliedImports } = ctx
 
-  // Check all possible variations of the import path
   if (preSuppliedImports[importName]) return
   if (importName.startsWith("./") && preSuppliedImports[importName.slice(2)])
     return
