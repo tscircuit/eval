@@ -1,6 +1,7 @@
 export const getImportsFromCode = (code: string): string[] => {
+  // Match only at start of line (allowing whitespace)
   const importRegex =
-    /import\s+(?:(?:[\w\s]+,\s*)?(?:\*\s+as\s+[\w\s]+|\{[\s\w,]+\}|\w+)\s+from\s+)?['"](.+?)['"]/g
+    /^\s*import\s+(?:(?:[\w\s]+,\s*)?(?:\*\s+as\s+[\w\s]+|\{[\s\w,]+\}|\w+)\s+from\s+)?['"](.+?)['"]/gm
   const imports: string[] = []
   let match: RegExpExecArray | null
 
