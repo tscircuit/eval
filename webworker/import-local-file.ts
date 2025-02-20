@@ -63,10 +63,6 @@ export const importLocalFile = async (
     // Similar placeholder technique for .js files
     preSuppliedImports[fsPath] = {}
     preSuppliedImports[importName] = preSuppliedImports[fsPath]
-
-    const importRunResult = evalCompiledJs(fileContent, preSuppliedImports)
-    preSuppliedImports[fsPath] = importRunResult.exports
-    preSuppliedImports[importName] = importRunResult.exports
   } else {
     throw new Error(
       `Unsupported file extension "${fsPath.split(".").pop()}" for "${fsPath}"`,
