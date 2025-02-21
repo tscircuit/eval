@@ -20,6 +20,13 @@ test("getImportsFromCode should extract imports correctly", () => {
   `)
 })
 
+test("getImportsFromCode should handle combined default and namespace imports", () => {
+  const sourceCode = `
+    import SomeDefault, * as OtherExports from "./file.tsx"
+  `
+  expect(getImportsFromCode(sourceCode)).toEqual(["./file.tsx"])
+})
+
 test("getImportsFromCode should handle multiline imports", () => {
   const sourceCode = `
     import {
