@@ -7,9 +7,7 @@ test("getImportsFromCode should extract imports correctly", () => {
     import * as namespace from "./namespace-module"
     import { export1, export2 as alias2 } from "./named-exports"
     import "./side-effect-only"
-    import defaultAndNamed, { named1, named2 } from "./mixed"
     import { something } from "@tsci/package"
-    import SomeDefault, * as OtherExports from "./combined"
   `
   expect(getImportsFromCode(sourceCode)).toMatchInlineSnapshot(`
     [
@@ -17,9 +15,7 @@ test("getImportsFromCode should extract imports correctly", () => {
       "./namespace-module",
       "./named-exports",
       "./side-effect-only",
-      "./mixed",
       "@tsci/package",
-      "./combined",
     ]
   `)
 })
@@ -85,24 +81,6 @@ test("getImportsFromCode should handle comments and commented imports", () => {
     [
       "./real-import",
       "./another-import",
-    ]
-  `)
-})
-
-test("getImportsFromCode should handle default+namespace import syntax", () => {
-  const sourceCode = `
-    // This is the syntax from example7-import-default-and-namespace.test.tsx
-    import DefaultExport, * as AllExports from "./component.tsx"
-    
-    // Similar variations
-    import Default, * as Everything from "./module.js"
-    import MyClass, * as Utils from "./utils"
-  `
-  expect(getImportsFromCode(sourceCode)).toMatchInlineSnapshot(`
-    [
-      "./component.tsx",
-      "./module.js",
-      "./utils",
     ]
   `)
 })
