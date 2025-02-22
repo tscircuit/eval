@@ -18,9 +18,10 @@ test("example8-footprinter-to220", async () => {
 
   const circuitJson = await circuitWebWorker.getCircuitJson()
 
-  const pcb_plated_hole = circuitJson.filter((el: any) => el.type === "pcb_plated_hole")
+  const pcb_plated_hole = circuitJson.filter(
+    (el: any) => el.type === "pcb_plated_hole",
+  )
   expect(pcb_plated_hole).toBeDefined()
-
 
   const chip = circuitJson.find((el: any) => el.name === "U3")
   expect(chip).toBeDefined()
