@@ -1,6 +1,7 @@
 export const getImportsFromCode = (code: string): string[] => {
+  // Match basic import patterns including combined default and namespace imports
   const importRegex =
-    /import\s+(?:(?:(?:\*\s+as\s+\w+)|(?:[\w\s,{}]+))\s+from\s+)?['"](.+?)['"]/g
+    /^\s*import\s+(?:(?:[\w\s]+,\s*)?(?:\*\s+as\s+[\w\s]+|\{[\s\w,]+\}|\w+)\s+from\s+)?['"](.+?)['"]/gm
   const imports: string[] = []
   let match: RegExpExecArray | null
 
