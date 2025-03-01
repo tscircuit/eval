@@ -1,4 +1,5 @@
 import type { AnyCircuitElement } from "circuit-json"
+import type { RootCircuitEventName } from "@tscircuit/core"
 
 export interface CircuitRunnerConfiguration {
   snippetsApiBaseUrl: string
@@ -32,7 +33,7 @@ export interface CircuitRunnerApi {
   renderUntilSettled: () => Promise<void>
   getCircuitJson: () => Promise<AnyCircuitElement[]>
   setSnippetsApiBaseUrl: (baseUrl: string) => Promise<void>
-  on: (event: string, callback: (...args: any[]) => void) => void
+  on: (event: RootCircuitEventName, callback: (...args: any[]) => void) => void
   clearEventListeners: () => void
   kill: () => Promise<void>
 }
@@ -50,14 +51,7 @@ export type CircuitWebWorker = {
   }) => Promise<void>
   renderUntilSettled: () => Promise<void>
   getCircuitJson: () => Promise<AnyCircuitElement[]>
-  on: (
-    event:
-      | "renderable:renderLifecycle:anyEvent"
-      | `asyncEffect:start`
-      | `asyncEffect:end`
-      | `renderable:renderLifecycle:${string}`,
-    callback: (...args: any[]) => void,
-  ) => void
+  on: (event: RootCircuitEventName, callback: (...args: any[]) => void) => void
   clearEventListeners: () => void
   kill: () => Promise<void>
 }

@@ -6,6 +6,7 @@ import type {
   WebWorkerConfiguration,
   CircuitWebWorker,
 } from "./shared/types"
+import type { RootCircuitEventName } from "@tscircuit/core"
 
 export type { CircuitWebWorker, WebWorkerConfiguration }
 
@@ -60,7 +61,7 @@ export const createCircuitWebWorker = async (
     getCircuitJson: comlinkWorker.getCircuitJson.bind(comlinkWorker),
     on: (event: string, callback: (...args: any[]) => void) => {
       const proxiedCallback = Comlink.proxy(callback)
-      comlinkWorker.on(event, proxiedCallback)
+      comlinkWorker.on(event as RootCircuitEventName, proxiedCallback)
     },
     kill: async () => {
       comlinkWorker[Comlink.releaseProxy]()
