@@ -34,18 +34,21 @@
   "devDependencies": {
     "@babel/standalone": "^7.26.2",
     "@biomejs/biome": "^1.9.4",
-    "@tscircuit/core": "^0.0.326",
+    "@tscircuit/core": "^0.0.339",
     "@tscircuit/math-utils": "^0.0.10",
     "@types/babel__standalone": "^7.1.9",
     "@types/bun": "latest",
     "@types/react": "^18.3.12",
-    "circuit-json": "^0.0.139",
+    "circuit-json": "^0.0.149",
     "comlink": "^4.4.2",
     "jscad-fiber": "^0.0.77",
     "react": "^18.3.1",
     "tsup": "^8.3.5"
   },
   "peerDependencies": {
-    "typescript": "^5.0.0"
+    "typescript": "^5.0.0",
+    "@tscircuit/core": "*",
+    "circuit-json": "*",
+    "jscad-fiber": "*"
   }
 }
