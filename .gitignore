@@ -176,3 +176,6 @@ dist
 
 .vscode
 .aider*
+
+playwright-report
+test-results

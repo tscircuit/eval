@@ -12,7 +12,8 @@
     "build:eval": "tsup-node ./lib/eval --format esm --dts --platform browser -d dist/eval",
     "start:browser-test-server": "bun --port 3070 ./tests/browser/browsertest.html",
     "format": "biome format --write .",
-    "format:check": "biome format ."
+    "format:check": "biome format .",
+    "test:playwright": "playwright test"
   },
   "exports": {
     ".": {
