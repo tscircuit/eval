@@ -1,5 +1,5 @@
 import { createCircuitWebWorker } from "lib/index"
-import blobUrl from "../../dist/blob-url"
+import blobUrl from "../dist/blob-url"
 
 async function runTest() {
   try {

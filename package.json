@@ -10,7 +10,7 @@
     "build:webworker:analyze": "tsup ./webworker/index.ts --platform browser --metafile ./metadata.json --format esm --sourcemap inline -d dist/webworker",
     "build:blob-url": "bun run ./scripts/build-worker-blob-url.ts",
     "build:eval": "tsup-node ./lib/eval --format esm --dts --platform browser -d dist/eval",
-    "start:browser-test-server": "bun --port 3070 ./tests/browser/browsertest.html",
+    "start:browser-test-server": "bun --port 3070 ./browser-tests/browsertest.html",
     "format": "biome format --write .",
     "format:check": "biome format .",
     "test:playwright": "playwright test"
