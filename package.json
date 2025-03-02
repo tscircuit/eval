@@ -13,7 +13,8 @@
     "start:browser-test-server": "bun --port 3070 ./browser-tests/browsertest.html",
     "format": "biome format --write .",
     "format:check": "biome format .",
-    "test:playwright": "playwright test"
+    "test:playwright": "playwright test",
+    "test": "bun test tests"
   },
   "exports": {
     ".": {
