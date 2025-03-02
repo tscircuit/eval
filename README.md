@@ -12,7 +12,7 @@ scope. All imports from `@tsci/*` are automatically handled.
 ### 1. Using CircuitWebWorker (Web Worker)
 
 ```tsx
-import { createCircuitWebWorker } from "@tscircuit/eval-webworker"
+import { createCircuitWebWorker } from "@tscircuit/eval"
 
 const circuitWebWorker = createCircuitWebWorker()
 
@@ -36,7 +36,7 @@ const circuitJson = await circuitWebWorker.getCircuitJson()
 For simple cases where you don't need web worker isolation, you can use CircuitRunner directly in the main thread:
 
 ```tsx
-import { CircuitRunner } from "@tscircuit/eval-webworker"
+import { CircuitRunner } from "@tscircuit/eval"
 
 const circuitRunner = new CircuitRunner()
 
@@ -61,7 +61,7 @@ const led = circuitJson.find((el) => el.name === "LED1")
 You can also execute code using a virtual filesystem, which is useful when you have multiple files or components:
 
 ```tsx
-import { createCircuitWebWorker } from "@tscircuit/eval-webworker"
+import { createCircuitWebWorker } from "@tscircuit/eval"
 
 const circuitWebWorker = createCircuitWebWorker()
 
