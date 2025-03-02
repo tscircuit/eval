@@ -8,6 +8,7 @@ export interface CircuitRunnerConfiguration {
 }
 
 export interface WebWorkerConfiguration extends CircuitRunnerConfiguration {
+  evalVersion?: string
   /**
    * @deprecated, renamed to webWorkerBlobUrl
    */

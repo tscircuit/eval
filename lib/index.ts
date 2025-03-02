@@ -24,8 +24,7 @@ export const createCircuitWebWorker = async (
     configuration.webWorkerBlobUrl ?? configuration.webWorkerUrl
 
   if (!workerBlobUrl) {
-    const cdnUrl =
-      "https://cdn.jsdelivr.net/npm/@tscircuit/eval/dist/webworker/index.js"
+    const cdnUrl = `https://cdn.jsdelivr.net/npm/@tscircuit/eval@${configuration.evalVersion ?? "latest"}/dist/webworker/index.js`
 
     const workerBlob = await fetch(cdnUrl).then((res) => res.blob())
     workerBlobUrl = URL.createObjectURL(workerBlob)
