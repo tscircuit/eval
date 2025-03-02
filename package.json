@@ -6,10 +6,11 @@
   "scripts": {
     "build": "bun run build:lib && bun run build:webworker && bun run build:blob-url && bun run build:eval",
     "build:lib": "tsup-node ./lib/index.ts --format esm --sourcemap inline --dts -d dist/lib",
-    "build:webworker": "tsup ./webworker/index.ts --platform browser --format esm --sourcemap inline -d dist/webworker",
+    "build:webworker": "tsup --config tsup-webworker.config.ts",
     "build:webworker:analyze": "tsup ./webworker/index.ts --platform browser --metafile ./metadata.json --format esm --sourcemap inline -d dist/webworker",
     "build:blob-url": "bun run ./scripts/build-worker-blob-url.ts",
     "build:eval": "tsup-node ./lib/eval --format esm --dts --platform browser -d dist/eval",
+    "start:browser-test-server": "bun --port 3070 ./tests/browser/browsertest.html",
     "format": "biome format --write .",
     "format:check": "biome format ."
   },
