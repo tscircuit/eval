@@ -11,7 +11,6 @@ export function evalCompiledJs(
     }
 
     const mod = preSuppliedImports[name]
-
     return new Proxy(mod, {
       get(target, prop) {
         if (!(prop in target)) {
