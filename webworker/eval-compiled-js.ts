@@ -9,8 +9,20 @@ export function evalCompiledJs(
     if (!preSuppliedImports[name]) {
       throw new Error(`Import "${name}" not found`)
     }
-    return preSuppliedImports[name]
+
+    const mod = preSuppliedImports[name]
+    return new Proxy(mod, {
+      get(target, prop) {
+        if (!(prop in target)) {
+          throw new Error(
+            `Component "${String(prop)}" is not exported by "${name}"`,
+          )
+        }
+        return target[prop as keyof typeof target]
+      },
+    })
   }
+
   const functionBody = `
   var exports = {};
   var require = globalThis.__tscircuit_require;
