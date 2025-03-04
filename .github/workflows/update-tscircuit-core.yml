@@ -17,6 +17,12 @@ jobs:
       - name: Update @tscircuit/core
         run: bun update --latest @tscircuit/core
         
+      - name: Get new version
+        id: get-version
+        run: |
+          NEW_VERSION=$(grep '"@tscircuit/core"' package.json | sed 's/.*: "\(.*\)".*/\1/')
+          echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
+        
       - name: Check for changes
         id: git-check
         run: |
@@ -26,10 +32,10 @@ jobs:
         if: steps.git-check.outputs.changes == 'true'
         uses: peter-evans/create-pull-request@v5
         with:
-          commit-message: "chore: update @tscircuit/core to latest version"
-          title: "chore: update @tscircuit/core to latest version"
+          commit-message: "chore: update @tscircuit/core to v${{ steps.get-version.outputs.new_version }}"
+          title: "chore: update @tscircuit/core to v${{ steps.get-version.outputs.new_version }}"
           body: |
-            Automated update of @tscircuit/core to the latest version.
+            Automated update of @tscircuit/core to v${{ steps.get-version.outputs.new_version }}.
             
             This PR was created automatically by the update-tscircuit-core GitHub workflow.
           branch: update-tscircuit-core
