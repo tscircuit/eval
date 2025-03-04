@@ -14,6 +14,12 @@ jobs:
       - name: Setup Bun
         uses: oven-sh/setup-bun@v1
         
+      - name: Close existing PRs
+        run: |
+          gh pr list --repo ${{ github.repository }} --state open --json number,title --jq '.[] | select(.title | contains("update @tscircuit/core")) | .number' | xargs -I{} gh pr close {} --comment "Closing in favor of a new update PR"
+        env:
+          GH_TOKEN: ${{ secrets.TSCIRCUIT_BOT_GITHUB_TOKEN }}
+        
       - name: Update @tscircuit/core
         run: bun update --latest @tscircuit/core
         
