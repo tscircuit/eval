@@ -6,6 +6,7 @@ on:
       - main
     paths:
       - 'lib/**'
+      - 'package.json'
 jobs:
   publish:
     runs-on: ubuntu-latest
