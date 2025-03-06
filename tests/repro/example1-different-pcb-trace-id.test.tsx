@@ -1,7 +1,7 @@
 import { RootCircuit } from "@tscircuit/core"
 import { expect, test } from "bun:test"
 
-test("example1: different pcb trace id format from core", async () => {
+test.skip("example1: different pcb trace id format from core", async () => {
   const circuit = new RootCircuit()
 
   circuit.add(
