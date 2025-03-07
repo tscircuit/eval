@@ -26,7 +26,7 @@ jobs:
       - name: Get new version
         id: get-version
         run: |
-          NEW_VERSION=$(node -e "console.log(require('./package.json').dependencies['@tscircuit/core'].replace(/^\^/, ''))")
+          NEW_VERSION=$(node -e "console.log(require('./package.json').devDependencies['@tscircuit/core'].replace(/^\^/, ''))")
           echo "new_version=${NEW_VERSION}" >> $GITHUB_OUTPUT
         
       - name: Check for changes
