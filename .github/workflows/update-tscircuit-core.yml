@@ -26,8 +26,8 @@ jobs:
       - name: Get new version
         id: get-version
         run: |
-          NEW_VERSION=$(grep '"@tscircuit/core"' package.json | sed 's/.*: "\(.*\)".*/\1/')
-          echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
+          NEW_VERSION=$(node -e "console.log(require('./package.json').dependencies['@tscircuit/core'].replace(/^\^/, ''))")
+          echo "new_version=${NEW_VERSION}" >> $GITHUB_OUTPUT
         
       - name: Check for changes
         id: git-check
