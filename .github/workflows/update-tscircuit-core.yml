@@ -47,5 +47,5 @@ jobs:
           branch: update-tscircuit-core
           base: main
           token: ${{ secrets.TSCIRCUIT_BOT_GITHUB_TOKEN }}
-          committer: tscircuit-bot <bot@tscircuit.com>
-          author: tscircuit-bot <bot@tscircuit.com>
+          committer: tscircuitbot <bot@tscircuit.com>
+          author: tscircuitbot <bot@tscircuit.com>
