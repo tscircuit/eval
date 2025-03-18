@@ -38,7 +38,7 @@
     "@babel/standalone": "^7.26.2",
     "@biomejs/biome": "^1.9.4",
     "@playwright/test": "^1.50.1",
-    "@tscircuit/core": "^0.0.351",
+    "@tscircuit/core": "^0.0.352",
     "@tscircuit/math-utils": "^0.0.10",
     "@types/babel__standalone": "^7.1.9",
     "@types/bun": "latest",
