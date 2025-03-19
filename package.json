@@ -4,9 +4,10 @@
   "version": "0.0.130",
   "type": "module",
   "scripts": {
-    "build": "bun run build:lib && bun run build:webworker && bun run build:blob-url && bun run build:runner",
+    "build": "bun run build:lib && bun run build:webworker && bun run build:blob-url && bun run build:runner && bun run build:worker-wrapper",
     "build:lib": "tsup-node ./lib/index.ts --format esm --sourcemap inline --dts -d dist/lib",
     "build:webworker": "tsup --config tsup-webworker.config.ts",
+    "build:worker-wrapper": "tsup-node ./lib/worker.ts --format esm --sourcemap inline --dts -d dist",
     "build:webworker:analyze": "tsup ./webworker/entrypoint.ts --platform browser --metafile ./metadata.json --format esm --sourcemap inline -d dist/webworker",
     "build:blob-url": "bun run ./scripts/build-worker-blob-url.ts",
     "build:runner": "tsup-node ./lib/runner --format esm --dts --platform browser -d dist/eval",
