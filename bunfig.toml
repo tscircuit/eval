@@ -1,2 +1,5 @@
+[install.lockfile]
+save = false
+
 [test]
 root = "./tests"
