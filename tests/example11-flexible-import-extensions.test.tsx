@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test"
-import { runTscircuitCode } from "lib/eval"
+import { runTscircuitCode } from "lib/runner"
 
 test("example11 flexible imports", async () => {
   const circuitJson = await runTscircuitCode(

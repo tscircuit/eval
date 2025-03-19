@@ -1,7 +1,7 @@
 import { defineConfig } from "tsup"
 
 export default defineConfig({
-  entry: ["./webworker/entrypoint.ts", "./webworker/index.ts"],
+  entry: ["./webworker/entrypoint.ts"],
   format: ["esm"],
   platform: "browser",
   sourcemap: "inline",

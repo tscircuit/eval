@@ -3,8 +3,8 @@ import { importEvalPath } from "./import-eval-path"
 import * as Babel from "@babel/standalone"
 import { evalCompiledJs } from "./eval-compiled-js"
 import { getImportsFromCode } from "lib/utils/get-imports-from-code"
-import { normalizeFilePath } from "lib/eval/normalizeFsMap"
-import { resolveFilePathOrThrow } from "lib/eval/resolveFilePath"
+import { normalizeFilePath } from "lib/runner/normalizeFsMap"
+import { resolveFilePathOrThrow } from "lib/runner/resolveFilePath"
 
 export const importLocalFile = async (
   importName: string,

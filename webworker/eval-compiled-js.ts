@@ -1,4 +1,4 @@
-import { resolveFilePath } from "lib/eval/resolveFilePath"
+import { resolveFilePath } from "lib/runner/resolveFilePath"
 
 export function evalCompiledJs(
   compiledCode: string,

@@ -10,7 +10,7 @@ import {
   type ExecutionContext,
 } from "./execution-context"
 import { importEvalPath } from "./import-eval-path"
-import { normalizeFsMap } from "../lib/eval/normalizeFsMap"
+import { normalizeFsMap } from "../lib/runner/normalizeFsMap"
 import type { RootCircuit } from "@tscircuit/core"
 
 globalThis.React = React
