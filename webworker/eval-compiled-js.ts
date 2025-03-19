@@ -1,10 +1,18 @@
+import { resolveFilePath } from "lib/eval/resolveFilePath"
+
 export function evalCompiledJs(
   compiledCode: string,
   preSuppliedImports: Record<string, any>,
 ) {
   ;(globalThis as any).__tscircuit_require = (name: string) => {
-    if (name.startsWith("./") && preSuppliedImports[name.slice(2)]) {
-      return preSuppliedImports[name.slice(2)]
+    if (name.startsWith("./")) {
+      const resolvedFilePath = resolveFilePath(
+        name.slice(2),
+        preSuppliedImports,
+      )
+      if (resolvedFilePath && preSuppliedImports[resolvedFilePath]) {
+        return preSuppliedImports[resolvedFilePath]
+      }
     }
     if (!preSuppliedImports[name]) {
       throw new Error(`Import "${name}" not found`)

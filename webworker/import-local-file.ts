@@ -3,6 +3,8 @@ import { importEvalPath } from "./import-eval-path"
 import * as Babel from "@babel/standalone"
 import { evalCompiledJs } from "./eval-compiled-js"
 import { getImportsFromCode } from "lib/utils/get-imports-from-code"
+import { normalizeFilePath } from "lib/eval/normalizeFsMap"
+import { resolveFilePathOrThrow } from "lib/eval/resolveFilePath"
 
 export const importLocalFile = async (
   importName: string,
@@ -11,7 +13,7 @@ export const importLocalFile = async (
 ) => {
   const { fsMap, preSuppliedImports } = ctx
 
-  const fsPath = importName.slice(2)
+  const fsPath = resolveFilePathOrThrow(importName.slice(2), fsMap)
   if (!ctx.fsMap[fsPath]) {
     throw new Error(`File "${fsPath}" not found`)
   }

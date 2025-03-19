@@ -2,7 +2,7 @@ import { createCircuitWebWorker } from "lib"
 import { expect, test } from "bun:test"
 
 // TODO should skip b/c uses network
-test("example6-dynamic-load-blob-url", async () => {
+test.skip("example6-dynamic-load-blob-url", async () => {
   const circuitWebWorker = await createCircuitWebWorker({})
 
   await circuitWebWorker.execute(`

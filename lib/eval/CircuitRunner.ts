@@ -4,10 +4,11 @@ import type {
   CircuitRunnerConfiguration,
 } from "lib/shared/types"
 import { createExecutionContext } from "../../webworker/execution-context"
-import { normalizeFsMap } from "../../webworker/normalize-fs-map"
+import { normalizeFsMap } from "./normalizeFsMap"
 import type { RootCircuit } from "@tscircuit/core"
 import * as React from "react"
 import { importEvalPath } from "webworker/import-eval-path"
+import { setupDefaultEntrypointIfNeeded } from "./setupDefaultEntrypointIfNeeded"
 
 export class CircuitRunner implements CircuitRunnerApi {
   _executionContext: ReturnType<typeof createExecutionContext> | null = null
@@ -18,11 +19,14 @@ export class CircuitRunner implements CircuitRunnerApi {
   }
   _eventListeners: Record<string, ((...args: any[]) => void)[]> = {}
 
-  async executeWithFsMap(opts: {
-    entrypoint: string
+  async executeWithFsMap(ogOpts: {
+    entrypoint?: string
+    mainComponentPath?: string
+    mainComponentName?: string
     fsMap: Record<string, string>
     name?: string
   }): Promise<void> {
+    const opts = { ...ogOpts }
     if (this._circuitRunnerConfiguration.verbose) {
       console.log("[CircuitRunner] executeWithFsMap called with:", {
         entrypoint: opts.entrypoint,
@@ -30,6 +34,8 @@ export class CircuitRunner implements CircuitRunnerApi {
         name: opts.name,
       })
     }
+
+    setupDefaultEntrypointIfNeeded(opts)
 
     this._executionContext = createExecutionContext(
       this._circuitRunnerConfiguration,
@@ -40,16 +46,16 @@ export class CircuitRunner implements CircuitRunnerApi {
     this._bindEventListeners(this._executionContext.circuit)
 
     this._executionContext.fsMap = normalizeFsMap(opts.fsMap)
-    if (!this._executionContext.fsMap[opts.entrypoint]) {
+    if (!this._executionContext.fsMap[opts.entrypoint!]) {
       throw new Error(`Entrypoint "${opts.entrypoint}" not found`)
     }
     ;(globalThis as any).__tscircuit_circuit = this._executionContext.circuit
 
-    const entrypoint = opts.entrypoint.startsWith("./")
+    const entrypoint = opts.entrypoint!.startsWith("./")
       ? opts.entrypoint
       : `./${opts.entrypoint}`
 
-    await importEvalPath(entrypoint, this._executionContext)
+    await importEvalPath(entrypoint!, this._executionContext)
   }
 
   async execute(code: string, opts: { name?: string } = {}) {
