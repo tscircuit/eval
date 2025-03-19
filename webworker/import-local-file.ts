@@ -12,13 +12,28 @@ export const importLocalFile = async (
   const { fsMap, preSuppliedImports } = ctx
 
   const fsPath = importName.slice(2)
-  if (!ctx.fsMap[fsPath]) {
+
+  let actualFsPath = fsPath
+  if (!fsPath.includes(".")) {
+    const possibleExtensions = [".tsx", ".json"]
+    for (const ext of possibleExtensions) {
+      if (ctx.fsMap[fsPath + ext]) {
+        actualFsPath = fsPath + ext
+        break
+      }
+    }
+  }
+
+  if (!ctx.fsMap[actualFsPath]) {
     throw new Error(`File "${fsPath}" not found`)
   }
-  const fileContent = fsMap[fsPath]
-  if (fsPath.endsWith(".json")) {
-    preSuppliedImports[fsPath] = JSON.parse(fileContent)
-  } else if (fsPath.endsWith(".tsx")) {
+
+  const fileContent = fsMap[actualFsPath]
+  const resultPath = fsPath.includes(".") ? actualFsPath : fsPath
+
+  if (actualFsPath.endsWith(".json")) {
+    preSuppliedImports[resultPath] = JSON.parse(fileContent)
+  } else if (actualFsPath.endsWith(".tsx")) {
     const importNames = getImportsFromCode(fileContent)
 
     for (const importName of importNames) {
@@ -39,22 +54,22 @@ export const importLocalFile = async (
 
     try {
       const importRunResult = evalCompiledJs(result.code, preSuppliedImports)
-      preSuppliedImports[fsPath] = importRunResult.exports
+      preSuppliedImports[resultPath] = importRunResult.exports
     } catch (error: any) {
       throw new Error(
         `Eval compiled js error for "${importName}": ${error.message}`,
       )
     }
-  } else if (fsPath.endsWith(".js")) {
+  } else if (actualFsPath.endsWith(".js")) {
     // TODO get imports from js?
 
-    preSuppliedImports[importName] = evalCompiledJs(
+    preSuppliedImports[resultPath] = evalCompiledJs(
       fileContent,
       preSuppliedImports,
     ).exports
   } else {
     throw new Error(
-      `Unsupported file extension "${fsPath.split(".").pop()}" for "${fsPath}"`,
+      `Unsupported file extension "${actualFsPath.split(".").pop()}" for "${actualFsPath}"`,
     )
   }
 }
