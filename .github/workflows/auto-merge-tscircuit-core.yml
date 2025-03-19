@@ -1,0 +1,35 @@
+name: Auto-merge @tscircuit/core updates
+
+on:
+  pull_request:
+    types:
+      - opened
+      - synchronize
+      - reopened
+      - labeled
+
+jobs:
+  auto-merge:
+    runs-on: ubuntu-latest
+    if: |
+      contains(github.event.pull_request.title, 'update @tscircuit/core') && 
+      github.event.pull_request.user.login == 'tscircuitbot'
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        
+      - name: Wait for checks
+        uses: lewagon/wait-on-check-action@v1.3.1
+        with:
+          repo-token: ${{ secrets.TSCIRCUIT_BOT_GITHUB_TOKEN }}
+          check-name: 'update-core' # Make sure this matches your main workflow's job name
+          ref: ${{ github.event.pull_request.head.sha }}
+          wait-interval: 20
+          
+      - name: Auto-merge if checks pass
+        run: |
+          PR_NUMBER=${{ github.event.pull_request.number }}
+          gh pr merge $PR_NUMBER --auto --merge
+        env:
+          GH_TOKEN: ${{ secrets.TSCIRCUIT_BOT_GITHUB_TOKEN }}
