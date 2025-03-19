@@ -4,7 +4,8 @@ import { createCircuitWebWorker } from "../lib"
 describe("kill method", () => {
   it("should immediately terminate the worker", async () => {
     const worker = await createCircuitWebWorker({
-      webWorkerUrl: new URL("../dist/webworker/index.js", import.meta.url).href,
+      webWorkerUrl: new URL("../dist/webworker/entrypoint.js", import.meta.url)
+        .href,
     })
 
     // Ensure worker is running

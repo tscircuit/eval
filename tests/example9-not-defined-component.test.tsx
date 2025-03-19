@@ -3,7 +3,7 @@ import { expect, test } from "bun:test"
 
 test("example9-not-defined-component", async () => {
   const circuitWebWorker = await createCircuitWebWorker({
-    webWorkerUrl: new URL("../webworker/index.ts", import.meta.url),
+    webWorkerUrl: new URL("../webworker/entrypoint.ts", import.meta.url),
   })
 
   expect(async () => {

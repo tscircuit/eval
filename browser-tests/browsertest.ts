@@ -6,6 +6,7 @@ async function runTest() {
   try {
     // Create a circuit web worker
     console.log("creating worker...")
+    console.log("blobUrl", blobUrl)
     const circuitWebWorker = await createCircuitWebWorker({
       webWorkerBlobUrl: blobUrl,
     })

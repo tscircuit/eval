@@ -9,7 +9,25 @@ scope. All imports from `@tsci/*` are automatically handled.
 
 ## Usage Options
 
-### 1. Using CircuitWebWorker (Web Worker)
+### 1. Quick Use: `runTscircuitCode`
+
+Quickly run tscircuit code in the main thread. You can also supply a virtual
+filesystem to run multiple files.
+
+```tsx
+import { runTscircuitCode } from "@tscircuit/eval"
+
+const circuitJson = await runTscircuitCode(`
+export default () => (
+  <resistor name="R1" resistance="1k" />
+)
+`)
+
+// You've got Circuit JSON!
+console.log(circuitJson)
+```
+
+### 2. Using CircuitWebWorker (Web Worker)
 
 ```tsx
 import { createCircuitWebWorker } from "@tscircuit/eval"
@@ -31,7 +49,7 @@ await circuitWebWorker.renderUntilSettled()
 const circuitJson = await circuitWebWorker.getCircuitJson()
 ```
 
-### 2. Using CircuitRunner Directly
+### 3. Using CircuitRunner Directly
 
 For simple cases where you don't need web worker isolation, you can use CircuitRunner directly in the main thread:
 
@@ -56,7 +74,7 @@ const circuitJson = await circuitRunner.getCircuitJson()
 const led = circuitJson.find((el) => el.name === "LED1")
 ```
 
-### 3. Using Virtual Filesystem
+### 4. Using Virtual Filesystem
 
 You can also execute code using a virtual filesystem, which is useful when you have multiple files or components:
 

@@ -3,7 +3,7 @@ import { createCircuitWebWorker } from "lib/index"
 
 test("example5-event-recording", async () => {
   const circuitWebWorker = await createCircuitWebWorker({
-    webWorkerUrl: new URL("../webworker/index.ts", import.meta.url),
+    webWorkerUrl: new URL("../webworker/entrypoint.ts", import.meta.url),
   })
 
   const events: any[] = []

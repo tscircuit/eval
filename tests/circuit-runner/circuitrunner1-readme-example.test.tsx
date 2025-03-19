@@ -1,6 +1,6 @@
 import { createCircuitWebWorker } from "lib"
 import { expect, test } from "bun:test"
-import { CircuitRunner } from "lib/eval/CircuitRunner"
+import { CircuitRunner } from "lib/runner/CircuitRunner"
 
 test("circuitrunner1-readme-example", async () => {
   const circuitRunner = new CircuitRunner()
