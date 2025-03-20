@@ -4,10 +4,12 @@ import { runTscircuitCode } from "lib/runner"
 test("example12 subdirectory relative imports", async () => {
   const circuitJson = await runTscircuitCode(
     {
+      "lib/resistor-name.ts": `export const resistorName = "R1"`,
       "lib/resistance-value.ts": `export const resistanceValue = "1k"`,
       "lib/resistor.tsx": `
       import { resistanceValue } from "./resistance-value"
-      export default () => (<resistor name="R1" resistance={resistanceValue} />)
+      import { resistorName } from "lib/resistor-name"
+      export default () => (<resistor name={resistorName} resistance={resistanceValue} />)
       `,
       "user-code.tsx": `import Resistor from "./lib/resistor";\nexport default () => (<Resistor />)`,
     },

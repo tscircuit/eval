@@ -6,15 +6,9 @@ export function evalCompiledJs(
   cwd?: string,
 ) {
   ;(globalThis as any).__tscircuit_require = (name: string) => {
-    if (name.startsWith("./")) {
-      const resolvedFilePath = resolveFilePath(
-        name.slice(2),
-        preSuppliedImports,
-        cwd,
-      )
-      if (resolvedFilePath && preSuppliedImports[resolvedFilePath]) {
-        return preSuppliedImports[resolvedFilePath]
-      }
+    const resolvedFilePath = resolveFilePath(name, preSuppliedImports, cwd)
+    if (resolvedFilePath && preSuppliedImports[resolvedFilePath]) {
+      return preSuppliedImports[resolvedFilePath]
     }
     if (!preSuppliedImports[name]) {
       throw new Error(`Import "${name}" not found`)
