@@ -3,12 +3,14 @@ import { resolveFilePath } from "lib/runner/resolveFilePath"
 export function evalCompiledJs(
   compiledCode: string,
   preSuppliedImports: Record<string, any>,
+  cwd?: string,
 ) {
   ;(globalThis as any).__tscircuit_require = (name: string) => {
     if (name.startsWith("./")) {
       const resolvedFilePath = resolveFilePath(
         name.slice(2),
         preSuppliedImports,
+        cwd,
       )
       if (resolvedFilePath && preSuppliedImports[resolvedFilePath]) {
         return preSuppliedImports[resolvedFilePath]

@@ -3,15 +3,19 @@ import { normalizeFilePath } from "./normalizeFsMap"
 export const resolveFilePath = (
   unknownFilePath: string,
   fsMapOrAllFilePaths: Record<string, string> | string[],
+  cwd?: string,
 ) => {
+  const unknownFilePathWithCwd = cwd
+    ? `${cwd}/${unknownFilePath.replace(/^\.\//, "")}`
+    : unknownFilePath
   const filePaths = new Set(
     Array.isArray(fsMapOrAllFilePaths)
       ? fsMapOrAllFilePaths
       : Object.keys(fsMapOrAllFilePaths),
   )
 
-  if (filePaths.has(unknownFilePath)) {
-    return unknownFilePath
+  if (filePaths.has(unknownFilePathWithCwd)) {
+    return unknownFilePathWithCwd
   }
 
   const normalizedFilePathMap = new Map<string, string>()
@@ -19,7 +23,7 @@ export const resolveFilePath = (
     normalizedFilePathMap.set(normalizeFilePath(filePath), filePath)
   }
 
-  const normalizedUnknownFilePath = normalizeFilePath(unknownFilePath)
+  const normalizedUnknownFilePath = normalizeFilePath(unknownFilePathWithCwd)
 
   if (normalizedFilePathMap.has(normalizedUnknownFilePath)) {
     return normalizedFilePathMap.get(normalizedUnknownFilePath)!
@@ -44,7 +48,7 @@ export const resolveFilePathOrThrow = (
   const resolvedFilePath = resolveFilePath(unknownFilePath, fsMapOrAllFilePaths)
   if (!resolvedFilePath) {
     throw new Error(
-      `File not found "${unknownFilePath}", available paths:\n\n${Object.keys(fsMapOrAllFilePaths)}`,
+      `File not found "${unknownFilePath}", available paths:\n\n${Object.keys(fsMapOrAllFilePaths).join(", ")}`,
     )
   }
   return resolvedFilePath

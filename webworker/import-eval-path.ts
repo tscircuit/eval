@@ -3,11 +3,15 @@ import type { ExecutionContext } from "./execution-context"
 import * as Babel from "@babel/standalone"
 import { importLocalFile } from "./import-local-file"
 import { importSnippet } from "./import-snippet"
+import { resolveFilePath } from "lib/runner/resolveFilePath"
 
 export async function importEvalPath(
   importName: string,
   ctx: ExecutionContext,
   depth = 0,
+  opts: {
+    cwd?: string
+  } = {},
 ) {
   if (ctx.verbose) {
     console.log(`[Worker] ${"  ".repeat(depth)}➡️`, importName)
@@ -23,13 +27,20 @@ export async function importEvalPath(
     return
   }
 
-  if (importName.startsWith("./")) {
-    return importLocalFile(importName, ctx, depth)
+  const resolvedLocalImportPath = resolveFilePath(
+    importName,
+    ctx.fsMap,
+    opts.cwd,
+  )
+  if (resolvedLocalImportPath) {
+    return importLocalFile(resolvedLocalImportPath, ctx, depth)
   }
 
   if (importName.startsWith("@tsci/")) {
     return importSnippet(importName, ctx, depth)
   }
 
-  throw new Error(`Unsupported module import, file an issue "${importName}"`)
+  throw new Error(
+    `Unresolved import "${importName}" ${opts.cwd ? `from directory "${opts.cwd}"` : ""}`,
+  )
 }

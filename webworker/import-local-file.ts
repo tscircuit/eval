@@ -5,6 +5,7 @@ import { evalCompiledJs } from "./eval-compiled-js"
 import { getImportsFromCode } from "lib/utils/get-imports-from-code"
 import { normalizeFilePath } from "lib/runner/normalizeFsMap"
 import { resolveFilePathOrThrow } from "lib/runner/resolveFilePath"
+import { dirname } from "node:path"
 
 export const importLocalFile = async (
   importName: string,
@@ -13,7 +14,7 @@ export const importLocalFile = async (
 ) => {
   const { fsMap, preSuppliedImports } = ctx
 
-  const fsPath = resolveFilePathOrThrow(importName.slice(2), fsMap)
+  const fsPath = resolveFilePathOrThrow(importName, fsMap)
   if (!ctx.fsMap[fsPath]) {
     throw new Error(`File "${fsPath}" not found`)
   }
@@ -25,7 +26,9 @@ export const importLocalFile = async (
 
     for (const importName of importNames) {
       if (!preSuppliedImports[importName]) {
-        await importEvalPath(importName, ctx, depth + 1)
+        await importEvalPath(importName, ctx, depth + 1, {
+          cwd: dirname(fsPath),
+        })
       }
     }
 
@@ -40,7 +43,11 @@ export const importLocalFile = async (
     }
 
     try {
-      const importRunResult = evalCompiledJs(result.code, preSuppliedImports)
+      const importRunResult = evalCompiledJs(
+        result.code,
+        preSuppliedImports,
+        dirname(fsPath),
+      )
       preSuppliedImports[fsPath] = importRunResult.exports
     } catch (error: any) {
       throw new Error(
@@ -53,6 +60,7 @@ export const importLocalFile = async (
     preSuppliedImports[importName] = evalCompiledJs(
       fileContent,
       preSuppliedImports,
+      dirname(fsPath),
     ).exports
   } else {
     throw new Error(
