@@ -20,6 +20,9 @@ export function evalCompiledJs(
     return new Proxy(mod, {
       get(target, prop) {
         if (!(prop in target)) {
+          if (prop === "default") {
+            return undefined
+          }
           throw new Error(
             `Component "${String(prop)}" is not exported by "${name}"`,
           )
