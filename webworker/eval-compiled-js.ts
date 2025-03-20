@@ -7,14 +7,16 @@ export function evalCompiledJs(
 ) {
   ;(globalThis as any).__tscircuit_require = (name: string) => {
     const resolvedFilePath = resolveFilePath(name, preSuppliedImports, cwd)
-    if (resolvedFilePath && preSuppliedImports[resolvedFilePath]) {
-      return preSuppliedImports[resolvedFilePath]
-    }
-    if (!preSuppliedImports[name]) {
-      throw new Error(`Import "${name}" not found`)
+
+    const hasResolvedFilePath =
+      resolvedFilePath && preSuppliedImports[resolvedFilePath]
+
+    if (!preSuppliedImports[name] && !hasResolvedFilePath) {
+      throw new Error(`Import "${name}" not found ${cwd ? `in "${cwd}"` : ""}`)
     }
 
-    const mod = preSuppliedImports[name]
+    const mod =
+      preSuppliedImports[name] || preSuppliedImports[resolvedFilePath!]
     return new Proxy(mod, {
       get(target, prop) {
         if (!(prop in target)) {
