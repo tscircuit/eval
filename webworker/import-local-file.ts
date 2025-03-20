@@ -5,7 +5,7 @@ import { evalCompiledJs } from "./eval-compiled-js"
 import { getImportsFromCode } from "lib/utils/get-imports-from-code"
 import { normalizeFilePath } from "lib/runner/normalizeFsMap"
 import { resolveFilePathOrThrow } from "lib/runner/resolveFilePath"
-import { dirname } from "node:path"
+import { dirname } from "lib/utils/dirname"
 
 export const importLocalFile = async (
   importName: string,
