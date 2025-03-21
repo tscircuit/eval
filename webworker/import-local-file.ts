@@ -1,11 +1,10 @@
-import type { ExecutionContext } from "./execution-context"
-import { importEvalPath } from "./import-eval-path"
 import * as Babel from "@babel/standalone"
-import { evalCompiledJs } from "./eval-compiled-js"
-import { getImportsFromCode } from "lib/utils/get-imports-from-code"
-import { normalizeFilePath } from "lib/runner/normalizeFsMap"
 import { resolveFilePathOrThrow } from "lib/runner/resolveFilePath"
 import { dirname } from "lib/utils/dirname"
+import { getImportsFromCode } from "lib/utils/get-imports-from-code"
+import { evalCompiledJs } from "./eval-compiled-js"
+import type { ExecutionContext } from "./execution-context"
+import { importEvalPath } from "./import-eval-path"
 
 export const importLocalFile = async (
   importName: string,
@@ -20,7 +19,11 @@ export const importLocalFile = async (
   }
   const fileContent = fsMap[fsPath]
   if (fsPath.endsWith(".json")) {
-    preSuppliedImports[fsPath] = JSON.parse(fileContent)
+    const jsonData = JSON.parse(fileContent)
+    preSuppliedImports[fsPath] = {
+      __esModule: true,
+      default: jsonData,
+    }
   } else if (fsPath.endsWith(".tsx") || fsPath.endsWith(".ts")) {
     const importNames = getImportsFromCode(fileContent)
 
