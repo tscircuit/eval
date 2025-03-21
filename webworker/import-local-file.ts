@@ -19,11 +19,11 @@ export const importLocalFile = async (
   }
   const fileContent = fsMap[fsPath]
   if (fsPath.endsWith(".json")) {
-    const jsonData = JSON.parse(fileContent);
+    const jsonData = JSON.parse(fileContent)
     preSuppliedImports[fsPath] = {
       __esModule: true,
-      default: jsonData
-    };
+      default: jsonData,
+    }
   } else if (fsPath.endsWith(".tsx") || fsPath.endsWith(".ts")) {
     const importNames = getImportsFromCode(fileContent)
 
