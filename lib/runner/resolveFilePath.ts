@@ -7,7 +7,10 @@ export const resolveFilePath = (
   cwd?: string,
 ) => {
   let unknownFilePathWithCwd = unknownFilePath
-  if (cwd && (unknownFilePath.startsWith("./") || unknownFilePath.startsWith("../"))) {
+  if (
+    cwd &&
+    (unknownFilePath.startsWith("./") || unknownFilePath.startsWith("../"))
+  ) {
     unknownFilePathWithCwd = resolveRelativePath(unknownFilePath, cwd)
   } else if (cwd && !unknownFilePath.startsWith("/")) {
     // Path is in the same directory

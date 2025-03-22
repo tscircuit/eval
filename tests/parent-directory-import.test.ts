@@ -1,4 +1,4 @@
-import { resolveFilePath } from 'lib/runner/resolveFilePath';
+import { resolveFilePath } from "lib/runner/resolveFilePath"
 import { describe, it, expect } from "bun:test"
 
 describe("resolve parent directory imports", () => {
@@ -21,12 +21,20 @@ describe("resolve parent directory imports", () => {
   })
 
   it("should resolve a component from a schematic directory", () => {
-    const result = resolveFilePath("../components/Resistor.tsx", fsMap, "src/schematics")
+    const result = resolveFilePath(
+      "../components/Resistor.tsx",
+      fsMap,
+      "src/schematics",
+    )
     expect(result).toBe("src/components/Resistor.tsx")
   })
 
   it("should resolve circuit helpers from a component directory", () => {
-    const result = resolveFilePath("../utils/circuit-helpers.ts", fsMap, "src/components")
+    const result = resolveFilePath(
+      "../utils/circuit-helpers.ts",
+      fsMap,
+      "src/components",
+    )
     expect(result).toBe("src/utils/circuit-helpers.ts")
   })
 
