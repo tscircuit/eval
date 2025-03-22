@@ -6,7 +6,7 @@ export const resolveFilePath = (
   cwd?: string,
 ) => {
   const unknownFilePathWithCwd = cwd
-    ? `${cwd}/${unknownFilePath.replace(/^\.\//, "")}`
+    ? `${cwd}/${unknownFilePath.replace(/^(\.\/|\.\.\/)/, "")}`
     : unknownFilePath
   const filePaths = new Set(
     Array.isArray(fsMapOrAllFilePaths)
