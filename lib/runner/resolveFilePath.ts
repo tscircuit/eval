@@ -1,5 +1,23 @@
 import { normalizeFilePath } from "./normalizeFsMap"
-import { join } from "path"
+import { dirname } from "lib/utils/dirname"
+
+function resolveRelativePath(importPath: string, cwd: string): string {
+  // Handle parent directory navigation
+  if (importPath.startsWith("../")) {
+    const parentDir = dirname(cwd)
+    return resolveRelativePath(importPath.slice(3), parentDir)
+  }
+  // Handle current directory
+  if (importPath.startsWith("./")) {
+    return resolveRelativePath(importPath.slice(2), cwd)
+  }
+  // Handle absolute path
+  if (importPath.startsWith("/")) {
+    return importPath.slice(1)
+  }
+  // Handle relative path
+  return `${cwd}/${importPath}`
+}
 
 export const resolveFilePath = (
   unknownFilePath: string,
@@ -7,7 +25,9 @@ export const resolveFilePath = (
   cwd?: string,
 ) => {
   // Handle parent directory navigation properly
-  const resolvedPath = cwd ? join(cwd, unknownFilePath) : unknownFilePath
+  const resolvedPath = cwd
+    ? resolveRelativePath(unknownFilePath, cwd)
+    : unknownFilePath
 
   const filePaths = new Set(
     Array.isArray(fsMapOrAllFilePaths)
