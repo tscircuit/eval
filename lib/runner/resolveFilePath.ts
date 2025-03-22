@@ -1,23 +1,18 @@
 import { normalizeFilePath } from "./normalizeFsMap"
+import { resolveRelativePath } from "./resolveRelativePath"
 
 export const resolveFilePath = (
   unknownFilePath: string,
   fsMapOrAllFilePaths: Record<string, string> | string[],
   cwd?: string,
 ) => {
-  const unknownFilePathWithCwd = cwd
-    ? normalizeFilePath(`${cwd}/${unknownFilePath.replace(/^\.\//, "")}`)
-        .split("/")
-        .reduce((acc: string[], part: string) => {
-          if (part === "..") {
-            acc.pop()
-          } else if (part !== "." && part !== "") {
-            acc.push(part)
-          }
-          return acc
-        }, [])
-        .join("/")
-    : unknownFilePath
+  let unknownFilePathWithCwd = unknownFilePath
+  if (cwd && (unknownFilePath.startsWith("./") || unknownFilePath.startsWith("../"))) {
+    unknownFilePathWithCwd = resolveRelativePath(unknownFilePath, cwd)
+  } else if (cwd && !unknownFilePath.startsWith("/")) {
+    // Path is in the same directory
+    unknownFilePathWithCwd = `${cwd}/${unknownFilePath.replace(/^\.\//, "")}`
+  }
   const filePaths = new Set(
     Array.isArray(fsMapOrAllFilePaths)
       ? fsMapOrAllFilePaths
