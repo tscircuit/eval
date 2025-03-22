@@ -4,7 +4,7 @@ import { runTscircuitCode } from "lib/runner"
 test("example13 parent directory relative imports", async () => {
   const circuitJson = await runTscircuitCode(
     {
-      "lib/subdir/resistor-name.ts": `export const resistorName = "R1"`,
+      "lib/resistor-name.ts": `export const resistorName = "R1"`,
       "lib/subdir/resistance-value.ts": `export const resistanceValue = "1k"`,
       "lib/subdir/resistor.tsx": `
       import { resistanceValue } from "./resistance-value"
