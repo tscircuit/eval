@@ -3,16 +3,15 @@ import { resolveFilePath } from "lib/runner/resolveFilePath"
 export function evalCompiledJs(
   compiledCode: string,
   preSuppliedImports: Record<string, any>,
-  cwd?: string,
 ) {
   ;(globalThis as any).__tscircuit_require = (name: string) => {
-    const resolvedFilePath = resolveFilePath(name, preSuppliedImports, cwd)
+    const resolvedFilePath = resolveFilePath(name, preSuppliedImports)
 
     const hasResolvedFilePath =
       resolvedFilePath && preSuppliedImports[resolvedFilePath]
 
     if (!preSuppliedImports[name] && !hasResolvedFilePath) {
-      throw new Error(`Import "${name}" not found (imports available: ${Object.keys(preSuppliedImports).join(",")}) ${cwd ? `in "${cwd}"` : ""}`)
+      throw new Error(`Import "${name}" not found (imports available: ${Object.keys(preSuppliedImports).join(",")})`)
     }
 
     const mod =
