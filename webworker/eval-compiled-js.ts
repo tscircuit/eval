@@ -12,7 +12,7 @@ export function evalCompiledJs(
       resolvedFilePath && preSuppliedImports[resolvedFilePath]
 
     if (!preSuppliedImports[name] && !hasResolvedFilePath) {
-      throw new Error(`Import "${name}" not found ${cwd ? `in "${cwd}"` : ""}`)
+      throw new Error(`Import "${name}" not found (imports available: ${Object.keys(preSuppliedImports).join(",")}) ${cwd ? `in "${cwd}"` : ""}`)
     }
 
     const mod =
@@ -21,7 +21,13 @@ export function evalCompiledJs(
       get(target, prop) {
         if (!(prop in target)) {
           if (prop === "default") {
-            return undefined
+            const defaultExport = Object.entries(target)
+              .find(([key]) => !key.startsWith("use"))?.[1]
+            
+            if (!defaultExport) {
+              throw new Error(`Module "${name}" does not have a valid default export`)
+            }
+            return defaultExport
           }
           throw new Error(
             `Component "${String(prop)}" is not exported by "${name}"`,
