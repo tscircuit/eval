@@ -4,6 +4,8 @@ import * as Babel from "@babel/standalone"
 import { importLocalFile } from "./import-local-file"
 import { importSnippet } from "./import-snippet"
 import { resolveFilePath } from "lib/runner/resolveFilePath"
+import { resolveNodeModule } from "lib/utils/resolve-node-module"
+import { importNodeModule } from "./import-node-module"
 
 export async function importEvalPath(
   importName: string,
@@ -34,6 +36,21 @@ export async function importEvalPath(
   )
   if (resolvedLocalImportPath) {
     return importLocalFile(resolvedLocalImportPath, ctx, depth)
+  }
+
+  // Try to resolve from node_modules
+  const resolvedNodeModulePath = resolveNodeModule(
+    importName,
+    ctx.fsMap,
+    opts.cwd || "",
+  )
+  console.log("Resolved node module path:", resolvedNodeModulePath)
+  if (resolvedNodeModulePath) {
+    console.log(
+      "[Worker] Importing resolved node module file:",
+      resolvedNodeModulePath,
+    );
+    return importNodeModule(importName, ctx, depth);
   }
 
   if (importName.startsWith("@tsci/")) {
