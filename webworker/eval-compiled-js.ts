@@ -3,15 +3,16 @@ import { resolveFilePath } from "lib/runner/resolveFilePath"
 export function evalCompiledJs(
   compiledCode: string,
   preSuppliedImports: Record<string, any>,
+  cwd?: string,
 ) {
   ;(globalThis as any).__tscircuit_require = (name: string) => {
-    const resolvedFilePath = resolveFilePath(name, preSuppliedImports)
+    const resolvedFilePath = resolveFilePath(name, preSuppliedImports, cwd)
 
     const hasResolvedFilePath =
       resolvedFilePath && preSuppliedImports[resolvedFilePath]
 
     if (!preSuppliedImports[name] && !hasResolvedFilePath) {
-      throw new Error(`Import "${name}" not found (imports available: ${Object.keys(preSuppliedImports).join(",")})`)
+      throw new Error(`Import "${name}" not found ${cwd ? `in "${cwd}"` : ""}`)
     }
 
     const mod =
@@ -21,10 +22,10 @@ export function evalCompiledJs(
         if (!(prop in target)) {
           if (prop === "default") {
             const defaultExport = Object.entries(target)
-              .find(([key]) => !key.startsWith("use"))?.[1]
+              .find(([key]) => !key.startsWith("use"))?.[1];
             
             if (!defaultExport) {
-              throw new Error(`Module "${name}" does not have a valid default export`)
+              throw new Error(`Module "${name}" does not have a valid default export`,)
             }
             return defaultExport
           }
