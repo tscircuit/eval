@@ -313,13 +313,10 @@ describe("node module resolution", () => {
     expect(resistor.name).toBe("R9")
   })
 
-  test.skip("resolves TypeScript files with .ts extension", async () => {
+  test("resolves TypeScript files with .ts extension", async () => {
     const circuitJson = await runTscircuitCode(
       {
-        "node_modules/test-package/index.js": `
-          export * from "./resistor.ts"
-        `,
-        "node_modules/test-package/resistor.ts": `
+        "node_modules/test-package/index.ts": `
           export const resistorName: string = "R10"
           export const resistanceValue: string = "10k"
         `,

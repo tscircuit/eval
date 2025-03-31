@@ -34,9 +34,13 @@ export const importNodeModule = async (
 
   console.log(`[importNodeModule] Transforming module with Babel`);
   const result = Babel.transform(fileContent, {
-    presets: ["env"],
+    presets: ["env", "typescript"],
     plugins: ["transform-modules-commonjs"],
     filename: resolvedNodeModulePath,
+    // Enable TypeScript parsing
+    parserOpts: {
+      plugins: ["typescript"]
+    }
   });
 
   if (!result || !result.code) {
