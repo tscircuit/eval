@@ -188,40 +188,6 @@ describe("node module resolution", () => {
     expect(resistor.name).toBe("R5")
   })
 
-  test.skip("resolves package.json browser field for browser environment", async () => {
-    const circuitJson = await runTscircuitCode(
-      {
-        "node_modules/test-package/package.json": JSON.stringify({
-          name: "test-package",
-          main: "index.js",
-          browser: "browser.js"
-        }),
-        "node_modules/test-package/index.js": `
-          export const resistorName = "wrong-name"
-          export const resistanceValue = "wrong-value"
-        `,
-        "node_modules/test-package/browser.js": `
-          export const resistorName = "R6"
-          export const resistanceValue = "6k"
-        `,
-        "user-code.tsx": `
-          import { resistorName, resistanceValue } from "test-package"
-          export default () => (<resistor name={resistorName} resistance={resistanceValue} />)
-        `,
-      },
-      {
-        mainComponentPath: "user-code",
-      },
-    )
-
-    const resistor = circuitJson.find(
-      (element) => element.type === "source_component" && element.name === "R6",
-    ) as any
-    expect(resistor).toBeDefined()
-    expect(resistor.resistance).toBe(6000)
-    expect(resistor.name).toBe("R6")
-  })
-
   test.skip("resolves nested node_modules packages", async () => {
     const circuitJson = await runTscircuitCode(
       {
