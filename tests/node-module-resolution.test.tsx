@@ -288,7 +288,7 @@ describe("node module resolution", () => {
     expect(resistor.name).toBe("R8")
   })
 
-  test.skip("resolves directory import with index.js", async () => {
+  test("resolves directory import with index.js", async () => {
     const circuitJson = await runTscircuitCode(
       {
         "node_modules/test-package/lib/index.js": `
@@ -341,7 +341,7 @@ describe("node module resolution", () => {
     expect(resistor.name).toBe("R10")
   })
 
-  test.skip("resolves subpath exports in package.json", async () => {
+  test("resolves subpath exports in package.json", async () => {
     const circuitJson = await runTscircuitCode(
       {
         "node_modules/test-package/package.json": JSON.stringify({
