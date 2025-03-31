@@ -152,7 +152,7 @@ describe("node module resolution", () => {
     expect(resistor.name).toBe("R4")
   })
 
-  test.skip("resolves package.json exports field with conditional exports", async () => {
+  test("resolves package.json exports field with conditional exports", async () => {
     const circuitJson = await runTscircuitCode(
       {
         "node_modules/test-package/package.json": JSON.stringify({
