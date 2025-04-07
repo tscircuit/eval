@@ -52,6 +52,11 @@ export const importLocalFile = async (
         dirname(fsPath),
       )
       preSuppliedImports[fsPath] = importRunResult.exports
+      // Also register the module under its bare name if it's in node_modules
+      if (fsPath.startsWith("node_modules/")) {
+        const moduleName = fsPath.split("/")[1]
+        preSuppliedImports[moduleName] = importRunResult.exports
+      }
     } catch (error: any) {
       throw new Error(
         `Eval compiled js error for "${importName}": ${error.message}`,

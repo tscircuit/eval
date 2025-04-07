@@ -19,6 +19,28 @@ function resolveRelativePath(importPath: string, cwd: string): string {
   return `${cwd}/${importPath}`
 }
 
+function resolveNodeModulesPath(
+  importPath: string,
+  normalizedFilePathMap: Map<string, string>,
+): string | null {
+  // Try direct node_modules path
+  const nodeModulesPath = `node_modules/${importPath}`
+  if (normalizedFilePathMap.has(nodeModulesPath)) {
+    return normalizedFilePathMap.get(nodeModulesPath)!
+  }
+
+  // Try with extensions
+  const extensions = ["tsx", "ts", "json", "js", "jsx"]
+  for (const ext of extensions) {
+    const possiblePath = `${nodeModulesPath}.${ext}`
+    if (normalizedFilePathMap.has(possiblePath)) {
+      return normalizedFilePathMap.get(possiblePath)!
+    }
+  }
+
+  return null
+}
+
 export const resolveFilePath = (
   unknownFilePath: string,
   fsMapOrAllFilePaths: Record<string, string> | string[],
@@ -59,8 +81,9 @@ export const resolveFilePath = (
     }
   }
 
-  // Check if it's an absolute import
+  // Check if it's a non-relative import (absolute or node_modules)
   if (!unknownFilePath.startsWith("./") && !unknownFilePath.startsWith("../")) {
+    // First try as absolute path
     const normalizedUnknownFilePath = normalizeFilePath(unknownFilePath)
     if (normalizedFilePathMap.has(normalizedUnknownFilePath)) {
       return normalizedFilePathMap.get(normalizedUnknownFilePath)!
@@ -70,6 +93,15 @@ export const resolveFilePath = (
       if (normalizedFilePathMap.has(possibleFilePath)) {
         return normalizedFilePathMap.get(possibleFilePath)!
       }
+    }
+
+    // Then try node_modules resolution
+    const nodeModulesResult = resolveNodeModulesPath(
+      unknownFilePath,
+      normalizedFilePathMap,
+    )
+    if (nodeModulesResult) {
+      return nodeModulesResult
     }
   }
 

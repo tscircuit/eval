@@ -5,6 +5,29 @@ import { importLocalFile } from "./import-local-file"
 import { importSnippet } from "./import-snippet"
 import { resolveFilePath } from "lib/runner/resolveFilePath"
 
+async function tryNodeModulesImport(
+  importName: string,
+  ctx: ExecutionContext,
+  depth: number,
+  opts: { cwd?: string } = {},
+) {
+  // Try node_modules/package/index.tsx
+  const indexPath = `node_modules/${importName}/index`
+  const resolvedIndexPath = resolveFilePath(indexPath, ctx.fsMap, opts.cwd)
+  if (resolvedIndexPath) {
+    return importLocalFile(resolvedIndexPath, ctx, depth)
+  }
+
+  // Try direct node_modules/package.tsx
+  const directPath = `node_modules/${importName}`
+  const resolvedDirectPath = resolveFilePath(directPath, ctx.fsMap, opts.cwd)
+  if (resolvedDirectPath) {
+    return importLocalFile(resolvedDirectPath, ctx, depth)
+  }
+
+  return null
+}
+
 export async function importEvalPath(
   importName: string,
   ctx: ExecutionContext,
@@ -38,6 +61,19 @@ export async function importEvalPath(
 
   if (importName.startsWith("@tsci/")) {
     return importSnippet(importName, ctx, depth)
+  }
+
+  // Finally try node_modules resolution
+  if (!importName.startsWith("./") && !importName.startsWith("../")) {
+    const nodeModulesResult = await tryNodeModulesImport(
+      importName,
+      ctx,
+      depth,
+      opts,
+    )
+    if (nodeModulesResult !== null) {
+      return nodeModulesResult
+    }
   }
 
   throw new Error(
