@@ -109,5 +109,4 @@ export const importNodeModule = async (
     // Map the full resolved path (without node_modules prefix)
     preSuppliedImports[resolvedNodeModulePath.replace(/^node_modules\//, '')] = moduleExports;
   }
-  console.log(`[importNodeModule] Successfully imported "${importName}"`, resolvedNodeModulePath);
 }
