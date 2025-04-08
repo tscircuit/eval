@@ -44,12 +44,7 @@ export async function importEvalPath(
     ctx.fsMap,
     opts.cwd || "",
   )
-  console.log("Resolved node module path:", resolvedNodeModulePath)
   if (resolvedNodeModulePath) {
-    console.log(
-      "[Worker] Importing resolved node module file:",
-      resolvedNodeModulePath,
-    );
     return importNodeModule(importName, ctx, depth);
   }
 
