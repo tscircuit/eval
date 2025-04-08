@@ -53,7 +53,6 @@ export const importLocalFile = async (
       )
       preSuppliedImports[fsPath] = importRunResult.exports
     } catch (error: any) {
-      console.log(Object.keys(preSuppliedImports))
       throw new Error(
         `Eval compiled js error for "${importName}": ${error.message}`,
       )
