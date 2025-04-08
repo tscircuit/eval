@@ -1,7 +1,7 @@
 {
   "name": "@tscircuit/eval",
   "main": "dist/lib/index.js",
-  "version": "0.0.145",
+  "version": "0.0.148",
   "type": "module",
   "scripts": {
     "build": "bun run build:lib && bun run build:webworker && bun run build:blob-url && bun run build:runner && bun run build:worker-wrapper",
@@ -47,14 +47,14 @@
     "@babel/standalone": "^7.26.2",
     "@biomejs/biome": "^1.9.4",
     "@playwright/test": "^1.50.1",
-    "@tscircuit/core": "^0.0.361",
+    "@tscircuit/core": "^0.0.362",
     "@tscircuit/math-utils": "^0.0.13",
     "@types/babel__standalone": "^7.1.9",
     "@types/bun": "latest",
     "@types/react": "^18.3.12",
     "circuit-json": "^0.0.153",
     "comlink": "^4.4.2",
-    "jscad-fiber": "^0.0.78",
+    "jscad-fiber": "^0.0.79",
     "react": "^18.3.1",
     "tsup": "^8.3.5"
   },

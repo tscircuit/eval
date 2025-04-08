@@ -21,12 +21,30 @@ console.log(71, hasResolvedFilePath,preSuppliedImports[name], Object.keys(preSup
       get(target, prop) {
         if (!(prop in target)) {
           if (prop === "default") {
+            if (target.default !== undefined) {
+              return target.default
+            }
+
+            if (target.__esModule) {
+              return undefined
+            }
+
+            if (typeof target === "function" || typeof target === "object") {
+              return target
+            }
+
             return undefined
           }
+
+          if (prop === "__esModule") {
+            return true
+          }
+
           throw new Error(
             `Component "${String(prop)}" is not exported by "${name}"`,
           )
         }
+
         return target[prop as keyof typeof target]
       },
     })
