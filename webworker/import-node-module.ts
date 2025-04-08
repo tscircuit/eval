@@ -8,15 +8,12 @@ export const importNodeModule = async (
   ctx: ExecutionContext,
   depth = 0
 ) => {
-  console.log(`[importNodeModule] Starting import of "${importName}" at depth ${depth}`);
   const { preSuppliedImports } = ctx;
 
   if (preSuppliedImports[importName]) {
-    console.log(`[importNodeModule] Module "${importName}" already imported, skipping`);
     return;
   }
 
-  console.log(`[importNodeModule] Resolving module path for "${importName}"`);
   const resolvedNodeModulePath = resolveNodeModule(
     importName,
     ctx.fsMap,
@@ -24,15 +21,11 @@ export const importNodeModule = async (
   );
 
   if (!resolvedNodeModulePath) {
-    console.error(`[importNodeModule] Failed to resolve path for "${importName}"`);
     throw new Error(`Node module "${importName}" not found`);
   }
-  console.log(`[importNodeModule] Resolved path: ${resolvedNodeModulePath}`);
 
   const fileContent = ctx.fsMap[resolvedNodeModulePath];
-  console.log(`[importNodeModule] Retrieved file content, length: ${fileContent.length}`);
 
-  console.log(`[importNodeModule] Transforming module with Babel`);
   const result = Babel.transform(fileContent, {
     presets: ["env", "typescript"],
     plugins: ["transform-modules-commonjs"],
@@ -44,12 +37,8 @@ export const importNodeModule = async (
   });
 
   if (!result || !result.code) {
-    console.error(`[importNodeModule] Babel transformation failed`);
     throw new Error("Failed to transform node module code");
   }
-  console.log(`[importNodeModule] Babel transformation successful`);
-
-  console.log(`[importNodeModule] Evaluating compiled code`);
   
   // Evaluate the compiled code
   const moduleExports = evalCompiledJs(
