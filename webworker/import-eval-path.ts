@@ -45,7 +45,7 @@ export async function importEvalPath(
     opts.cwd || "",
   )
   if (resolvedNodeModulePath) {
-    return importNodeModule(importName, ctx, depth);
+    return importNodeModule(importName, ctx, depth)
   }
 
   if (importName.startsWith("@tsci/")) {

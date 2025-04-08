@@ -124,8 +124,8 @@ describe("node module resolution", () => {
         "node_modules/test-package/package.json": JSON.stringify({
           name: "test-package",
           exports: {
-            ".": "./dist/modern.js"
-          }
+            ".": "./dist/modern.js",
+          },
         }),
         "node_modules/test-package/dist/modern.js": `
           export const resistorName = "R4"
@@ -158,9 +158,9 @@ describe("node module resolution", () => {
         "node_modules/test-package/package.json": JSON.stringify({
           name: "test-package",
           exports: {
-            "import": "./dist/esm/index.js",
-            "require": "./dist/cjs/index.js"
-          }
+            import: "./dist/esm/index.js",
+            require: "./dist/cjs/index.js",
+          },
         }),
         "node_modules/test-package/dist/esm/index.js": `
           export const resistorName = "R5"
@@ -193,17 +193,18 @@ describe("node module resolution", () => {
       {
         "node_modules/parent-package/package.json": JSON.stringify({
           name: "parent-package",
-          main: "index.js"
+          main: "index.js",
         }),
         "node_modules/parent-package/index.js": `
           import { nestedResistorName, nestedResistanceValue } from "nested-package"
           export const resistorName = nestedResistorName
           export const resistanceValue = nestedResistanceValue
         `,
-        "node_modules/parent-package/node_modules/nested-package/package.json": JSON.stringify({
-          name: "nested-package",
-          main: "index.js"
-        }),
+        "node_modules/parent-package/node_modules/nested-package/package.json":
+          JSON.stringify({
+            name: "nested-package",
+            main: "index.js",
+          }),
         "node_modules/parent-package/node_modules/nested-package/index.js": `
           export const nestedResistorName = "R7"
           export const nestedResistanceValue = "7k"
@@ -297,7 +298,8 @@ describe("node module resolution", () => {
     )
 
     const resistor = circuitJson.find(
-      (element) => element.type === "source_component" && element.name === "R10",
+      (element) =>
+        element.type === "source_component" && element.name === "R10",
     ) as any
     expect(resistor).toBeDefined()
     expect(resistor.resistance).toBe(10000)
@@ -311,8 +313,8 @@ describe("node module resolution", () => {
           name: "test-package",
           exports: {
             "./components": "./dist/components/index.js",
-            "./utils": "./dist/utils/index.js"
-          }
+            "./utils": "./dist/utils/index.js",
+          },
         }),
         "node_modules/test-package/dist/components/index.js": `
           export const resistorName = "R11"
@@ -333,7 +335,8 @@ describe("node module resolution", () => {
     )
 
     const resistor = circuitJson.find(
-      (element) => element.type === "source_component" && element.name === "R11",
+      (element) =>
+        element.type === "source_component" && element.name === "R11",
     ) as any
     expect(resistor).toBeDefined()
     expect(resistor.resistance).toBe(11000)

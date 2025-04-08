@@ -28,55 +28,72 @@ export function resolveNodeModule(
     if (fsMap[packageJsonPath]) {
       try {
         const packageJson: PackageJson = JSON.parse(fsMap[packageJsonPath])
-        
+
         // Check for exports field first
         if (packageJson.exports) {
           // Handle default export condition
-          if (remainingPath === "" && packageJson.exports["."] && typeof packageJson.exports["."] === "string") {
+          if (
+            remainingPath === "" &&
+            packageJson.exports["."] &&
+            typeof packageJson.exports["."] === "string"
+          ) {
             const exportPath = packageJson.exports["."] as string
             const fullExportPath = `${nodeModulesPath}/${exportPath.replace(/^\.\//, "")}`
-            
+
             // Check if the export path exists
             if (fsMap[fullExportPath]) return fullExportPath
-            
+
             // Try with extensions
             for (const ext of extensions) {
-              const pathWithExt = fullExportPath.replace(/\.js$|\.jsx$/, "") + ext
+              const pathWithExt =
+                fullExportPath.replace(/\.js$|\.jsx$/, "") + ext
               if (fsMap[pathWithExt]) return pathWithExt
             }
           }
-          
+
           // Handle subpath exports
-          if (remainingPath && packageJson.exports[`./${remainingPath}`] && typeof packageJson.exports[`./${remainingPath}`] === "string") {
-            const exportPath = packageJson.exports[`./${remainingPath}`] as string
+          if (
+            remainingPath &&
+            packageJson.exports[`./${remainingPath}`] &&
+            typeof packageJson.exports[`./${remainingPath}`] === "string"
+          ) {
+            const exportPath = packageJson.exports[
+              `./${remainingPath}`
+            ] as string
             const fullExportPath = `${nodeModulesPath}/${exportPath.replace(/^\.\//, "")}`
-            
+
             // Check if the export path exists
             if (fsMap[fullExportPath]) return fullExportPath
-            
+
             // Try with extensions
             for (const ext of extensions) {
-              const pathWithExt = fullExportPath.replace(/\.js$|\.jsx$/, "") + ext
+              const pathWithExt =
+                fullExportPath.replace(/\.js$|\.jsx$/, "") + ext
               if (fsMap[pathWithExt]) return pathWithExt
             }
           }
-          
+
           // Handle conditional exports
-          if (remainingPath === "" && packageJson.exports["import"] && typeof packageJson.exports["import"] === "string") {
+          if (
+            remainingPath === "" &&
+            packageJson.exports["import"] &&
+            typeof packageJson.exports["import"] === "string"
+          ) {
             const exportPath = packageJson.exports["import"] as string
             const fullExportPath = `${nodeModulesPath}/${exportPath.replace(/^\.\//, "")}`
-            
+
             // Check if the export path exists
             if (fsMap[fullExportPath]) return fullExportPath
-            
+
             // Try with extensions
             for (const ext of extensions) {
-              const pathWithExt = fullExportPath.replace(/\.js$|\.jsx$/, "") + ext
+              const pathWithExt =
+                fullExportPath.replace(/\.js$|\.jsx$/, "") + ext
               if (fsMap[pathWithExt]) return pathWithExt
             }
           }
         }
-        
+
         // Fall back to module/main fields if exports didn't resolve
         const entryPoint = packageJson.module || packageJson.main || "index.js"
         const fullPath = `${nodeModulesPath}/${entryPoint}`
