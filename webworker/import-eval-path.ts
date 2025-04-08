@@ -40,7 +40,18 @@ export async function importEvalPath(
     return importSnippet(importName, ctx, depth)
   }
 
+  const isNodeModuleImport =
+    !importName.startsWith("./") &&
+    !importName.startsWith("../") &&
+    !importName.startsWith("/")
+
   throw new Error(
-    `Unresolved import "${importName}" ${opts.cwd ? `from directory "${opts.cwd}"` : ""}`,
+    `Unresolved import "${importName}" ${
+      opts.cwd ? `from directory "${opts.cwd}"` : ""
+    } ${
+      isNodeModuleImport
+        ? `\nThis appears to be a node_modules import. Check that the module is in your node_modules directory and included in fsMap.`
+        : ""
+    }`
   )
 }
