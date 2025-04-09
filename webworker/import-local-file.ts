@@ -58,10 +58,19 @@ export const importLocalFile = async (
       )
     }
   } else if (fsPath.endsWith(".js")) {
-    // TODO get imports from js?
+    // For .js files, especially from node_modules, we need to transform them
+    const result = Babel.transform(fileContent, {
+      presets: ["env"],
+      plugins: ["transform-modules-commonjs"],
+      filename: fsPath,
+    })
 
-    preSuppliedImports[importName] = evalCompiledJs(
-      fileContent,
+    if (!result || !result.code) {
+      throw new Error("Failed to transform JS code")
+    }
+
+    preSuppliedImports[fsPath] = evalCompiledJs(
+      result.code,
       preSuppliedImports,
       dirname(fsPath),
     ).exports
