@@ -27,7 +27,7 @@ export interface CircuitRunnerApi {
     },
   ) => Promise<void>
   executeWithFsMap(opts: {
-    entrypoint: string
+    entrypoint?: string
     fsMap: Record<string, string>
     name?: string
   }): Promise<void>
@@ -47,7 +47,7 @@ export type InternalWebWorkerApi = CircuitRunnerApi
 export type CircuitWebWorker = {
   execute: (code: string) => Promise<void>
   executeWithFsMap: (opts: {
-    entrypoint: string
+    entrypoint?: string
     fsMap: Record<string, string>
   }) => Promise<void>
   renderUntilSettled: () => Promise<void>

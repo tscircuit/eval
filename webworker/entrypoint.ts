@@ -12,6 +12,7 @@ import {
 import { importEvalPath } from "./import-eval-path"
 import { normalizeFsMap } from "../lib/runner/normalizeFsMap"
 import type { RootCircuit } from "@tscircuit/core"
+import { setupDefaultEntrypointIfNeeded } from "lib/runner/setupDefaultEntrypointIfNeeded"
 
 globalThis.React = React
 
@@ -39,7 +40,7 @@ const webWorkerApi = {
   },
 
   async executeWithFsMap(opts: {
-    entrypoint: string
+    entrypoint?: string
     fsMap: Record<string, string>
     name?: string
   }): Promise<void> {
@@ -50,21 +51,26 @@ const webWorkerApi = {
         name: opts.name,
       })
     }
+
+    setupDefaultEntrypointIfNeeded(opts)
+
+    let entrypoint = opts.entrypoint!
+
     executionContext = createExecutionContext(circuitRunnerConfiguration, {
       name: opts.name,
     })
     bindEventListeners(executionContext.circuit)
     executionContext.fsMap = normalizeFsMap(opts.fsMap)
-    if (!executionContext.fsMap[opts.entrypoint]) {
+    if (!executionContext.fsMap[entrypoint]) {
       throw new Error(`Entrypoint "${opts.entrypoint}" not found`)
     }
     ;(globalThis as any).__tscircuit_circuit = executionContext.circuit
 
-    if (!opts.entrypoint.startsWith("./")) {
-      opts.entrypoint = `./${opts.entrypoint}`
+    if (!entrypoint.startsWith("./")) {
+      entrypoint = `./${entrypoint}`
     }
 
-    await importEvalPath(opts.entrypoint, executionContext)
+    await importEvalPath(entrypoint, executionContext)
   },
 
   async execute(code: string, opts: { name?: string } = {}) {

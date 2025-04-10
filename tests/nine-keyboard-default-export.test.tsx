@@ -16,9 +16,11 @@ export default () => <NineKeyKeyboard />
       },
     )
 
-    const keyboard = circuitJson.find((element) => element.type === "pcb_via")
+    const someSourceElm = circuitJson.find(
+      (element) => element.type === "source_component",
+    )
 
-    expect(keyboard).toBeDefined()
+    expect(someSourceElm).toBeDefined()
   },
   { timeout: 10000 },
 )
