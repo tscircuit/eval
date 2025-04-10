@@ -12,6 +12,7 @@ import {
 import { importEvalPath } from "./import-eval-path"
 import { normalizeFsMap } from "../lib/runner/normalizeFsMap"
 import type { RootCircuit } from "@tscircuit/core"
+import { setupDefaultEntrypointIfNeeded } from "lib/runner/setupDefaultEntrypointIfNeeded"
 
 globalThis.React = React
 
@@ -39,7 +40,7 @@ const webWorkerApi = {
   },
 
   async executeWithFsMap(opts: {
-    entrypoint: string
+    entrypoint?: string
     fsMap: Record<string, string>
     name?: string
   }): Promise<void> {
@@ -50,6 +51,9 @@ const webWorkerApi = {
         name: opts.name,
       })
     }
+
+    setupDefaultEntrypointIfNeeded(opts)
+
     executionContext = createExecutionContext(circuitRunnerConfiguration, {
       name: opts.name,
     })
