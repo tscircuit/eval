@@ -12,11 +12,13 @@ export const setupDefaultEntrypointIfNeeded = (opts: {
       opts.mainComponentPath = "index.tsx"
     } else if ("index.ts" in opts.fsMap) {
       opts.mainComponentPath = "index.ts"
-    } else if (Object.keys(opts.fsMap).length === 1) {
+    } else if (
+      Object.keys(opts.fsMap).filter((k) => k.endsWith(".tsx")).length === 1
+    ) {
       opts.mainComponentPath = Object.keys(opts.fsMap)[0]
     } else {
       throw new Error(
-        "Either entrypoint or mainComponentPath must be provided (could not infer entrypoint)",
+        "Either entrypoint or mainComponentPath must be provided (no index file, could not infer entrypoint)",
       )
     }
   }
