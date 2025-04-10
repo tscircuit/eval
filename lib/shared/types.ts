@@ -27,7 +27,7 @@ export interface CircuitRunnerApi {
     },
   ) => Promise<void>
   executeWithFsMap(opts: {
-    entrypoint: string
+    entrypoint?: string
     fsMap: Record<string, string>
     name?: string
   }): Promise<void>
