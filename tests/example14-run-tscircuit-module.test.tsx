@@ -4,7 +4,9 @@ import { runTscircuitModule } from "lib/runner"
 test(
   "example14 runTscircuitModule",
   async () => {
-    const circuitJson = await runTscircuitModule("seveibar/usb-c-flashlight")
+    const circuitJson = await runTscircuitModule(
+      "@tsci/seveibar.usb-c-flashlight",
+    )
 
     expect(circuitJson).toBeDefined()
 

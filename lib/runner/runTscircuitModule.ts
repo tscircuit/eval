@@ -5,7 +5,13 @@ export const runTscircuitModule = async (module: string) => {
     module = `@tsci/${module.replace(/\//, ".")}`
   }
   const circuitJson = await runTscircuitCode({
-    "user-code.tsx": `export * from "${module}";`,
+    // TODO handle exports that are not the default export by scanning
+    // otherExports for components
+    "user-code.tsx": `
+    import Module, * as otherExports from "${module}";
+
+    export default Module;
+    `,
   })
   return circuitJson
 }
