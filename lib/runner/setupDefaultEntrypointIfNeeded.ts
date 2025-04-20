@@ -6,6 +6,7 @@ export const setupDefaultEntrypointIfNeeded = (opts: {
   mainComponentPath?: string
   mainComponentName?: string
   name?: string
+  mainComponentProps?: Record<string, any>
 }) => {
   if (!opts.entrypoint && !opts.mainComponentPath) {
     if ("index.tsx" in opts.fsMap) {
@@ -48,10 +49,10 @@ export const setupDefaultEntrypointIfNeeded = (opts: {
 
       circuit.add(
         hasBoard ? (
-          <ComponentToRender />
+          <ComponentToRender ${opts.mainComponentProps ? `{...${JSON.stringify(opts.mainComponentProps, null, 2)}}` : ""} />
         ) : (
           <board>
-            <ComponentToRender name="U1" />
+            <ComponentToRender name="U1" ${opts.mainComponentProps ? `{...${JSON.stringify(opts.mainComponentProps, null, 2)}}` : ""} />
           </board>
         )
       );

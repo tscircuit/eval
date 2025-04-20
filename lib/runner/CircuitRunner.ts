@@ -25,6 +25,7 @@ export class CircuitRunner implements CircuitRunnerApi {
     mainComponentName?: string
     fsMap: Record<string, string>
     name?: string
+    mainComponentProps?: Record<string, any>
   }): Promise<void> {
     const opts = { ...ogOpts }
     if (this._circuitRunnerConfiguration.verbose) {
