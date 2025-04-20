@@ -2,7 +2,7 @@ import { runTscircuitCode } from "./runTscircuitCode"
 
 export const runTscircuitModule = async (
   module: string,
-  props?: Record<string, any>,
+  opts: { props?: Record<string, any>; exportName?: string } = {},
 ) => {
   if (!module.startsWith("@")) {
     module = `@tsci/${module.replace(/\//, ".")}`
@@ -14,11 +14,23 @@ export const runTscircuitModule = async (
       "user-code.tsx": `
     import Module, * as otherExports from "${module}";
 
-    export default Module;
+    let exportName = "${opts.exportName ?? ""}"
+
+    if ((!Module || typeof Module !== "function") && !Boolean(exportName)) {
+      exportName = Object.keys(otherExports).filter(key => key[0] === key[0].toUpperCase() && typeof otherExports[key] === "function")[0]
+    }
+
+    const defaultExport = exportName ? otherExports[exportName] : Module
+
+    if (!defaultExport) {
+      throw new Error(\`No export found for module "\${module}" (tried "\${exportName ?? "default"}")\`)
+    }
+
+    export default defaultExport;
     `,
     },
     {
-      mainComponentProps: props,
+      mainComponentProps: opts.props,
     },
   )
   return circuitJson
