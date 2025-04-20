@@ -110,6 +110,22 @@ await circuitWebWorker.renderUntilSettled()
 const circuitJson = await circuitWebWorker.getCircuitJson()
 ```
 
+### 5. Running a Module Directly: `runTscircuitModule`
+
+If you want to quickly run a published tscircuit module by its name (e.g., from the tscircuit registry), you can use `runTscircuitModule`. This function handles the import and execution for you.
+
+```tsx
+import { runTscircuitModule } from "@tscircuit/eval"
+
+// Run a module by its full name
+const circuitJson = await runTscircuitModule("@tsci/seveibar.usb-c-flashlight")
+
+// Or use a shorthand (will be prefixed with "@tsci/")
+const circuitJsonShorthand = await runTscircuitModule("seveibar/usb-c-flashlight")
+
+console.log(circuitJson)
+```
+
 ## When to Use Which Approach
 
 **CircuitRunner (Direct Execution)**
