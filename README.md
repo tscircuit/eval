@@ -124,6 +124,15 @@ const circuitJson = await runTscircuitModule("@tsci/seveibar.usb-c-flashlight")
 const circuitJsonShorthand = await runTscircuitModule("seveibar/usb-c-flashlight")
 
 console.log(circuitJson)
+
+// You can also pass props to the main component of the module:
+const circuitJsonWithProps = await runTscircuitModule("@tsci/seveibar.key", {
+  props: {
+    name: "MyCustomKey",
+  },
+})
+
+console.log(circuitJsonWithProps) // The root component will have the name "MyCustomKey"
 ```
 
 ## When to Use Which Approach
