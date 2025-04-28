@@ -5,7 +5,7 @@ import type { SourceComponentBase } from "circuit-json"
 test("example16-jlc-parts-engine with entrypoint", async () => {
   const circuitWebWorker = await createCircuitWebWorker({
     webWorkerUrl: new URL("../webworker/entrypoint.ts", import.meta.url),
-    verbose: true
+    verbose: true,
   })
 
   await circuitWebWorker.executeWithFsMap({
@@ -47,7 +47,7 @@ test("example16-jlc-parts-engine with mainComponentPath", async () => {
     },
     {
       mainComponentPath: "user-code",
-    }
+    },
   )
 
   const source_component = circuitJson.filter(

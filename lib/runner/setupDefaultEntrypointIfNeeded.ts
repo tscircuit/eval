@@ -26,16 +26,17 @@ export const setupDefaultEntrypointIfNeeded = (opts: {
 
   // Add partsEngine to all board components in the fsMap
   for (const [path, code] of Object.entries(opts.fsMap)) {
-    if (code.includes("<board") && !code.includes('partsEngine=')) {
+    if (code.includes("<board") && !code.includes("partsEngine=")) {
       // Add import if not already present
-      const importStatement = 'import { jlcPartsEngine } from "@tscircuit/parts-engine";\n'
-      const hasImport = code.includes('import { jlcPartsEngine }')
+      const importStatement =
+        'import { jlcPartsEngine } from "@tscircuit/parts-engine";\n'
+      const hasImport = code.includes("import { jlcPartsEngine }")
       const modifiedCode = hasImport ? code : importStatement + code
-      
+
       // Add partsEngine prop
       opts.fsMap[path] = modifiedCode.replace(
         /<board([^>]*)/g,
-        '<board$1 partsEngine={jlcPartsEngine}'
+        "<board$1 partsEngine={jlcPartsEngine}",
       )
     }
   }
