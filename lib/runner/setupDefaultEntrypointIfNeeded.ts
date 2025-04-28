@@ -24,6 +24,22 @@ export const setupDefaultEntrypointIfNeeded = (opts: {
     }
   }
 
+  // Add partsEngine to all board components in the fsMap
+  for (const [path, code] of Object.entries(opts.fsMap)) {
+    if (code.includes("<board") && !code.includes('partsEngine=')) {
+      // Add import if not already present
+      const importStatement = 'import { jlcPartsEngine } from "@tscircuit/parts-engine";\n'
+      const hasImport = code.includes('import { jlcPartsEngine }')
+      const modifiedCode = hasImport ? code : importStatement + code
+      
+      // Add partsEngine prop
+      opts.fsMap[path] = modifiedCode.replace(
+        /<board([^>]*)/g,
+        '<board$1 partsEngine={jlcPartsEngine}'
+      )
+    }
+  }
+
   if (!opts.entrypoint && opts.mainComponentPath) {
     opts.entrypoint = "entrypoint.tsx"
     const mainComponentCode =
@@ -35,6 +51,7 @@ export const setupDefaultEntrypointIfNeeded = (opts: {
     }
     opts.fsMap[opts.entrypoint] = `
      import * as UserComponents from "./${opts.mainComponentPath}";
+     import { jlcPartsEngine } from "@tscircuit/parts-engine";
           
       const hasBoard = ${mainComponentCode.includes("<board").toString()};
       ${
@@ -51,7 +68,7 @@ export const setupDefaultEntrypointIfNeeded = (opts: {
         hasBoard ? (
           <ComponentToRender ${opts.mainComponentProps ? `{...${JSON.stringify(opts.mainComponentProps, null, 2)}}` : ""} />
         ) : (
-          <board>
+          <board partsEngine={jlcPartsEngine}>
             <ComponentToRender name="U1" ${opts.mainComponentProps ? `{...${JSON.stringify(opts.mainComponentProps, null, 2)}}` : ""} />
           </board>
         )

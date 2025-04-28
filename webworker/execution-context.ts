@@ -4,6 +4,7 @@ import * as tscircuitCore from "@tscircuit/core"
 import * as React from "react"
 import * as jscadFiber from "jscad-fiber"
 import * as tscircuitMathUtils from "@tscircuit/math-utils"
+import { jlcPartsEngine } from "@tscircuit/parts-engine"
 
 export interface ExecutionContext extends WebWorkerConfiguration {
   fsMap: Record<string, string>
@@ -35,6 +36,7 @@ export function createExecutionContext(
       "@tscircuit/math-utils": tscircuitMathUtils,
       react: React,
       "jscad-fiber": jscadFiber,
+      "@tscircuit/parts-engine": { jlcPartsEngine },
 
       // This is usually used as a type import, we can remove the shim when we
       // ignore type imports in getImportsFromCode
