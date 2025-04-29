@@ -8,4 +8,4 @@ export default defineConfig({
   noExternal: ["@tscircuit/parts-engine"],
   clean: true,
   dts: true,
-}) 
+})
