@@ -63,5 +63,8 @@
     "@tscircuit/core": "*",
     "circuit-json": "*",
     "jscad-fiber": "*"
+  },
+  "dependencies": {
+    "@tscircuit/parts-engine": "^0.0.1"
   }
 }

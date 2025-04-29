@@ -4,6 +4,8 @@ import * as tscircuitCore from "@tscircuit/core"
 import * as React from "react"
 import * as jscadFiber from "jscad-fiber"
 import * as tscircuitMathUtils from "@tscircuit/math-utils"
+import type { PlatformConfig } from "@tscircuit/props"
+import { getPlatformConfig } from "lib/getPlatformConfig"
 
 export interface ExecutionContext extends WebWorkerConfiguration {
   fsMap: Record<string, string>
@@ -16,11 +18,14 @@ export function createExecutionContext(
   webWorkerConfiguration: WebWorkerConfiguration,
   opts: {
     name?: string
+    platform?: PlatformConfig
   } = {},
 ): ExecutionContext {
   globalThis.React = React
 
-  const circuit = new RootCircuit()
+  const circuit = new RootCircuit({
+    platform: opts.platform || getPlatformConfig(),
+  })
 
   if (opts.name) {
     circuit.name = opts.name
