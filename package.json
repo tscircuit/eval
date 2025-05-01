@@ -10,7 +10,7 @@
     "build:worker-wrapper": "tsup-node ./lib/worker.ts --format esm --sourcemap inline --dts -d dist",
     "build:webworker:analyze": "tsup ./webworker/entrypoint.ts --platform browser --metafile ./metadata.json --format esm --sourcemap inline -d dist/webworker",
     "build:blob-url": "bun run ./scripts/build-worker-blob-url.ts",
-    "build:runner": "tsup-node ./lib/runner --format esm --dts --platform browser -d dist/eval",
+    "build:runner": "tsup-node --config tsup-runner.config.ts",
     "start:browser-test-server": "bun --port 3070 ./browser-tests/browsertest.html",
     "format": "biome format --write .",
     "format:check": "biome format .",

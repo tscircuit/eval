@@ -6,7 +6,7 @@ export default defineConfig({
   platform: "browser",
   sourcemap: "inline",
   outDir: "dist/webworker",
-  noExternal: ["@tscircuit/core", "circuit-json", "jscad-fiber"],
+  noExternal: ["@tscircuit/core", "circuit-json", "jscad-fiber", "@tscircuit/parts-engine"],
   clean: true,
   dts: true,
 })
