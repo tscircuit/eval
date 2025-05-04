@@ -35,7 +35,7 @@ export default () => (
   expect(circuitJson.filter((el: any) => el.name === "F1")).toBeDefined()
 })
 
-test("CustomComponent with FSMap - Reject not found file", async () => {
+test("CustomComponent with FSMap - Reject invalid file", async () => {
   const circuitWebWorker = createCircuitWebWorker({
     webWorkerUrl: new URL("../webworker/entrypoint.ts", import.meta.url),
   })
