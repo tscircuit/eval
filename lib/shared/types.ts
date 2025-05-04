@@ -48,6 +48,7 @@ export type CircuitWebWorker = {
   execute: (code: string) => Promise<void>
   executeWithFsMap: (opts: {
     entrypoint?: string
+    mainComponentPath?: string
     fsMap: Record<string, string>
   }) => Promise<void>
   renderUntilSettled: () => Promise<void>
