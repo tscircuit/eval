@@ -83,6 +83,8 @@ test("example1: Manual edits in entrypoint.tsx file", async () => {
 
   expect(pcb_component.center.x).toBe(5)
   expect(pcb_component.center.y).toBe(5)
+
+  await circuitWebWorker.kill()
 })
 
 test("example2: Manual edits in manual-edits.json file", async () => {
@@ -111,4 +113,6 @@ test("example2: Manual edits in manual-edits.json file", async () => {
 
   expect(pcb_component.center.x).toBe(5)
   expect(pcb_component.center.y).toBe(5)
+
+  await circuitWebWorker.kill()
 })

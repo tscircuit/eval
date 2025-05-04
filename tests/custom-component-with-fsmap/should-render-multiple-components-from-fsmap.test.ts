@@ -41,4 +41,6 @@ export default () => (
   expect(
     circuitJson.filter((el: any) => el.name?.startsWith("F")),
   ).toHaveLength(4)
+
+  await worker.kill()
 })

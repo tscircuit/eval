@@ -40,4 +40,6 @@ test("example5-event-recording", async () => {
 
   // Verify no new events were recorded after clearing listeners
   expect(events.length).toBe(initialEventCount)
+
+  await circuitWebWorker.kill()
 })

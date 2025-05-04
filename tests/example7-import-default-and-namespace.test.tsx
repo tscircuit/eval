@@ -33,6 +33,8 @@ test("namespace import syntax", async () => {
   const component = circuitJson.find((el: any) => el.name === "COMP1")
   expect(component).toBeDefined()
   expect(component?.type).toBe("source_component")
+
+  await circuitWebWorker.kill()
 })
 
 test("combined default and namespace import with fallback", async () => {
@@ -67,4 +69,6 @@ test("combined default and namespace import with fallback", async () => {
   const board = circuitJson.find((el: any) => el.name === "BOARD1")
   expect(board).toBeDefined()
   expect(board?.type).toBe("source_component")
+
+  await circuitWebWorker.kill()
 })

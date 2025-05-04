@@ -25,4 +25,6 @@ test("example8-footprinter-to220", async () => {
 
   const chip = circuitJson.find((el: any) => el.name === "U3")
   expect(chip).toBeDefined()
+
+  await circuitWebWorker.kill()
 })
