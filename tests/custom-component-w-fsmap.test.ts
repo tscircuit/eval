@@ -32,7 +32,7 @@ export default () => (
   await worker.renderUntilSettled()
 
   const circuitJson = await worker.getCircuitJson()
-  expect(circuitJson.filter((el: any) => el.name === "F1")).toBeDefined()
+  expect(circuitJson.filter((el: any) => el.name === "F1")).toHaveLength(1)
 })
 
 test("CustomComponent with FSMap - Reject invalid file", async () => {
