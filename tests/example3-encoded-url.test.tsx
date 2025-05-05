@@ -1,4 +1,4 @@
-import { createCircuitWebWorker } from "lib"
+import { createCircuitWebWorker } from "."
 import { expect, test } from "bun:test"
 // @ts-ignore
 import blobUrl from "dist/blob-url"

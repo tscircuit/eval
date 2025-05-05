@@ -1,4 +1,4 @@
-import { createCircuitWebWorker } from "lib"
+import { createCircuitWebWorker } from "."
 import { expect, test } from "bun:test"
 
 test("virtual filesystem with components", async () => {
@@ -40,6 +40,4 @@ test("virtual filesystem with components", async () => {
 
   const led = circuitJson.find((el: any) => el.name === "LED1")
   expect(led?.type).toBe("source_component")
-
-  await circuitWebWorker.kill()
 })

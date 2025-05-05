@@ -1,4 +1,4 @@
-import { createCircuitWebWorker } from "lib"
+import { createCircuitWebWorker } from "."
 import { expect, test } from "bun:test"
 
 test("circuit-web-worker-events", async () => {

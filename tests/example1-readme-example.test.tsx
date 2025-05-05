@@ -1,4 +1,4 @@
-import { createCircuitWebWorker } from "lib/worker"
+import { createCircuitWebWorker } from "."
 import { expect, test } from "bun:test"
 
 test("example1-readme-example", async () => {
@@ -25,6 +25,4 @@ test("example1-readme-example", async () => {
   const led = circuitJson.find((el: any) => el.name === "LED1")
   expect(led).toBeDefined()
   expect(led?.type).toBe("source_component")
-
-  await circuitWebWorker.kill()
 })
