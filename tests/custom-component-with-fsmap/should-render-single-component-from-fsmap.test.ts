@@ -1,5 +1,5 @@
 import { expect, test } from "bun:test"
-import { createCircuitWebWorker } from "."
+import { createCircuitWebWorker } from "lib"
 
 test("should render single component from FSMap", async () => {
   const circuitWebWorker = createCircuitWebWorker({
@@ -33,4 +33,6 @@ export default () => (
 
   const circuitJson = await worker.getCircuitJson()
   expect(circuitJson.filter((el: any) => el.name === "F1")).toHaveLength(1)
+
+  await worker.kill()
 })

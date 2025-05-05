@@ -1,5 +1,5 @@
 import { expect, test } from "bun:test"
-import { createCircuitWebWorker } from ".."
+import { createCircuitWebWorker } from "lib"
 
 test("should reject invalid mainComponentPath", async () => {
   const circuitWebWorker = createCircuitWebWorker({
@@ -21,4 +21,6 @@ test("should reject invalid mainComponentPath", async () => {
       mainComponentPath: "myled.tsx",
     }),
   ).rejects.toThrow('File not found "myled.tsx"')
+
+  await worker.kill()
 })

@@ -1,4 +1,4 @@
-import { createCircuitWebWorker } from "."
+import { createCircuitWebWorker } from "lib"
 import { expect, test } from "bun:test"
 
 // TODO should skip b/c uses network
