@@ -28,4 +28,6 @@ test("example4-root-child-issue", async () => {
   const led = circuitJson.find((el: any) => el.name === "LED")
   expect(led).toBeDefined()
   expect(led?.type).toBe("source_component")
+
+  await circuitWebWorker.kill()
 })

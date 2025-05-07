@@ -24,4 +24,6 @@ test.skip("example6-dynamic-load-blob-url", async () => {
   const led = circuitJson.find((el: any) => el.name === "LED1")
   expect(led).toBeDefined()
   expect(led?.type).toBe("source_component")
+
+  await circuitWebWorker.kill()
 })

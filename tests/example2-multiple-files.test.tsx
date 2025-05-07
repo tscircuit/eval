@@ -40,4 +40,6 @@ test("virtual filesystem with components", async () => {
 
   const led = circuitJson.find((el: any) => el.name === "LED1")
   expect(led?.type).toBe("source_component")
+
+  await circuitWebWorker.kill()
 })

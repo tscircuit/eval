@@ -40,4 +40,6 @@ test("circuit-web-worker-events", async () => {
   expect(capturedEvents.length).toBeGreaterThan(0)
   expect(capturedEvents).toContain("pcbComponentRenderStart")
   expect(capturedEvents).toContain("pcbComponentRenderEnd")
+
+  await circuitWebWorker.kill()
 })

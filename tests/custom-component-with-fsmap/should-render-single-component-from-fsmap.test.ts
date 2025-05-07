@@ -33,4 +33,6 @@ export default () => (
 
   const circuitJson = await worker.getCircuitJson()
   expect(circuitJson.filter((el: any) => el.name === "F1")).toHaveLength(1)
+
+  await worker.kill()
 })

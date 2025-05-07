@@ -21,4 +21,6 @@ test("should reject invalid mainComponentPath", async () => {
       mainComponentPath: "myled.tsx",
     }),
   ).rejects.toThrow('File not found "myled.tsx"')
+
+  await worker.kill()
 })

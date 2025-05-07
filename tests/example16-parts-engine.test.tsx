@@ -32,6 +32,8 @@ test("example16-jlc-parts-engine with entrypoint", async () => {
 
   const supplier_part = source_component[0].supplier_part_numbers
   expect(supplier_part).toBeDefined()
+
+  await circuitWebWorker.kill()
 })
 
 test("example16-jlc-parts-engine with mainComponentPath", async () => {

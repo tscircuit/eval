@@ -19,4 +19,6 @@ test("example9-not-defined-component", async () => {
   }).toThrowError(
     `Component "NotExportedComponent" is not exported by "@tsci/seveibar.a555timer"`,
   )
+
+  await circuitWebWorker.kill()
 })
