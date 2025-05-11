@@ -9,9 +9,38 @@ import type { RootCircuitEventName } from "@tscircuit/core"
 
 export type { CircuitWebWorker, WebWorkerConfiguration }
 
+declare global {
+  interface Window {
+    TSCIRCUIT_GLOBAL_CIRCUIT_WORKER: CircuitWebWorker | undefined
+  }
+  var TSCIRCUIT_GLOBAL_CIRCUIT_WORKER: CircuitWebWorker | undefined
+}
+
 export const createCircuitWebWorker = async (
   configuration: Partial<WebWorkerConfiguration>,
 ): Promise<CircuitWebWorker> => {
+  // Kill existing global worker instance if present
+  const existingWorker = globalThis.TSCIRCUIT_GLOBAL_CIRCUIT_WORKER
+  if (existingWorker && typeof existingWorker.kill === "function") {
+    if (configuration.verbose) {
+      console.log("[Worker] Killing previous global worker instance...")
+    }
+    try {
+      await existingWorker.kill()
+    } catch (e) {
+      if (configuration.verbose) {
+        console.warn(
+          "[Worker] Error killing previous global worker instance:",
+          e,
+        )
+      }
+      // Ensure the key is cleared even if kill throws an error
+      if (globalThis.TSCIRCUIT_GLOBAL_CIRCUIT_WORKER === existingWorker) {
+        globalThis.TSCIRCUIT_GLOBAL_CIRCUIT_WORKER = undefined
+      }
+    }
+  }
+
   if (configuration.verbose) {
     console.log(
       "[Worker] Creating circuit web worker with config:",
@@ -65,8 +94,11 @@ export const createCircuitWebWorker = async (
       comlinkWorker[Comlink.releaseProxy]()
       rawWorker.terminate()
       isTerminated = true
+      if (globalThis.TSCIRCUIT_GLOBAL_CIRCUIT_WORKER === wrapper) {
+        globalThis.TSCIRCUIT_GLOBAL_CIRCUIT_WORKER = undefined
+      }
     },
   }
-
+  globalThis.TSCIRCUIT_GLOBAL_CIRCUIT_WORKER = wrapper
   return wrapper
 }
