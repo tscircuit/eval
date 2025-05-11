@@ -3,3 +3,4 @@ save = false
 
 [test]
 root = "./tests"
+preload = ["./tests/fixtures/preload.ts"]
