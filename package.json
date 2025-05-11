@@ -47,8 +47,13 @@
     "@babel/standalone": "^7.26.2",
     "@biomejs/biome": "^1.9.4",
     "@playwright/test": "^1.50.1",
+<<<<<<< Updated upstream
     "@tscircuit/core": "^0.0.395",
     "@tscircuit/math-utils": "^0.0.18",
+=======
+    "@tscircuit/core": "^0.0.398",
+    "@tscircuit/math-utils": "^0.0.15",
+>>>>>>> Stashed changes
     "@types/babel__standalone": "^7.1.9",
     "@types/bun": "latest",
     "@types/react": "^18.3.12",
