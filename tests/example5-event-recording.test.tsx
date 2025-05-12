@@ -6,9 +6,9 @@ test("example5-event-recording", async () => {
     webWorkerUrl: new URL("../webworker/entrypoint.ts", import.meta.url),
   })
 
-  const events: any[] = []
-  circuitWebWorker.on("renderable:renderLifecycle:anyEvent", (event) => {
-    events.push(event)
+  let eventCount = 0
+  circuitWebWorker.on("board:renderPhaseStarted", (event) => {
+    eventCount++
   })
 
   await circuitWebWorker.execute(`
@@ -21,8 +21,8 @@ test("example5-event-recording", async () => {
 
   await circuitWebWorker.renderUntilSettled()
 
-  expect(events.length).toBeGreaterThan(0)
-  const initialEventCount = events.length
+  expect(eventCount).toBeGreaterThan(0)
+  const initialEventCount = eventCount
 
   // Clear event listeners
   circuitWebWorker.clearEventListeners()
@@ -39,5 +39,5 @@ test("example5-event-recording", async () => {
   await circuitWebWorker.renderUntilSettled()
 
   // Verify no new events were recorded after clearing listeners
-  expect(events.length).toBe(initialEventCount)
+  expect(eventCount).toBe(initialEventCount)
 })
