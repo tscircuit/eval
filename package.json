@@ -16,7 +16,7 @@
     "format:check": "biome format .",
     "test:playwright": "playwright test",
     "test": "bun test tests",
-    "postinstall": "node ./scripts/sync-core.mjs"
+    "postinstall": "node ./scripts/sync-core.js"
   },
   "exports": {
     ".": {
