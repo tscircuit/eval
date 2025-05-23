@@ -1,9 +1,10 @@
+import type { CircuitJson } from "circuit-json"
 import { CircuitRunner } from "./CircuitRunner"
 
 export async function runTscircuitCode(
   filesystemOrCodeString: Record<string, string> | string,
   opts?: Omit<Parameters<CircuitRunner["executeWithFsMap"]>[0], "fsMap">,
-) {
+): Promise<CircuitJson> {
   if (
     typeof filesystemOrCodeString === "string" &&
     !filesystemOrCodeString.includes("export")

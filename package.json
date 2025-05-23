@@ -15,7 +15,8 @@
     "format": "biome format --write .",
     "format:check": "biome format .",
     "test:playwright": "playwright test",
-    "test": "bun test tests"
+    "test": "bun test tests",
+    "postinstall": "bun run scripts/copy-core-versions.ts && bun install --ignore-scripts"
   },
   "exports": {
     ".": {
@@ -45,20 +46,21 @@
   },
   "devDependencies": {
     "@babel/standalone": "^7.26.2",
-    "@biomejs/biome": "^1.9.4",
+    "@biomejs/biome": "^1.8.3",
     "@playwright/test": "^1.50.1",
-    "@tscircuit/capacity-autorouter": "0.0.66",
+    "@tscircuit/capacity-autorouter": "^0.0.66",
     "@tscircuit/core": "^0.0.414",
     "@tscircuit/math-utils": "^0.0.18",
     "@tscircuit/parts-engine": "^0.0.2",
     "@types/babel__standalone": "^7.1.9",
     "@types/bun": "latest",
-    "@types/react": "^18.3.12",
+    "@types/react": "^19.0.1",
     "circuit-json": "^0.0.180",
     "comlink": "^4.4.2",
     "jscad-fiber": "^0.0.79",
-    "react": "^18.3.1",
-    "tsup": "^8.3.5"
+    "react": "^19.0.0",
+    "schematic-symbols": "^0.0.139",
+    "tsup": "^8.2.4"
   },
   "peerDependencies": {
     "typescript": "^5.0.0",
