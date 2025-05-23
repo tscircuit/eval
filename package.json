@@ -15,7 +15,8 @@
     "format": "biome format --write .",
     "format:check": "biome format .",
     "test:playwright": "playwright test",
-    "test": "bun test tests"
+    "test": "bun test tests",
+    "postinstall": "bun run scripts/copy-core-versions.ts && bun install --ignore-scripts"
   },
   "exports": {
     ".": {
@@ -58,6 +59,7 @@
     "comlink": "^4.4.2",
     "jscad-fiber": "^0.0.79",
     "react": "^18.3.1",
+    "schematic-symbols": "^0.0.139",
     "tsup": "^8.3.5"
   },
   "peerDependencies": {
