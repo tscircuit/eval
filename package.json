@@ -1,7 +1,7 @@
 {
   "name": "@tscircuit/eval",
   "main": "dist/lib/index.js",
-  "version": "0.0.223",
+  "version": "0.0.224",
   "type": "module",
   "scripts": {
     "build": "bun run build:lib && bun run build:webworker && bun run build:blob-url && bun run build:runner && bun run build:worker-wrapper",
@@ -55,11 +55,11 @@
     "@types/babel__standalone": "^7.1.9",
     "@types/bun": "latest",
     "@types/react": "^19.0.1",
-    "circuit-json": "^0.0.190",
+    "circuit-json": "^0.0.194",
     "comlink": "^4.4.2",
     "jscad-fiber": "^0.0.79",
     "react": "^19.0.0",
-    "schematic-symbols": "^0.0.139",
+    "schematic-symbols": "^0.0.143",
     "tsup": "^8.2.4"
   },
   "peerDependencies": {
