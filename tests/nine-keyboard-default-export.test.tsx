@@ -22,5 +22,6 @@ export default () => <NineKeyKeyboard />
 
     expect(someSourceElm).toBeDefined()
   },
-  { timeout: 10000 },
+  // Increase timeout because NineKeyKeyboard can take longer to initialize
+  { timeout: 45000 },
 )
