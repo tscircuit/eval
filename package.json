@@ -55,7 +55,7 @@
     "@types/babel__standalone": "^7.1.9",
     "@types/bun": "latest",
     "@types/react": "^19.0.1",
-    "circuit-json": "^0.0.199",
+    "circuit-json": "^0.0.201",
     "comlink": "^4.4.2",
     "jscad-fiber": "^0.0.79",
     "react": "^19.0.0",
