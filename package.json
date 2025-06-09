@@ -48,7 +48,7 @@
     "@babel/standalone": "^7.26.2",
     "@biomejs/biome": "^1.8.3",
     "@playwright/test": "^1.50.1",
-    "@tscircuit/capacity-autorouter": "^0.0.67",
+    "@tscircuit/capacity-autorouter": "^0.0.71",
     "@tscircuit/core": "^0.0.454",
     "@tscircuit/math-utils": "^0.0.18",
     "@tscircuit/parts-engine": "^0.0.2",
