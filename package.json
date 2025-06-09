@@ -16,7 +16,7 @@
     "format:check": "biome format .",
     "test:playwright": "playwright test",
     "test": "bun test tests",
-    "postinstall": "bun run scripts/copy-core-versions.ts && bun install --ignore-scripts"
+    "copy-core-versions": "bun run scripts/copy-core-versions.ts && bun install --ignore-scripts"
   },
   "exports": {
     ".": {
