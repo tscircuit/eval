@@ -91,7 +91,6 @@ export const createCircuitWebWorker = async (
       comlinkWorker.on(event as RootCircuitEventName, proxiedCallback)
     },
     kill: async () => {
-      comlinkWorker[Comlink.releaseProxy]()
       rawWorker.terminate()
       isTerminated = true
       if (globalThis.TSCIRCUIT_GLOBAL_CIRCUIT_WORKER === wrapper) {

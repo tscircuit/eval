@@ -37,8 +37,14 @@ export const setupDefaultEntrypointIfNeeded = (opts: {
      import * as UserComponents from "./${opts.mainComponentPath}";
           
       const hasBoard = ${Object.entries(opts.fsMap)
-        .filter(([path]) => path.endsWith('.tsx') || path.endsWith('.ts') || path.endsWith('.jsx') || path.endsWith('.js'))
-        .some(([_, code]) => code.includes('<board'))
+        .filter(
+          ([path]) =>
+            path.endsWith(".tsx") ||
+            path.endsWith(".ts") ||
+            path.endsWith(".jsx") ||
+            path.endsWith(".js"),
+        )
+        .some(([_, code]) => code.includes("<board"))
         .toString()};
       ${
         opts.mainComponentName
