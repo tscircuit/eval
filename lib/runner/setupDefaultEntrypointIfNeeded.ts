@@ -26,9 +26,9 @@ export const setupDefaultEntrypointIfNeeded = (opts: {
 
   if (!opts.entrypoint && opts.mainComponentPath) {
     opts.entrypoint = "entrypoint.tsx"
-    const mainComponentCode =
-      opts.fsMap[resolveFilePathOrThrow(opts.mainComponentPath, opts.fsMap)]
-    if (!mainComponentCode) {
+    if (
+      !opts.fsMap[resolveFilePathOrThrow(opts.mainComponentPath, opts.fsMap)]
+    ) {
       throw new Error(
         `Main component path "${opts.mainComponentPath}" not found in fsMap. Available paths: ${Object.keys(opts.fsMap).join(", ")}`,
       )
@@ -36,7 +36,10 @@ export const setupDefaultEntrypointIfNeeded = (opts: {
     opts.fsMap[opts.entrypoint] = `
      import * as UserComponents from "./${opts.mainComponentPath}";
           
-      const hasBoard = ${mainComponentCode.includes("<board").toString()};
+      const hasBoard = ${Object.entries(opts.fsMap)
+        .filter(([path]) => path.endsWith('.tsx') || path.endsWith('.ts') || path.endsWith('.jsx') || path.endsWith('.js'))
+        .some(([_, code]) => code.includes('<board'))
+        .toString()};
       ${
         opts.mainComponentName
           ? `
