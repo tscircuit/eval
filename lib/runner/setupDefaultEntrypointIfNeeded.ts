@@ -1,4 +1,6 @@
 import { resolveFilePath, resolveFilePathOrThrow } from "./resolveFilePath"
+import { getImportsFromCode } from "../utils/get-imports-from-code"
+import { dirname } from "../utils/dirname"
 
 export const setupDefaultEntrypointIfNeeded = (opts: {
   entrypoint?: string
@@ -26,17 +28,43 @@ export const setupDefaultEntrypointIfNeeded = (opts: {
 
   if (!opts.entrypoint && opts.mainComponentPath) {
     opts.entrypoint = "entrypoint.tsx"
-    const mainComponentCode =
-      opts.fsMap[resolveFilePathOrThrow(opts.mainComponentPath, opts.fsMap)]
+    const resolvedMainPath = resolveFilePathOrThrow(
+      opts.mainComponentPath,
+      opts.fsMap,
+    )
+    const mainComponentCode = opts.fsMap[resolvedMainPath]
     if (!mainComponentCode) {
       throw new Error(
         `Main component path "${opts.mainComponentPath}" not found in fsMap. Available paths: ${Object.keys(opts.fsMap).join(", ")}`,
       )
     }
+
+    const visited = new Set<string>()
+    const fileContainsBoard = (filePath: string): boolean => {
+      if (visited.has(filePath)) return false
+      visited.add(filePath)
+      const code = opts.fsMap[filePath]
+      if (!code) return false
+      if (code.includes("<board")) return true
+      for (const imp of getImportsFromCode(code)) {
+        const resolved = resolveFilePath(imp, opts.fsMap, dirname(filePath))
+        if (resolved && fileContainsBoard(resolved)) return true
+      }
+      return false
+    }
+
+    let hasBoard = fileContainsBoard(resolvedMainPath)
+    if (!hasBoard) {
+      const imports = getImportsFromCode(mainComponentCode)
+      if (imports.some((imp) => imp.startsWith("@tsci/"))) {
+        hasBoard = true
+      }
+    }
+
     opts.fsMap[opts.entrypoint] = `
      import * as UserComponents from "./${opts.mainComponentPath}";
-          
-      const hasBoard = ${mainComponentCode.includes("<board").toString()};
+
+      const hasBoard = ${hasBoard.toString()};
       ${
         opts.mainComponentName
           ? `
