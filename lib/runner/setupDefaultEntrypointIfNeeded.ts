@@ -53,18 +53,22 @@ export const setupDefaultEntrypointIfNeeded = (opts: {
       return false
     }
 
-    let hasBoard = fileContainsBoard(resolvedMainPath)
-    if (!hasBoard) {
+    const hasExplicitBoard = fileContainsBoard(resolvedMainPath)
+    let hasTsciImport =
+      mainComponentCode.includes("@tsci/") ||
+      mainComponentCode.includes('from "@tsci')
+
+    if (!hasExplicitBoard && !hasTsciImport) {
       const imports = getImportsFromCode(mainComponentCode)
       if (imports.some((imp) => imp.startsWith("@tsci/"))) {
-        hasBoard = true
+        hasTsciImport = true
       }
     }
 
+    const shouldWrapInBoard = !hasExplicitBoard && !hasTsciImport
+
     opts.fsMap[opts.entrypoint] = `
      import * as UserComponents from "./${opts.mainComponentPath}";
-
-      const hasBoard = ${hasBoard.toString()};
       ${
         opts.mainComponentName
           ? `
@@ -76,13 +80,17 @@ export const setupDefaultEntrypointIfNeeded = (opts: {
       }
 
       circuit.add(
-        hasBoard ? (
-          <ComponentToRender ${opts.mainComponentProps ? `{...${JSON.stringify(opts.mainComponentProps, null, 2)}}` : ""} />
-        ) : (
+        ${
+          shouldWrapInBoard
+            ? `
           <board>
             <ComponentToRender name="U1" ${opts.mainComponentProps ? `{...${JSON.stringify(opts.mainComponentProps, null, 2)}}` : ""} />
           </board>
-        )
+        `
+            : `
+          <ComponentToRender ${opts.mainComponentProps ? `{...${JSON.stringify(opts.mainComponentProps, null, 2)}}` : ""} />
+        `
+        }
       );
 `
   }
