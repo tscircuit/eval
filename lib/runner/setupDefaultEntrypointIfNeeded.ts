@@ -1,33 +1,4 @@
-import { resolveFilePath, resolveFilePathOrThrow } from "./resolveFilePath"
-import { getImportsFromCode } from "../utils/get-imports-from-code"
-import { dirname } from "lib/utils/dirname"
-
-const scanForBoardAndTsci = (
-  filePath: string,
-  fsMap: Record<string, string>,
-  visited: Set<string> = new Set(),
-): { hasBoard: boolean; hasTsciImport: boolean } => {
-  const resolved = resolveFilePathOrThrow(filePath, fsMap)
-  if (visited.has(resolved)) return { hasBoard: false, hasTsciImport: false }
-  visited.add(resolved)
-
-  const code = fsMap[resolved]
-  const hasBoard = code.includes("<board")
-  const hasTsciImport = code.includes("@tsci/") || code.includes('from "@tsci')
-
-  let result = { hasBoard, hasTsciImport }
-  for (const imp of getImportsFromCode(code)) {
-    if (!imp.startsWith(".")) continue
-    const child = resolveFilePath(imp, fsMap, dirname(resolved))
-    if (child && fsMap[child]) {
-      const childRes = scanForBoardAndTsci(child, fsMap, visited)
-      result.hasBoard ||= childRes.hasBoard
-      result.hasTsciImport ||= childRes.hasTsciImport
-    }
-    if (result.hasBoard && result.hasTsciImport) break
-  }
-  return result
-}
+import { resolveFilePathOrThrow } from "./resolveFilePath"
 
 export const setupDefaultEntrypointIfNeeded = (opts: {
   entrypoint?: string
@@ -61,12 +32,6 @@ export const setupDefaultEntrypointIfNeeded = (opts: {
     const mainComponentCode = opts.fsMap[mainComponentResolved]
     const usesCircuitAdd = mainComponentCode.includes("circuit.add(")
 
-    const { hasBoard: hasExplicitBoard, hasTsciImport } = scanForBoardAndTsci(
-      opts.mainComponentPath,
-      opts.fsMap,
-    )
-    const shouldWrapInBoard = !hasExplicitBoard && !hasTsciImport
-
     if (usesCircuitAdd) {
       opts.entrypoint = opts.mainComponentPath
       return
@@ -75,31 +40,25 @@ export const setupDefaultEntrypointIfNeeded = (opts: {
     opts.entrypoint = "entrypoint.tsx"
 
     opts.fsMap[opts.entrypoint] = `
+     import * as React from "react";
      import * as UserComponents from "./${opts.mainComponentPath}";
-          
+
       ${
         opts.mainComponentName
           ? `
-        const ComponentToRender = UserComponents["${opts.mainComponentName}"]
-        `
+      const ComponentToRender = UserComponents["${opts.mainComponentName}"]
+      `
           : `const ComponentToRender = Object.entries(UserComponents)
         .filter(([name]) => !name.startsWith("use"))
         .map(([_, component]) => component)[0] || (() => null);`
       }
 
-      circuit.add(
-        ${
-          shouldWrapInBoard
-            ? `
-          <board>
-            <ComponentToRender name="U1" ${opts.mainComponentProps ? `{...${JSON.stringify(opts.mainComponentProps, null, 2)}}` : ""} />
-          </board>
-        `
-            : `
-          <ComponentToRender ${opts.mainComponentProps ? `{...${JSON.stringify(opts.mainComponentProps, null, 2)}}` : ""} />
-        `
-        }
-      );
+      const element = <ComponentToRender ${opts.mainComponentProps ? `{...${JSON.stringify(opts.mainComponentProps, null, 2)}}` : ""} />;
+      const isBoard = React.isValidElement(element) && element.type === "board";
+
+      if (!circuit._getBoard()) {
+        circuit.add(isBoard ? element : <board>{element}</board>);
+      }
 `
   }
 
