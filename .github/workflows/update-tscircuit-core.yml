@@ -23,6 +23,9 @@ jobs:
       - name: Update @tscircuit/core
         run: bun update --latest @tscircuit/core
         
+      - name: Copy core dependencies (update to versions that core uses)
+        run: bun scripts/copy-core-versions.ts
+        
       - name: Get new version
         id: get-version
         run: |
