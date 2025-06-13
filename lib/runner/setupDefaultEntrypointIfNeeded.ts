@@ -1,4 +1,33 @@
 import { resolveFilePath, resolveFilePathOrThrow } from "./resolveFilePath"
+import { getImportsFromCode } from "../utils/get-imports-from-code"
+import { dirname } from "lib/utils/dirname"
+
+const scanForBoardAndTsci = (
+  filePath: string,
+  fsMap: Record<string, string>,
+  visited: Set<string> = new Set(),
+): { hasBoard: boolean; hasTsciImport: boolean } => {
+  const resolved = resolveFilePathOrThrow(filePath, fsMap)
+  if (visited.has(resolved)) return { hasBoard: false, hasTsciImport: false }
+  visited.add(resolved)
+
+  const code = fsMap[resolved]
+  const hasBoard = code.includes("<board")
+  const hasTsciImport = code.includes("@tsci/") || code.includes('from "@tsci')
+
+  let result = { hasBoard, hasTsciImport }
+  for (const imp of getImportsFromCode(code)) {
+    if (!imp.startsWith(".")) continue
+    const child = resolveFilePath(imp, fsMap, dirname(resolved))
+    if (child && fsMap[child]) {
+      const childRes = scanForBoardAndTsci(child, fsMap, visited)
+      result.hasBoard ||= childRes.hasBoard
+      result.hasTsciImport ||= childRes.hasTsciImport
+    }
+    if (result.hasBoard && result.hasTsciImport) break
+  }
+  return result
+}
 
 export const setupDefaultEntrypointIfNeeded = (opts: {
   entrypoint?: string
@@ -25,20 +54,25 @@ export const setupDefaultEntrypointIfNeeded = (opts: {
   }
 
   if (!opts.entrypoint && opts.mainComponentPath) {
-    opts.entrypoint = "entrypoint.tsx"
-    const mainComponentCode =
-      opts.fsMap[resolveFilePathOrThrow(opts.mainComponentPath, opts.fsMap)]
-    if (!mainComponentCode) {
-      throw new Error(
-        `Main component path "${opts.mainComponentPath}" not found in fsMap. Available paths: ${Object.keys(opts.fsMap).join(", ")}`,
-      )
+    const mainComponentResolved = resolveFilePathOrThrow(
+      opts.mainComponentPath,
+      opts.fsMap,
+    )
+    const mainComponentCode = opts.fsMap[mainComponentResolved]
+    const usesCircuitAdd = mainComponentCode.includes("circuit.add(")
+
+    const { hasBoard: hasExplicitBoard, hasTsciImport } = scanForBoardAndTsci(
+      opts.mainComponentPath,
+      opts.fsMap,
+    )
+    const shouldWrapInBoard = !hasExplicitBoard && !hasTsciImport
+
+    if (usesCircuitAdd) {
+      opts.entrypoint = opts.mainComponentPath
+      return
     }
 
-    const hasExplicitBoard = mainComponentCode.includes("<board")
-    const hasTsciImport =
-      mainComponentCode.includes("@tsci/") ||
-      mainComponentCode.includes('from "@tsci')
-    const shouldWrapInBoard = !hasExplicitBoard && !hasTsciImport
+    opts.entrypoint = "entrypoint.tsx"
 
     opts.fsMap[opts.entrypoint] = `
      import * as UserComponents from "./${opts.mainComponentPath}";
