@@ -53,8 +53,18 @@ export const setupDefaultEntrypointIfNeeded = (opts: {
         .map(([_, component]) => component)[0] || (() => null);`
       }
 
-      const element = <ComponentToRender ${opts.mainComponentProps ? `{...${JSON.stringify(opts.mainComponentProps, null, 2)}}` : ""} />;
-      const isBoard = React.isValidElement(element) && element.type === "board";
+      const props = ${opts.mainComponentProps ? JSON.stringify(opts.mainComponentProps, null, 2) : '{}'};
+      let element = <ComponentToRender {...props} />;
+      let isBoard = false;
+
+      try {
+        const evaluated =
+          typeof ComponentToRender === "function" ? ComponentToRender(props) : null;
+        if (React.isValidElement(evaluated) && evaluated.type === "board") {
+          element = evaluated;
+          isBoard = true;
+        }
+      } catch {}
 
       if (!circuit._getBoard()) {
         circuit.add(isBoard ? element : <board>{element}</board>);
