@@ -1,4 +1,4 @@
-import { resolveFilePath, resolveFilePathOrThrow } from "./resolveFilePath"
+import { resolveFilePathOrThrow } from "./resolveFilePath"
 
 export const setupDefaultEntrypointIfNeeded = (opts: {
   entrypoint?: string
@@ -25,47 +25,50 @@ export const setupDefaultEntrypointIfNeeded = (opts: {
   }
 
   if (!opts.entrypoint && opts.mainComponentPath) {
-    opts.entrypoint = "entrypoint.tsx"
-    const mainComponentCode =
-      opts.fsMap[resolveFilePathOrThrow(opts.mainComponentPath, opts.fsMap)]
-    if (!mainComponentCode) {
-      throw new Error(
-        `Main component path "${opts.mainComponentPath}" not found in fsMap. Available paths: ${Object.keys(opts.fsMap).join(", ")}`,
-      )
+    const mainComponentResolved = resolveFilePathOrThrow(
+      opts.mainComponentPath,
+      opts.fsMap,
+    )
+    const mainComponentCode = opts.fsMap[mainComponentResolved]
+    const usesCircuitAdd = mainComponentCode.includes("circuit.add(")
+
+    if (usesCircuitAdd) {
+      opts.entrypoint = opts.mainComponentPath
+      return
     }
 
-    const hasExplicitBoard = mainComponentCode.includes("<board")
-    const hasTsciImport =
-      mainComponentCode.includes("@tsci/") ||
-      mainComponentCode.includes('from "@tsci')
-    const shouldWrapInBoard = !hasExplicitBoard && !hasTsciImport
+    opts.entrypoint = "entrypoint.tsx"
 
     opts.fsMap[opts.entrypoint] = `
+     import * as React from "react";
      import * as UserComponents from "./${opts.mainComponentPath}";
-          
+
       ${
         opts.mainComponentName
           ? `
-        const ComponentToRender = UserComponents["${opts.mainComponentName}"]
-        `
+      const ComponentToRender = UserComponents["${opts.mainComponentName}"]
+      `
           : `const ComponentToRender = Object.entries(UserComponents)
         .filter(([name]) => !name.startsWith("use"))
         .map(([_, component]) => component)[0] || (() => null);`
       }
 
-      circuit.add(
-        ${
-          shouldWrapInBoard
-            ? `
-          <board>
-            <ComponentToRender name="U1" ${opts.mainComponentProps ? `{...${JSON.stringify(opts.mainComponentProps, null, 2)}}` : ""} />
-          </board>
-        `
-            : `
-          <ComponentToRender ${opts.mainComponentProps ? `{...${JSON.stringify(opts.mainComponentProps, null, 2)}}` : ""} />
-        `
+      const props = ${opts.mainComponentProps ? JSON.stringify(opts.mainComponentProps, null, 2) : '{}'};
+      let element = <ComponentToRender {...props} />;
+      let isBoard = false;
+
+      try {
+        const evaluated =
+          typeof ComponentToRender === "function" ? ComponentToRender(props) : null;
+        if (React.isValidElement(evaluated) && evaluated.type === "board") {
+          element = evaluated;
+          isBoard = true;
         }
-      );
+      } catch {}
+
+      if (!circuit._getBoard()) {
+        circuit.add(isBoard ? element : <board>{element}</board>);
+      }
 `
   }
 

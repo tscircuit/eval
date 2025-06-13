@@ -21,6 +21,9 @@ test("example5-event-recording", async () => {
 
   await circuitWebWorker.renderUntilSettled()
 
+  // Allow any pending events to be dispatched
+  await new Promise((resolve) => setTimeout(resolve, 0))
+
   expect(eventCount).toBeGreaterThan(0)
   const initialEventCount = eventCount
 
