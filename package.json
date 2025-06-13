@@ -27,6 +27,10 @@
       "types": "./dist/worker.d.ts",
       "import": "./dist/worker.js"
     },
+    "./worker-lite-wrapper": {
+      "types": "./dist/worker.d.ts",
+      "import": "./dist/worker.js"
+    },
     "./worker-entrypoint": {
       "types": "./dist/webworker/entrypoint.d.ts",
       "import": "./dist/webworker/entrypoint.js"
