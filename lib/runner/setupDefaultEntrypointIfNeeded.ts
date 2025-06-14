@@ -36,7 +36,6 @@ export const setupDefaultEntrypointIfNeeded = (opts: {
     opts.fsMap[opts.entrypoint] = `
      import * as UserComponents from "./${opts.mainComponentPath}";
           
-      const hasBoard = ${mainComponentCode.includes("<board").toString()};
       ${
         opts.mainComponentName
           ? `
@@ -47,12 +46,16 @@ export const setupDefaultEntrypointIfNeeded = (opts: {
         .map(([_, component]) => component)[0] || (() => null);`
       }
 
+      const mainComponentElm = <ComponentToRender ${opts.mainComponentProps ? `{...${JSON.stringify(opts.mainComponentProps, null, 2)}}` : ""} />
+
+      const hasBoard = mainComponentElm.type === "board" || mainComponentElm.type.toString().includes("\\"board\\"")
+
       circuit.add(
         hasBoard ? (
-          <ComponentToRender ${opts.mainComponentProps ? `{...${JSON.stringify(opts.mainComponentProps, null, 2)}}` : ""} />
+          mainComponentElm
         ) : (
           <board>
-            <ComponentToRender name="U1" ${opts.mainComponentProps ? `{...${JSON.stringify(opts.mainComponentProps, null, 2)}}` : ""} />
+            {mainComponentElm}
           </board>
         )
       );
