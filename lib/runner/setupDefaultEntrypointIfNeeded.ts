@@ -48,16 +48,8 @@ export const setupDefaultEntrypointIfNeeded = (opts: {
 
       const mainComponentElm = <ComponentToRender ${opts.mainComponentProps ? `{...${JSON.stringify(opts.mainComponentProps, null, 2)}}` : ""} />
 
-      const hasBoard = mainComponentElm.type === "board" || mainComponentElm.type.toString().includes("\\"board\\"")
-
       circuit.add(
-        hasBoard ? (
-          mainComponentElm
-        ) : (
-          <board>
-            {mainComponentElm}
-          </board>
-        )
+        mainComponentElm
       );
 `
   }
