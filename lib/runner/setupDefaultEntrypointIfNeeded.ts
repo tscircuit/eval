@@ -1,4 +1,4 @@
-import { resolveFilePath, resolveFilePathOrThrow } from "./resolveFilePath"
+import { resolveFilePathOrThrow } from "./resolveFilePath"
 
 export const setupDefaultEntrypointIfNeeded = (opts: {
   entrypoint?: string
@@ -17,6 +17,16 @@ export const setupDefaultEntrypointIfNeeded = (opts: {
       Object.keys(opts.fsMap).filter((k) => k.endsWith(".tsx")).length === 1
     ) {
       opts.mainComponentPath = Object.keys(opts.fsMap)[0]
+    } else if ("tscircuit.config.js" in opts.fsMap) {
+      const configContent = opts.fsMap["tscircuit.config.js"]
+      try {
+        const config = JSON.parse(configContent)
+        if (config.mainEntrypoint) {
+          opts.mainComponentPath = config.mainEntrypoint // TODO: variable update name in cli to mainComponentPath
+        }
+      } catch (e) {
+        console.warn("Failed to parse tscircuit.config.js:", e)
+      }
     } else {
       throw new Error(
         "Either entrypoint or mainComponentPath must be provided (no index file, could not infer entrypoint)",
