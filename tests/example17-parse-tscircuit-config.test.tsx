@@ -8,7 +8,7 @@ test("parse tscircuit.config.js with mainEntrypoint", async () => {
 
   await circuitWebWorker.executeWithFsMap({
     fsMap: {
-      "tscircuit.config.js": `
+      "tscircuit.config.json": `
         {
           "mainEntrypoint": "random1.tsx"
         }

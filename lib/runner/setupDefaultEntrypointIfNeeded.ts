@@ -17,15 +17,15 @@ export const setupDefaultEntrypointIfNeeded = (opts: {
       Object.keys(opts.fsMap).filter((k) => k.endsWith(".tsx")).length === 1
     ) {
       opts.mainComponentPath = Object.keys(opts.fsMap)[0]
-    } else if ("tscircuit.config.js" in opts.fsMap) {
-      const configContent = opts.fsMap["tscircuit.config.js"]
+    } else if ("tscircuit.config.json" in opts.fsMap) {
+      const configContent = opts.fsMap["tscircuit.config.json"]
       try {
         const config = JSON.parse(configContent)
         if (config.mainEntrypoint) {
           opts.entrypoint = config.mainEntrypoint
         }
       } catch (e) {
-        console.warn("Failed to parse tscircuit.config.js:", e)
+        console.warn("Failed to parse tscircuit.config.json:", e)
       }
     } else {
       throw new Error(
