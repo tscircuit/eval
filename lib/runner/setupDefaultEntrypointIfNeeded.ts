@@ -22,7 +22,7 @@ export const setupDefaultEntrypointIfNeeded = (opts: {
       try {
         const config = JSON.parse(configContent)
         if (config.mainEntrypoint) {
-          opts.mainComponentPath = config.mainEntrypoint // TODO: variable update name in cli to mainComponentPath
+          opts.entrypoint = config.mainEntrypoint
         }
       } catch (e) {
         console.warn("Failed to parse tscircuit.config.js:", e)
