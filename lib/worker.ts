@@ -64,6 +64,9 @@ export const createCircuitWebWorker = async (
   if (configuration.snippetsApiBaseUrl) {
     await comlinkWorker.setSnippetsApiBaseUrl(configuration.snippetsApiBaseUrl)
   }
+  if (configuration.platform) {
+    await comlinkWorker.setPlatformConfig(configuration.platform)
+  }
 
   let isTerminated = false
 

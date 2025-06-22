@@ -1,10 +1,12 @@
 import type { AnyCircuitElement } from "circuit-json"
 import type { RootCircuitEventName } from "@tscircuit/core"
+import type { PlatformConfig } from "@tscircuit/props"
 
 export interface CircuitRunnerConfiguration {
   snippetsApiBaseUrl: string
   cjsRegistryUrl: string
   verbose?: boolean
+  platform?: PlatformConfig
 }
 
 export interface WebWorkerConfiguration extends CircuitRunnerConfiguration {
@@ -34,6 +36,7 @@ export interface CircuitRunnerApi {
   renderUntilSettled: () => Promise<void>
   getCircuitJson: () => Promise<AnyCircuitElement[]>
   setSnippetsApiBaseUrl: (baseUrl: string) => Promise<void>
+  setPlatformConfig: (platform: PlatformConfig) => Promise<void>
   on: (event: RootCircuitEventName, callback: (...args: any[]) => void) => void
   clearEventListeners: () => void
   kill: () => Promise<void>

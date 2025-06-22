@@ -3,6 +3,7 @@ import type {
   CircuitRunnerApi,
   CircuitRunnerConfiguration,
 } from "lib/shared/types"
+import type { PlatformConfig } from "@tscircuit/props"
 import { createExecutionContext } from "../../webworker/execution-context"
 import { normalizeFsMap } from "./normalizeFsMap"
 import type { RootCircuit } from "@tscircuit/core"
@@ -18,6 +19,10 @@ export class CircuitRunner implements CircuitRunnerApi {
     verbose: false,
   }
   _eventListeners: Record<string, ((...args: any[]) => void)[]> = {}
+
+  constructor(configuration: Partial<CircuitRunnerConfiguration> = {}) {
+    Object.assign(this._circuitRunnerConfiguration, configuration)
+  }
 
   async executeWithFsMap(ogOpts: {
     entrypoint?: string
@@ -42,6 +47,7 @@ export class CircuitRunner implements CircuitRunnerApi {
       this._circuitRunnerConfiguration,
       {
         name: opts.name,
+        platform: this._circuitRunnerConfiguration.platform,
       },
     )
     this._bindEventListeners(this._executionContext.circuit)
@@ -69,7 +75,10 @@ export class CircuitRunner implements CircuitRunnerApi {
 
     this._executionContext = createExecutionContext(
       this._circuitRunnerConfiguration,
-      opts,
+      {
+        ...opts,
+        platform: this._circuitRunnerConfiguration.platform,
+      },
     )
     this._bindEventListeners(this._executionContext.circuit)
     this._executionContext.fsMap["entrypoint.tsx"] = code
@@ -123,6 +132,10 @@ export class CircuitRunner implements CircuitRunnerApi {
 
   async setSnippetsApiBaseUrl(baseUrl: string) {
     this._circuitRunnerConfiguration.snippetsApiBaseUrl = baseUrl
+  }
+
+  async setPlatformConfig(platform: PlatformConfig) {
+    this._circuitRunnerConfiguration.platform = platform
   }
 
   private _bindEventListeners(circuit: RootCircuit) {

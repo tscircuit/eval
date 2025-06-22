@@ -5,6 +5,7 @@ import type {
   WebWorkerConfiguration,
 } from "lib/shared/types"
 import * as React from "react"
+import type { PlatformConfig } from "@tscircuit/props"
 import {
   createExecutionContext,
   type ExecutionContext,
@@ -22,6 +23,7 @@ const circuitRunnerConfiguration: WebWorkerConfiguration = {
   snippetsApiBaseUrl: "https://registry-api.tscircuit.com",
   cjsRegistryUrl: "https://cjs.tscircuit.com",
   verbose: false,
+  platform: undefined,
 }
 
 const eventListeners: Record<string, ((...args: any[]) => void)[]> = {}
@@ -37,6 +39,9 @@ function bindEventListeners(circuit: RootCircuit) {
 const webWorkerApi = {
   setSnippetsApiBaseUrl: async (baseUrl: string) => {
     circuitRunnerConfiguration.snippetsApiBaseUrl = baseUrl
+  },
+  setPlatformConfig: async (platform: PlatformConfig) => {
+    circuitRunnerConfiguration.platform = platform
   },
 
   async executeWithFsMap(opts: {
@@ -58,6 +63,7 @@ const webWorkerApi = {
 
     executionContext = createExecutionContext(circuitRunnerConfiguration, {
       name: opts.name,
+      platform: circuitRunnerConfiguration.platform,
     })
     bindEventListeners(executionContext.circuit)
     executionContext.fsMap = normalizeFsMap(opts.fsMap)
@@ -77,7 +83,10 @@ const webWorkerApi = {
     if (circuitRunnerConfiguration.verbose) {
       console.log("[Worker] execute called with code length:", code.length)
     }
-    executionContext = createExecutionContext(circuitRunnerConfiguration, opts)
+    executionContext = createExecutionContext(circuitRunnerConfiguration, {
+      ...opts,
+      platform: circuitRunnerConfiguration.platform,
+    })
     bindEventListeners(executionContext.circuit)
     executionContext.fsMap["entrypoint.tsx"] = code
     ;(globalThis as any).__tscircuit_circuit = executionContext.circuit
