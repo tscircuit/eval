@@ -71,5 +71,9 @@
     "@tscircuit/core": "*",
     "circuit-json": "*",
     "jscad-fiber": "*"
+  },
+  "dependencies": {
+    "css-select": "^5.2.1",
+    "css-what": "^6.2.1"
   }
 }
