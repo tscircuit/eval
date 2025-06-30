@@ -55,7 +55,7 @@
     "@tscircuit/capacity-autorouter": "^0.0.75",
     "@tscircuit/core": "^0.0.532",
     "@tscircuit/math-utils": "^0.0.18",
-    "@tscircuit/parts-engine": "^0.0.3",
+    "@tscircuit/parts-engine": "^0.0.8",
     "@types/babel__standalone": "^7.1.9",
     "@types/bun": "^1.2.16",
     "@types/react": "^19.0.1",
