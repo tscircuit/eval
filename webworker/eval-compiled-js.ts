@@ -4,6 +4,7 @@ export function evalCompiledJs(
   compiledCode: string,
   preSuppliedImports: Record<string, any>,
   cwd?: string,
+  sourceUrl?: string,
 ) {
   ;(globalThis as any).__tscircuit_require = (name: string) => {
     const resolvedFilePath = resolveFilePath(name, preSuppliedImports, cwd)
@@ -56,6 +57,7 @@ export function evalCompiledJs(
   var module = { exports };
   var circuit = globalThis.__tscircuit_circuit;
   ${compiledCode};
+  //# sourceURL=${sourceUrl ?? "compiled.ts"}
   return module;`.trim()
   return Function(functionBody).call(globalThis)
 }

@@ -2,6 +2,7 @@ import * as Babel from "@babel/standalone"
 import { resolveFilePathOrThrow } from "lib/runner/resolveFilePath"
 import { dirname } from "lib/utils/dirname"
 import { getImportsFromCode } from "lib/utils/get-imports-from-code"
+import { addSourceLineToError } from "lib/utils/addSourceLineToError"
 import { evalCompiledJs } from "./eval-compiled-js"
 import type { ExecutionContext } from "./execution-context"
 import { importEvalPath } from "./import-eval-path"
@@ -38,8 +39,12 @@ export const importLocalFile = async (
     const result = Babel.transform(fileContent, {
       presets: ["react", "typescript"],
       plugins: ["transform-modules-commonjs"],
-      filename: "virtual.tsx",
+      filename: fsPath,
+      sourceMaps: true,
     })
+    if (result.map) {
+      ctx.sourceMaps[fsPath] = result.map
+    }
 
     if (!result || !result.code) {
       throw new Error("Failed to transform code")
@@ -50,9 +55,11 @@ export const importLocalFile = async (
         result.code,
         preSuppliedImports,
         dirname(fsPath),
+        fsPath,
       )
       preSuppliedImports[fsPath] = importRunResult.exports
     } catch (error: any) {
+      await addSourceLineToError(error, ctx.fsMap, ctx.sourceMaps)
       throw new Error(
         `Eval compiled js error for "${importName}": ${error.message}`,
       )
@@ -63,7 +70,11 @@ export const importLocalFile = async (
       presets: ["env"],
       plugins: ["transform-modules-commonjs"],
       filename: fsPath,
+      sourceMaps: true,
     })
+    if (result.map) {
+      ctx.sourceMaps[fsPath] = result.map
+    }
 
     if (!result || !result.code) {
       throw new Error("Failed to transform JS code")
@@ -73,6 +84,7 @@ export const importLocalFile = async (
       result.code,
       preSuppliedImports,
       dirname(fsPath),
+      fsPath,
     ).exports
   } else {
     throw new Error(

@@ -14,6 +14,7 @@ import { importEvalPath } from "./import-eval-path"
 import { normalizeFsMap } from "../lib/runner/normalizeFsMap"
 import type { RootCircuit } from "@tscircuit/core"
 import { setupDefaultEntrypointIfNeeded } from "lib/runner/setupDefaultEntrypointIfNeeded"
+import { addSourceLineToError } from "lib/utils/addSourceLineToError"
 
 globalThis.React = React
 
@@ -76,7 +77,16 @@ const webWorkerApi = {
       entrypoint = `./${entrypoint}`
     }
 
-    await importEvalPath(entrypoint, executionContext)
+    try {
+      await importEvalPath(entrypoint, executionContext)
+    } catch (error: any) {
+      await addSourceLineToError(
+        error,
+        executionContext.fsMap,
+        executionContext.sourceMaps,
+      )
+      throw error
+    }
   },
 
   async execute(code: string, opts: { name?: string } = {}) {
@@ -91,7 +101,16 @@ const webWorkerApi = {
     executionContext.fsMap["entrypoint.tsx"] = code
     ;(globalThis as any).__tscircuit_circuit = executionContext.circuit
 
-    await importEvalPath("./entrypoint.tsx", executionContext)
+    try {
+      await importEvalPath("./entrypoint.tsx", executionContext)
+    } catch (error: any) {
+      await addSourceLineToError(
+        error,
+        executionContext.fsMap,
+        executionContext.sourceMaps,
+      )
+      throw error
+    }
   },
 
   on: (event: string, callback: (...args: any[]) => void) => {

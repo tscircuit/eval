@@ -25,6 +25,8 @@ export async function importSnippet(
     preSuppliedImports[importName] = evalCompiledJs(
       cjs!,
       preSuppliedImports,
+      undefined,
+      importName,
     ).exports
   } catch (e) {
     console.error("Error importing snippet", e)
