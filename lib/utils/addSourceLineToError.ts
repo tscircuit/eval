@@ -1,4 +1,5 @@
-import { SourceMapConsumer, RawSourceMap } from "source-map"
+import { SourceMapConsumer } from "source-map"
+import type { RawSourceMap } from "source-map"
 
 export async function addSourceLineToError(
   error: Error,
