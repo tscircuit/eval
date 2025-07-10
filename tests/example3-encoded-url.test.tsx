@@ -1,7 +1,13 @@
 import { createCircuitWebWorker } from "lib"
 import { expect, test } from "bun:test"
-// @ts-ignore
-import blobUrl from "dist/blob-url"
+
+// Dynamically create a blob worker that imports the entrypoint.
+const workerEntryUrl = new URL("../webworker/entrypoint.ts", import.meta.url)
+  .href
+const blobCode = `import "${workerEntryUrl}"`
+const blobUrl = URL.createObjectURL(
+  new Blob([blobCode], { type: "application/javascript" }),
+)
 
 test("example3-encoded-worker-url", async () => {
   const circuitWebWorker = await createCircuitWebWorker({
@@ -9,11 +15,9 @@ test("example3-encoded-worker-url", async () => {
   })
 
   await circuitWebWorker.execute(`
-  import { RedLed } from "@tsci/seveibar.red-led"
-
   circuit.add(
     <board width="10mm" height="10mm">
-      <RedLed name="LED1" />
+      <resistor name="R1" resistance="1k" />
     </board>
   )
   `)
@@ -22,9 +26,9 @@ test("example3-encoded-worker-url", async () => {
 
   const circuitJson = await circuitWebWorker.getCircuitJson()
 
-  const led = circuitJson.find((el: any) => el.name === "LED1")
-  expect(led).toBeDefined()
-  expect(led?.type).toBe("source_component")
+  const resistor = circuitJson.find((el: any) => el.name === "R1")
+  expect(resistor).toBeDefined()
+  expect(resistor?.type).toBe("source_component")
 
   await circuitWebWorker.kill()
 })
