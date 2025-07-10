@@ -11,6 +11,7 @@ export interface ExecutionContext extends WebWorkerConfiguration {
   fsMap: Record<string, string>
   entrypoint: string
   preSuppliedImports: Record<string, any>
+  sourceMaps: Record<string, any>
   circuit: RootCircuit
 }
 
@@ -45,6 +46,7 @@ export function createExecutionContext(
       // ignore type imports in getImportsFromCode
       "@tscircuit/props": {},
     },
+    sourceMaps: {},
     circuit,
     ...webWorkerConfiguration,
   }

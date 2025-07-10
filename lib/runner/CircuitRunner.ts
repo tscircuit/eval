@@ -10,6 +10,7 @@ import type { RootCircuit } from "@tscircuit/core"
 import * as React from "react"
 import { importEvalPath } from "webworker/import-eval-path"
 import { setupDefaultEntrypointIfNeeded } from "./setupDefaultEntrypointIfNeeded"
+import { addSourceLineToError } from "../utils/addSourceLineToError"
 
 export class CircuitRunner implements CircuitRunnerApi {
   _executionContext: ReturnType<typeof createExecutionContext> | null = null
@@ -62,7 +63,16 @@ export class CircuitRunner implements CircuitRunnerApi {
       ? opts.entrypoint
       : `./${opts.entrypoint}`
 
-    await importEvalPath(entrypoint!, this._executionContext)
+    try {
+      await importEvalPath(entrypoint!, this._executionContext)
+    } catch (error: any) {
+      await addSourceLineToError(
+        error,
+        this._executionContext.fsMap,
+        this._executionContext.sourceMaps,
+      )
+      throw error
+    }
   }
 
   async execute(code: string, opts: { name?: string } = {}) {
@@ -84,7 +94,16 @@ export class CircuitRunner implements CircuitRunnerApi {
     this._executionContext.fsMap["entrypoint.tsx"] = code
     ;(globalThis as any).__tscircuit_circuit = this._executionContext.circuit
 
-    await importEvalPath("./entrypoint.tsx", this._executionContext)
+    try {
+      await importEvalPath("./entrypoint.tsx", this._executionContext)
+    } catch (error: any) {
+      await addSourceLineToError(
+        error,
+        this._executionContext.fsMap,
+        this._executionContext.sourceMaps,
+      )
+      throw error
+    }
   }
 
   on(event: string, callback: (...args: any[]) => void) {
