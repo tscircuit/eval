@@ -6,6 +6,9 @@ import { importSnippet } from "./import-snippet"
 import { resolveFilePath } from "lib/runner/resolveFilePath"
 import { resolveNodeModule } from "lib/utils/resolve-node-module"
 import { importNodeModule } from "./import-node-module"
+import Debug from "debug"
+
+const debug = Debug("tsci:eval:import-eval-path")
 
 export async function importEvalPath(
   importName: string,
@@ -15,9 +18,13 @@ export async function importEvalPath(
     cwd?: string
   } = {},
 ) {
-  if (ctx.verbose) {
-    console.log(`[Worker] ${"  ".repeat(depth)}➡️`, importName)
-  }
+  debug("importEvalPath called with:", {
+    importName,
+    depth,
+    opts,
+  })
+
+  debug(`${"  ".repeat(depth)}➡️`, importName)
   const { preSuppliedImports } = ctx
 
   if (preSuppliedImports[importName]) return
