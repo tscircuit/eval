@@ -1,4 +1,7 @@
 import { resolveFilePathOrThrow } from "./resolveFilePath"
+import Debug from "debug"
+
+const debug = Debug("tsci:eval:setupDefaultEntrypointIfNeeded")
 
 export const setupDefaultEntrypointIfNeeded = (opts: {
   entrypoint?: string
@@ -62,6 +65,15 @@ export const setupDefaultEntrypointIfNeeded = (opts: {
         .filter(([name]) => !name.startsWith("use"))
         .map(([_, component]) => component)[0] || (() => null);`
       }
+
+           ${
+             debug.enabled
+               ? `
+     console.log("UserComponents",  { UserComponents })
+     console.log("ComponentToRender " + ComponentToRender.toString(),  { ComponentToRender })
+     `
+               : ""
+           }
 
       circuit.add(
         ${
