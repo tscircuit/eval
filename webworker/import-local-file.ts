@@ -5,19 +5,29 @@ import { getImportsFromCode } from "lib/utils/get-imports-from-code"
 import { evalCompiledJs } from "./eval-compiled-js"
 import type { ExecutionContext } from "./execution-context"
 import { importEvalPath } from "./import-eval-path"
+import Debug from "debug"
+
+const debug = Debug("tsci:eval:import-local-file")
 
 export const importLocalFile = async (
   importName: string,
   ctx: ExecutionContext,
   depth = 0,
 ) => {
+  debug("importLocalFile called with:", {
+    importName,
+  })
+
   const { fsMap, preSuppliedImports } = ctx
 
   const fsPath = resolveFilePathOrThrow(importName, fsMap)
+  debug("fsPath:", fsPath)
   if (!ctx.fsMap[fsPath]) {
+    debug("fsPath not found in fsMap:", fsPath)
     throw new Error(`File "${fsPath}" not found`)
   }
   const fileContent = fsMap[fsPath]
+  debug("fileContent:", fileContent?.slice(0, 100))
   if (fsPath.endsWith(".json")) {
     const jsonData = JSON.parse(fileContent)
     preSuppliedImports[fsPath] = {
@@ -46,11 +56,19 @@ export const importLocalFile = async (
     }
 
     try {
+      debug("evalCompiledJs called with:", {
+        code: result.code?.slice(0, 100),
+        dirname: dirname(fsPath),
+      })
       const importRunResult = evalCompiledJs(
         result.code,
         preSuppliedImports,
         dirname(fsPath),
       )
+      debug("importRunResult:", {
+        fsPath,
+        importRunResult,
+      })
       preSuppliedImports[fsPath] = importRunResult.exports
     } catch (error: any) {
       throw new Error(

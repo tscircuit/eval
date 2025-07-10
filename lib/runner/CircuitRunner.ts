@@ -10,6 +10,9 @@ import type { RootCircuit } from "@tscircuit/core"
 import * as React from "react"
 import { importEvalPath } from "webworker/import-eval-path"
 import { setupDefaultEntrypointIfNeeded } from "./setupDefaultEntrypointIfNeeded"
+import Debug from "debug"
+
+const debug = Debug("tsci:eval:CircuitRunner")
 
 export class CircuitRunner implements CircuitRunnerApi {
   _executionContext: ReturnType<typeof createExecutionContext> | null = null
@@ -33,15 +36,22 @@ export class CircuitRunner implements CircuitRunnerApi {
     mainComponentProps?: Record<string, any>
   }): Promise<void> {
     const opts = { ...ogOpts }
+
     if (this._circuitRunnerConfiguration.verbose) {
-      console.log("[CircuitRunner] executeWithFsMap called with:", {
-        entrypoint: opts.entrypoint,
-        fsMapKeys: Object.keys(opts.fsMap),
-        name: opts.name,
-      })
+      Debug.enable("tsci:eval:*")
     }
 
+    debug("executeWithFsMap called with:", {
+      entrypoint: opts.entrypoint,
+      fsMapKeys: Object.keys(opts.fsMap),
+      name: opts.name,
+    })
+
     setupDefaultEntrypointIfNeeded(opts)
+
+    debug("entrypoint after setupDefaultEntrypointIfNeeded:", {
+      entrypoint: opts.entrypoint,
+    })
 
     this._executionContext = createExecutionContext(
       this._circuitRunnerConfiguration,
@@ -62,6 +72,7 @@ export class CircuitRunner implements CircuitRunnerApi {
       ? opts.entrypoint
       : `./${opts.entrypoint}`
 
+    debug("final entrypoint:", entrypoint)
     await importEvalPath(entrypoint!, this._executionContext)
   }
 

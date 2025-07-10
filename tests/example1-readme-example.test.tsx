@@ -6,15 +6,15 @@ test("example1-readme-example", async () => {
     webWorkerUrl: new URL("../webworker/entrypoint.ts", import.meta.url),
   })
 
-  await circuitWebWorker.execute(`
-  import { RedLed } from "@tsci/seveibar.red-led"
-
-  circuit.add(
-    <board width="10mm" height="10mm">
-      <RedLed name="LED1" />
-    </board>
+  await circuitWebWorker.executeWithFsMap({
+    fsMap: {
+      "index.tsx": `
+  export default () => (
+    <led name="LED1" color="red" />
   )
-  `)
+  `,
+    },
+  })
 
   await circuitWebWorker.renderUntilSettled()
 
