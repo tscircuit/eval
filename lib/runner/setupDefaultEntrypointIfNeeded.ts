@@ -69,7 +69,7 @@ export const setupDefaultEntrypointIfNeeded = (opts: {
            ${
              debug.enabled
                ? `
-     console.log("UserComponents",  { UserComponents })
+     console.log({ UserComponents })
      console.log("ComponentToRender " + ComponentToRender.toString(),  { ComponentToRender })
      `
                : ""
