@@ -59,6 +59,7 @@
     "@types/babel__standalone": "^7.1.9",
     "@types/bun": "^1.2.16",
     "@types/react": "^19.0.1",
+    "calculate-elbow": "^0.0.5",
     "circuit-json": "^0.0.215",
     "comlink": "^4.4.2",
     "graphics-debug": "^0.0.60",
