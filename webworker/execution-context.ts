@@ -24,6 +24,9 @@ export function createExecutionContext(
     platform?: PlatformConfig
   } = {},
 ): ExecutionContext {
+  debug("createExecutionContext", {
+    ReactVersion: React.version,
+  })
   globalThis.React = React
 
   const circuit = new RootCircuit({
