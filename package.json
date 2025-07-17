@@ -68,7 +68,7 @@
     "tsup": "^8.2.4",
     "@tscircuit/checks": "^0.0.56",
     "@tscircuit/circuit-json-util": "^0.0.51",
-    "@tscircuit/footprinter": "^0.0.193",
+    "@tscircuit/footprinter": "^0.0.203",
     "@tscircuit/import-snippet": "^0.0.4",
     "@tscircuit/infgrid-ijump-astar": "^0.0.33",
     "@tscircuit/layout": "^0.0.28",
