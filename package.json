@@ -62,7 +62,7 @@
     "circuit-json": "^0.0.219",
     "comlink": "^4.4.2",
     "graphics-debug": "^0.0.60",
-    "jscad-fiber": "^0.0.79",
+    "jscad-fiber": "^0.0.82",
     "react": "^19.1.0",
     "schematic-symbols": "^0.0.180",
     "tsup": "^8.2.4",
