@@ -1,7 +1,7 @@
 {
   "name": "@tscircuit/eval",
   "main": "dist/lib/index.js",
-  "version": "0.0.263",
+  "version": "0.0.264",
   "type": "module",
   "scripts": {
     "build": "bun run build:lib && bun run build:webworker && bun run build:blob-url && bun run build:runner && bun run build:worker-wrapper",
@@ -97,7 +97,8 @@
     "pkg-pr-new": "^0.0.37",
     "react-dom": "^19.1.0",
     "ts-expect": "^1.3.0",
-    "@tscircuit/circuit-json-flex": "^0.0.1"},
+    "@tscircuit/circuit-json-flex": "^0.0.1"
+  },
   "peerDependencies": {
     "typescript": "^5.0.0",
     "@tscircuit/core": "*",
