@@ -4,7 +4,7 @@ export default defineConfig({
   entry: ["./webworker/entrypoint.ts"],
   format: ["esm"],
   platform: "browser",
-  sourcemap: "inline",
+  // sourcemap: "inline",
   outDir: "dist/webworker",
   splitting: false,
   noExternal: [

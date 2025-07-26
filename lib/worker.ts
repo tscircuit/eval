@@ -59,10 +59,29 @@ export const createCircuitWebWorker = async (
   }
 
   const rawWorker = new Worker(workerBlobUrl, { type: "module" })
-  rawWorker.onerror = (event) => {
+  let workerInitError: any
+  rawWorker.addEventListener("error", (event) => {
     console.error("[Worker] Error in worker", event)
+    workerInitError = event
+  })
+  rawWorker.addEventListener("unhandledrejection", (event) => {
+    console.error("[Worker] Unhandled rejection in worker", event)
+  })
+  rawWorker.addEventListener("messageerror", (event) => {
+    console.error("[Worker] Message error in worker", event)
+  })
+  const earlyMessageHandler = (event: MessageEvent) => {
+    console.log("[Worker] Message in worker", event)
   }
+  rawWorker.addEventListener("message", earlyMessageHandler)
+
+  if (workerInitError) {
+    throw workerInitError
+  }
+
   const comlinkWorker = Comlink.wrap<InternalWebWorkerApi>(rawWorker)
+
+  rawWorker.removeEventListener("message", earlyMessageHandler)
 
   if (configuration.snippetsApiBaseUrl) {
     await comlinkWorker.setSnippetsApiBaseUrl(configuration.snippetsApiBaseUrl)

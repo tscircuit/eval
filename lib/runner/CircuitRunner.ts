@@ -27,6 +27,10 @@ export class CircuitRunner implements CircuitRunnerApi {
     Object.assign(this._circuitRunnerConfiguration, configuration)
   }
 
+  async version(): Promise<string> {
+    return "0.0.0"
+  }
+
   async executeWithFsMap(ogOpts: {
     entrypoint?: string
     mainComponentPath?: string
