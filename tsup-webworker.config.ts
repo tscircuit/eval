@@ -14,6 +14,7 @@ export default defineConfig({
     "@tscircuit/parts-engine",
     "@babel/standalone",
     "@tscircuit/math-utils",
+    "zod",
   ],
   clean: true,
   dts: true,
