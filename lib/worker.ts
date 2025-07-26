@@ -59,6 +59,9 @@ export const createCircuitWebWorker = async (
   }
 
   const rawWorker = new Worker(workerBlobUrl, { type: "module" })
+  rawWorker.onerror = (event) => {
+    console.error("[Worker] Error in worker", event)
+  }
   const comlinkWorker = Comlink.wrap<InternalWebWorkerApi>(rawWorker)
 
   if (configuration.snippetsApiBaseUrl) {
