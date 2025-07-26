@@ -22,6 +22,7 @@ export interface WebWorkerConfiguration extends CircuitRunnerConfiguration {
  * API for the CircuitRunner class, used for eval'ing circuits
  */
 export interface CircuitRunnerApi {
+  version: () => Promise<string>
   execute: (
     code: string,
     opts?: {
@@ -58,5 +59,6 @@ export type CircuitWebWorker = {
   getCircuitJson: () => Promise<AnyCircuitElement[]>
   on: (event: RootCircuitEventName, callback: (...args: any[]) => void) => void
   clearEventListeners: () => void
+  version: () => Promise<string>
   kill: () => Promise<void>
 }

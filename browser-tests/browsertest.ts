@@ -11,6 +11,10 @@ async function runTest() {
       webWorkerBlobUrl: blobUrl,
     })
 
+    console.log("asking for version...")
+    const version = await circuitWebWorker.version()
+    console.log("version", version)
+
     // Execute some example circuit code
     await circuitWebWorker.execute(`
       circuit.add(

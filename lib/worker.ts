@@ -73,6 +73,7 @@ export const createCircuitWebWorker = async (
   // Create a wrapper that handles events directly through circuit instance
   const wrapper: CircuitWebWorker = {
     clearEventListeners: comlinkWorker.clearEventListeners.bind(comlinkWorker),
+    version: comlinkWorker.version.bind(comlinkWorker),
     execute: async (...args) => {
       if (isTerminated) {
         throw new Error("CircuitWebWorker was terminated, can't execute")
