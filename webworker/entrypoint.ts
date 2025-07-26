@@ -44,6 +44,10 @@ const webWorkerApi = {
     circuitRunnerConfiguration.platform = platform
   },
 
+  version: async () => {
+    return "0.0.0"
+  },
+
   async executeWithFsMap(opts: {
     entrypoint?: string
     fsMap: Record<string, string>

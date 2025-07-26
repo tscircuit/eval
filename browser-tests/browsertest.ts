@@ -1,4 +1,4 @@
-import { createCircuitWebWorker } from "lib/index"
+import { createCircuitWebWorker } from "lib/worker"
 // @ts-ignore
 import blobUrl from "../dist/blob-url"
 
@@ -9,7 +9,12 @@ async function runTest() {
     console.log("blobUrl", blobUrl)
     const circuitWebWorker = await createCircuitWebWorker({
       webWorkerBlobUrl: blobUrl,
+      verbose: true,
     })
+
+    console.log("asking for version...")
+    const version = await circuitWebWorker.version()
+    console.log("version", version)
 
     // Execute some example circuit code
     await circuitWebWorker.execute(`

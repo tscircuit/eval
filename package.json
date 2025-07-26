@@ -65,7 +65,7 @@
     "jscad-fiber": "^0.0.82",
     "react": "^19.1.0",
     "schematic-symbols": "^0.0.180",
-    "tsup": "^8.2.4",
+    "tsup": "^8.5.0",
     "@tscircuit/checks": "^0.0.56",
     "@tscircuit/circuit-json-util": "^0.0.54",
     "@tscircuit/footprinter": "^0.0.204",
