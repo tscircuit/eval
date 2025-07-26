@@ -103,6 +103,7 @@
     "typescript": "^5.0.0",
     "@tscircuit/core": "*",
     "circuit-json": "*",
-    "jscad-fiber": "*"
+    "jscad-fiber": "*",
+    "zod": "3"
   }
 }
