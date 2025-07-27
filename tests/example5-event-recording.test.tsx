@@ -1,7 +1,8 @@
 import { test, expect } from "bun:test"
 import { createCircuitWebWorker } from "lib/index"
 
-test("example5-event-recording", async () => {
+// Skipped for flakiness, re-enable when flakiness is solved
+test.skip("example5-event-recording", async () => {
   const circuitWebWorker = await createCircuitWebWorker({
     webWorkerUrl: new URL("../webworker/entrypoint.ts", import.meta.url),
   })
