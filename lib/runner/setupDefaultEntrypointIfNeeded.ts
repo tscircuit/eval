@@ -51,7 +51,8 @@ export const setupDefaultEntrypointIfNeeded = (opts: {
     const hasTsciImport =
       mainComponentCode.includes("@tsci/") ||
       mainComponentCode.includes('from "@tsci')
-    const shouldWrapInBoard = !hasExplicitBoard && !hasTsciImport
+    const hasGroup = mainComponentCode.includes("<group")
+    const shouldWrapInBoard = !hasExplicitBoard && !hasTsciImport && !hasGroup
 
     opts.fsMap[opts.entrypoint] = `
      import * as UserComponents from "./${opts.mainComponentPath}";
