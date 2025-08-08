@@ -46,14 +46,6 @@ export const setupDefaultEntrypointIfNeeded = (opts: {
         `Main component path "${opts.mainComponentPath}" not found in fsMap. Available paths: ${Object.keys(opts.fsMap).join(", ")}`,
       )
     }
-
-    const hasExplicitBoard = mainComponentCode.includes("<board")
-    const hasTsciImport =
-      mainComponentCode.includes("@tsci/") ||
-      mainComponentCode.includes('from "@tsci')
-    const hasGroup = mainComponentCode.includes("<group")
-    const shouldWrapInBoard = !hasExplicitBoard && !hasTsciImport && !hasGroup
-
     opts.fsMap[opts.entrypoint] = `
      import * as UserComponents from "./${opts.mainComponentPath}";
           
@@ -76,18 +68,8 @@ export const setupDefaultEntrypointIfNeeded = (opts: {
                : ""
            }
 
-      circuit.add(
-        ${
-          shouldWrapInBoard
-            ? `
-          <board>
-            <ComponentToRender name="U1" ${opts.mainComponentProps ? `{...${JSON.stringify(opts.mainComponentProps, null, 2)}}` : ""} />
-          </board>
-        `
-            : `
-          <ComponentToRender ${opts.mainComponentProps ? `{...${JSON.stringify(opts.mainComponentProps, null, 2)}}` : ""} />
-        `
-        }
+      circuit.add(       
+          <ComponentToRender ${opts.mainComponentProps ? `{...${JSON.stringify(opts.mainComponentProps, null, 2)}}` : ""} /> 
       );
 `
   }
