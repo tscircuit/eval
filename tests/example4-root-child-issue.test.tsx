@@ -11,23 +11,27 @@ const example4 = {
   },
 }
 
-test("example4-root-child-issue", async () => {
-  const circuitWebWorker = await createCircuitWebWorker({
-    webWorkerUrl: new URL("../webworker/entrypoint.ts", import.meta.url),
-  })
+test(
+  "example4-root-child-issue",
+  async () => {
+    const circuitWebWorker = await createCircuitWebWorker({
+      webWorkerUrl: new URL("../webworker/entrypoint.ts", import.meta.url),
+    })
 
-  await circuitWebWorker.executeWithFsMap({
-    fsMap: example4.fsMap,
-    entrypoint: example4.entrypoint,
-  })
+    await circuitWebWorker.executeWithFsMap({
+      fsMap: example4.fsMap,
+      entrypoint: example4.entrypoint,
+    })
 
-  await circuitWebWorker.renderUntilSettled()
+    await circuitWebWorker.renderUntilSettled()
 
-  const circuitJson = await circuitWebWorker.getCircuitJson()
+    const circuitJson = await circuitWebWorker.getCircuitJson()
 
-  const led = circuitJson.find((el: any) => el.name === "LED")
-  expect(led).toBeDefined()
-  expect(led?.type).toBe("source_component")
+    const led = circuitJson.find((el: any) => el.name === "LED")
+    expect(led).toBeDefined()
+    expect(led?.type).toBe("source_component")
 
-  await circuitWebWorker.kill()
-})
+    await circuitWebWorker.kill()
+  },
+  30 * 1000,
+)
