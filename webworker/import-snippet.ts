@@ -7,6 +7,9 @@ export async function importSnippet(
   depth = 0,
 ) {
   const { preSuppliedImports } = ctx
+  if (preSuppliedImports[importName]) {
+    return
+  }
   const fullSnippetName = importName.replace("@tsci/", "").replace(".", "/")
   const snippetUrl = `${ctx.cjsRegistryUrl}/${fullSnippetName}`
 

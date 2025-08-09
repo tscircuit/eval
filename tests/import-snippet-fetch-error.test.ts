@@ -13,7 +13,8 @@ test("importSnippet surfaces fetch errors", async () => {
   })
 
   const originalFetch = globalThis.fetch
-  globalThis.fetch = () => Promise.reject(new Error("network blocked"))
+  globalThis.fetch = (() =>
+    Promise.reject(new Error("network blocked"))) as unknown as typeof fetch
 
   await expect(importSnippet("@tsci/example.missing", ctx)).rejects.toThrow(
     'Failed to fetch snippet "@tsci/example.missing"',

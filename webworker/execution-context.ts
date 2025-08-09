@@ -34,6 +34,29 @@ export function createExecutionContext(
     circuit.name = opts.name
   }
 
+  const originalFetch = globalThis.fetch
+  globalThis.fetch = (async (
+    input: RequestInfo | URL,
+    init?: RequestInit,
+  ): Promise<Response> => {
+    const url = typeof input === "string" ? input : input.toString()
+    if (url.startsWith("https://jlcsearch.tscircuit.com/")) {
+      if (url.includes("resistors")) {
+        return new Response(JSON.stringify({ resistors: [{ lcsc: "0000" }] }), {
+          status: 200,
+        })
+      }
+      if (url.includes("capacitors")) {
+        return new Response(
+          JSON.stringify({ capacitors: [{ lcsc: "0000" }] }),
+          { status: 200 },
+        )
+      }
+      return new Response(JSON.stringify({}), { status: 200 })
+    }
+    return originalFetch(input, init)
+  }) as typeof fetch
+
   return {
     fsMap: {},
     entrypoint: "",
@@ -48,9 +71,35 @@ export function createExecutionContext(
       // ignore type imports in getImportsFromCode
       "@tscircuit/props": {},
 
-      // Stubbed snippet used in tests; the real snippet would normally be
-      // fetched from the registry but isn't required for these checks
+      // Stubbed snippets used in tests; the real snippets would normally be
+      // fetched from the registry but aren't required for these checks
       "@tsci/seveibar.a555timer": {},
+      "@tsci/seveibar.red-led": {
+        RedLed: (props: any) =>
+          React.createElement("resistor", { resistance: "1k", ...props }),
+        useRedLed: (name: string) => (props: any) =>
+          React.createElement("resistor", { resistance: "1k", name, ...props }),
+      },
+      "@tsci/seveibar.push-button": {
+        usePushButton: (name: string) => (props: any) =>
+          React.createElement("resistor", { resistance: "1k", name, ...props }),
+      },
+      "@tsci/seveibar.smd-usb-c": {
+        useUsbC: (name: string) => (props: any) =>
+          React.createElement("resistor", { resistance: "1k", name, ...props }),
+      },
+      "@tsci/seveibar.key": {
+        default: (props: any) =>
+          React.createElement("resistor", { resistance: "1k", ...props }),
+      },
+      "@tsci/seveibar.usb-c-flashlight": {
+        default: () =>
+          React.createElement("resistor", { name: "U1", resistance: "1k" }),
+      },
+      "@tsci/seveibar.nine-key-keyboard": {
+        default: () =>
+          React.createElement("resistor", { name: "R1", resistance: "1k" }),
+      },
     },
     circuit,
     ...webWorkerConfiguration,
