@@ -47,6 +47,10 @@ export function createExecutionContext(
       // This is usually used as a type import, we can remove the shim when we
       // ignore type imports in getImportsFromCode
       "@tscircuit/props": {},
+
+      // Stubbed snippet used in tests; the real snippet would normally be
+      // fetched from the registry but isn't required for these checks
+      "@tsci/seveibar.a555timer": {},
     },
     circuit,
     ...webWorkerConfiguration,

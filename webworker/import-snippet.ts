@@ -1,8 +1,5 @@
 import { evalCompiledJs } from "./eval-compiled-js"
 import type { ExecutionContext } from "./execution-context"
-import * as Babel from "@babel/standalone"
-import { importLocalFile } from "./import-local-file"
-import { importEvalPath } from "./import-eval-path"
 
 export async function importSnippet(
   importName: string,
@@ -11,22 +8,27 @@ export async function importSnippet(
 ) {
   const { preSuppliedImports } = ctx
   const fullSnippetName = importName.replace("@tsci/", "").replace(".", "/")
+  const snippetUrl = `${ctx.cjsRegistryUrl}/${fullSnippetName}`
 
-  const { cjs, error } = await fetch(`${ctx.cjsRegistryUrl}/${fullSnippetName}`)
-    .then(async (res) => ({ cjs: await res.text(), error: null }))
-    .catch((e) => ({ error: e, cjs: null }))
-
-  if (error) {
-    console.error("Error fetching import", importName, error)
-    return
+  let cjs: string
+  try {
+    const res = await fetch(snippetUrl)
+    if (!res.ok) {
+      throw new Error(`HTTP ${res.status} ${res.statusText}`)
+    }
+    cjs = await res.text()
+  } catch (error: any) {
+    throw new Error(
+      `Failed to fetch snippet "${importName}" from "${snippetUrl}": ${error.message}. This request may be blocked by your Content Security Policy.`,
+    )
   }
 
   try {
     preSuppliedImports[importName] = evalCompiledJs(
-      cjs!,
+      cjs,
       preSuppliedImports,
     ).exports
-  } catch (e) {
-    console.error("Error importing snippet", e)
+  } catch (error: any) {
+    throw new Error(`Error importing snippet "${importName}": ${error.message}`)
   }
 }
