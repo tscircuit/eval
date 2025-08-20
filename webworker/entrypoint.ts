@@ -14,8 +14,10 @@ import { importEvalPath } from "./import-eval-path"
 import { normalizeFsMap } from "../lib/runner/normalizeFsMap"
 import type { RootCircuit } from "@tscircuit/core"
 import { setupDefaultEntrypointIfNeeded } from "lib/runner/setupDefaultEntrypointIfNeeded"
+import { setupFetchProxy } from "./fetchProxy"
 
 globalThis.React = React
+setupFetchProxy()
 
 let executionContext: ExecutionContext | null = null
 
@@ -124,7 +126,10 @@ const webWorkerApi = {
       for (const event in eventListeners) {
         for (const listener of eventListeners[event]) {
           const circuit = executionContext.circuit as unknown as {
-            removeListener?: (event: string, listener: Function) => void
+            removeListener?: (
+              event: string,
+              listener: (...args: any[]) => void,
+            ) => void
           }
           if (typeof circuit.removeListener === "function") {
             circuit.removeListener(event, listener)

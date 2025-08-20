@@ -1,8 +1,5 @@
 import { evalCompiledJs } from "./eval-compiled-js"
 import type { ExecutionContext } from "./execution-context"
-import * as Babel from "@babel/standalone"
-import { importLocalFile } from "./import-local-file"
-import { importEvalPath } from "./import-eval-path"
 
 export async function importSnippet(
   importName: string,
@@ -12,7 +9,8 @@ export async function importSnippet(
   const { preSuppliedImports } = ctx
   const fullSnippetName = importName.replace("@tsci/", "").replace(".", "/")
 
-  const { cjs, error } = await fetch(`${ctx.cjsRegistryUrl}/${fullSnippetName}`)
+  const { cjs, error } = await globalThis
+    .fetch(`${ctx.cjsRegistryUrl}/${fullSnippetName}`)
     .then(async (res) => ({ cjs: await res.text(), error: null }))
     .catch((e) => ({ error: e, cjs: null }))
 
