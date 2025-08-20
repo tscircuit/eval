@@ -12,7 +12,8 @@ export async function importSnippet(
   const { preSuppliedImports } = ctx
   const fullSnippetName = importName.replace("@tsci/", "").replace(".", "/")
 
-  const { cjs, error } = await fetch(`${ctx.cjsRegistryUrl}/${fullSnippetName}`)
+  const { cjs, error } = await globalThis
+    .fetch(`${ctx.cjsRegistryUrl}/${fullSnippetName}`)
     .then(async (res) => ({ cjs: await res.text(), error: null }))
     .catch((e) => ({ error: e, cjs: null }))
 

@@ -54,7 +54,7 @@ export const createCircuitWebWorker = async (
   if (!workerBlobUrl) {
     const cdnUrl = `https://cdn.jsdelivr.net/npm/@tscircuit/eval@${configuration.evalVersion ?? "latest"}/dist/webworker/entrypoint.js`
 
-    const workerBlob = await fetch(cdnUrl).then((res) => res.blob())
+    const workerBlob = await globalThis.fetch(cdnUrl).then((res) => res.blob())
     workerBlobUrl = URL.createObjectURL(workerBlob)
   }
 
@@ -75,6 +75,39 @@ export const createCircuitWebWorker = async (
   }
   rawWorker.addEventListener("message", earlyMessageHandler)
 
+  // Handle fetch requests from the worker
+  rawWorker.addEventListener("message", async (event: MessageEvent) => {
+    const data = event.data
+    if (data?.type !== "worker-fetch") return
+
+    try {
+      const response = await globalThis.fetch(data.input, data.init)
+      const body = await response.text()
+      rawWorker.postMessage({
+        type: "worker-fetch-result",
+        requestId: data.requestId,
+        success: true,
+        response: {
+          body,
+          status: response.status,
+          statusText: response.statusText,
+          headers: Object.fromEntries(response.headers.entries()),
+        },
+      })
+    } catch (err: any) {
+      rawWorker.postMessage({
+        type: "worker-fetch-result",
+        requestId: data.requestId,
+        success: false,
+        error: {
+          name: err?.name || "Error",
+          message: err?.message || String(err),
+          stack: err?.stack,
+        },
+      })
+    }
+  })
+
   if (workerInitError) {
     throw workerInitError
   }
@@ -82,6 +115,9 @@ export const createCircuitWebWorker = async (
   const comlinkWorker = Comlink.wrap<InternalWebWorkerApi>(rawWorker)
 
   rawWorker.removeEventListener("message", earlyMessageHandler)
+
+  // Override global fetch inside the worker to route through the parent
+  rawWorker.postMessage({ type: "override-global-fetch" })
 
   if (configuration.snippetsApiBaseUrl) {
     await comlinkWorker.setSnippetsApiBaseUrl(configuration.snippetsApiBaseUrl)
@@ -125,6 +161,7 @@ export const createCircuitWebWorker = async (
       }
     },
   }
+  ;(wrapper as any).__rawWorker = rawWorker
   globalThis.TSCIRCUIT_GLOBAL_CIRCUIT_WORKER = wrapper
   return wrapper
 }
