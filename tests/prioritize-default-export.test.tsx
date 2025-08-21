@@ -23,5 +23,5 @@ test("example12 subdirectory relative imports", async () => {
   )
 
   expect(resistor).toBeDefined()
-  expect(resistor?.name).toBe("R2")d
+  expect(resistor?.name).toBe("R2")
 })
