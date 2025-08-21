@@ -56,7 +56,7 @@ export const setupDefaultEntrypointIfNeeded = (opts: {
         `
           : `const ComponentToRender = UserComponents.default || 
           Object.entries(UserComponents)
-          .filter(([name]) => !name.startsWith("use") && name !== "default")
+          .filter(([name]) => !name.startsWith("use"))
           .map(([_, component]) => component)[0] || (() => null);`
       }
 
