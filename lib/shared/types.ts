@@ -16,6 +16,13 @@ export interface WebWorkerConfiguration extends CircuitRunnerConfiguration {
    */
   webWorkerUrl?: URL | string
   webWorkerBlobUrl?: URL | string
+  /**
+   * Enable fetch proxy to route worker fetch requests through parent thread.
+   * Useful when running in restricted environments (like ChatGPT) where
+   * worker fetch requests are blocked.
+   * Default: false
+   */
+  enableFetchProxy?: boolean
 }
 
 /**

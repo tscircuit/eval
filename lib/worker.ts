@@ -122,8 +122,11 @@ export const createCircuitWebWorker = async (
 
   rawWorker.removeEventListener("message", earlyMessageHandler)
 
-  // Override global fetch inside the worker to route through the parent
-  rawWorker.postMessage({ type: "override_global_fetch" })
+  // Conditionally override global fetch inside the worker to route through the parent
+  // Only enable when explicitly requested via configuration
+  if (configuration.enableFetchProxy) {
+    rawWorker.postMessage({ type: "override_global_fetch" })
+  }
 
   if (configuration.snippetsApiBaseUrl) {
     await comlinkWorker.setSnippetsApiBaseUrl(configuration.snippetsApiBaseUrl)

@@ -17,6 +17,7 @@ describe("fetch override", () => {
     const worker = await createCircuitWebWorker({
       webWorkerUrl: new URL("../dist/webworker/entrypoint.js", import.meta.url)
         .href,
+      enableFetchProxy: true,
     })
 
     const rawWorker: Worker = (worker as any).__rawWorker
