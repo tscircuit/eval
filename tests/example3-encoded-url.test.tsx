@@ -1,7 +1,7 @@
 import { createCircuitWebWorker } from "lib"
 import { expect, test } from "bun:test"
 // @ts-ignore
-import blobUrl from "dist/blob-url"
+import blobUrl from "../dist/blob-url"
 
 test("example3-encoded-worker-url", async () => {
   const circuitWebWorker = await createCircuitWebWorker({
