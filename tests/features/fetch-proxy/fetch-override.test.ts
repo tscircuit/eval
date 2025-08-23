@@ -1,5 +1,6 @@
 import { describe, it, expect } from "bun:test"
 import { createCircuitWebWorker } from "lib"
+import { repoFileUrl } from "tests/fixtures/resourcePaths"
 
 describe("fetch override", () => {
   it("allows worker to fetch via parent and propagates errors", async () => {
@@ -15,10 +16,7 @@ describe("fetch override", () => {
     globalThis.fetch = fakeFetch as any
 
     const worker = await createCircuitWebWorker({
-      webWorkerUrl: new URL(
-        "../../dist/webworker/entrypoint.js",
-        import.meta.url,
-      ).href,
+      webWorkerUrl: repoFileUrl("dist/webworker/entrypoint.js").href,
       enableFetchProxy: true,
     })
 
