@@ -1,11 +1,11 @@
 import { describe, it, expect } from "bun:test"
-import { createCircuitWebWorker } from "../lib"
+import { createCircuitWebWorker } from "lib"
+import { repoFileUrl } from "tests/fixtures/resourcePaths"
 
 describe("fetch proxy validation", () => {
   it("should NOT proxy fetch requests when enableFetchProxy is false (default)", async () => {
     const worker = await createCircuitWebWorker({
-      webWorkerUrl: new URL("../dist/webworker/entrypoint.js", import.meta.url)
-        .href,
+      webWorkerUrl: repoFileUrl("dist/webworker/entrypoint.js").href,
       // enableFetchProxy not set, should default to false
     })
 
@@ -31,8 +31,7 @@ fetch("https://example.com/test")
 
   it("should proxy fetch requests when enableFetchProxy is true", async () => {
     const worker = await createCircuitWebWorker({
-      webWorkerUrl: new URL("../dist/webworker/entrypoint.js", import.meta.url)
-        .href,
+      webWorkerUrl: repoFileUrl("dist/webworker/entrypoint.js").href,
       enableFetchProxy: true,
     })
 
@@ -67,8 +66,7 @@ fetch("https://example.com/test")
     globalThis.fetch = fakeFetch as any
 
     const worker = await createCircuitWebWorker({
-      webWorkerUrl: new URL("../dist/webworker/entrypoint.js", import.meta.url)
-        .href,
+      webWorkerUrl: repoFileUrl("dist/webworker/entrypoint.js").href,
       enableFetchProxy: true,
     })
 

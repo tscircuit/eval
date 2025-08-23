@@ -15,7 +15,7 @@ test(
   "example4-root-child-issue",
   async () => {
     const circuitWebWorker = await createCircuitWebWorker({
-      webWorkerUrl: new URL("../webworker/entrypoint.ts", import.meta.url),
+      webWorkerUrl: new URL("../../webworker/entrypoint.ts", import.meta.url),
     })
 
     await circuitWebWorker.executeWithFsMap({

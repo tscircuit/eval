@@ -3,7 +3,7 @@ import { expect, test } from "bun:test"
 
 test("namespace import syntax", async () => {
   const circuitWebWorker = await createCircuitWebWorker({
-    webWorkerUrl: new URL("../webworker/entrypoint.ts", import.meta.url),
+    webWorkerUrl: new URL("../../webworker/entrypoint.ts", import.meta.url),
   })
 
   await circuitWebWorker.executeWithFsMap({
@@ -39,7 +39,7 @@ test("namespace import syntax", async () => {
 
 test("combined default and namespace import with fallback", async () => {
   const circuitWebWorker = await createCircuitWebWorker({
-    webWorkerUrl: new URL("../webworker/entrypoint.ts", import.meta.url),
+    webWorkerUrl: new URL("../../webworker/entrypoint.ts", import.meta.url),
   })
 
   await circuitWebWorker.executeWithFsMap({

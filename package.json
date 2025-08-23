@@ -16,6 +16,7 @@
     "format:check": "biome format .",
     "test:playwright": "playwright test",
     "test": "bun test tests",
+    "test:validate-matrix": "bun run scripts/validate-test-matrix.js",
     "copy-core-versions": "bun run scripts/copy-core-versions.ts && bun install --ignore-scripts"
   },
   "exports": {

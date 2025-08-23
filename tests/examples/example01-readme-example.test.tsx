@@ -3,7 +3,7 @@ import { expect, test } from "bun:test"
 
 test("example1-readme-example", async () => {
   const circuitWebWorker = await createCircuitWebWorker({
-    webWorkerUrl: new URL("../webworker/entrypoint.ts", import.meta.url),
+    webWorkerUrl: new URL("../../webworker/entrypoint.ts", import.meta.url),
   })
 
   await circuitWebWorker.executeWithFsMap({
