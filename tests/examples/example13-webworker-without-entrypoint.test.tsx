@@ -4,7 +4,7 @@ import type { SourceSimpleResistor } from "circuit-json"
 
 test("example13-webworker-without-entrypoint", async () => {
   const circuitWebWorker = await createCircuitWebWorker({
-    webWorkerUrl: new URL("../webworker/entrypoint.ts", import.meta.url),
+    webWorkerUrl: new URL("../../webworker/entrypoint.ts", import.meta.url),
   })
 
   try {

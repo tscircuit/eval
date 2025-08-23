@@ -5,9 +5,27 @@ on:
   pull_request:
 
 jobs:
+  validate-test-matrix:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      
+      - name: Validate test matrix covers all directories
+        run: bun run scripts/validate-test-matrix.js
+
   test:
     runs-on: ubuntu-latest
     timeout-minutes: 5
+    needs: validate-test-matrix
+    strategy:
+      matrix:
+        test-dir: [circuit-runner, custom-component-with-fsmap, examples, features, node-resolution, repros, util-fns]
 
     steps:
       - name: Checkout code
@@ -22,5 +40,5 @@ jobs:
         run: bun install
 
       - run: bun run build
-      - name: Run tests
-        run: bun test --timeout 20000
+      - name: Run tests for ${{ matrix.test-dir }}
+        run: bun test tests/${{ matrix.test-dir }} --timeout 30000

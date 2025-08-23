@@ -11,7 +11,7 @@ import {
   type ExecutionContext,
 } from "./execution-context"
 import { importEvalPath } from "./import-eval-path"
-import { normalizeFsMap } from "../lib/runner/normalizeFsMap"
+import { normalizeFsMap } from "lib/runner/normalizeFsMap"
 import type { RootCircuit } from "@tscircuit/core"
 import { setupDefaultEntrypointIfNeeded } from "lib/runner/setupDefaultEntrypointIfNeeded"
 import { setupFetchProxy } from "./fetchProxy"

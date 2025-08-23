@@ -4,7 +4,7 @@ import { createCircuitWebWorker } from "lib/index"
 // Skipped for flakiness, re-enable when flakiness is solved
 test.skip("example5-event-recording", async () => {
   const circuitWebWorker = await createCircuitWebWorker({
-    webWorkerUrl: new URL("../webworker/entrypoint.ts", import.meta.url),
+    webWorkerUrl: new URL("../../webworker/entrypoint.ts", import.meta.url),
   })
 
   let eventCount = 0
