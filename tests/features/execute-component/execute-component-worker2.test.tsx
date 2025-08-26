@@ -1,18 +1,23 @@
 import { expect, test } from "bun:test"
-import * as React from "react"
 import { createCircuitWebWorker } from "lib"
 import { repoFileUrl } from "tests/fixtures/resourcePaths"
 
-test("CircuitWebWorker.executeComponent with factory function", async () => {
+test("CircuitWebWorker.executeComponent 2", async () => {
   const worker = await createCircuitWebWorker({
     webWorkerUrl: repoFileUrl("dist/webworker/entrypoint.js").href,
   })
 
-  await worker.executeComponent(
-    <board>
-      <resistor name="R1" resistance="1k" />
-    </board>,
-  )
+  let testExecScope = "never_executed_outside_worker"
+  const MyComponent = () => {
+    testExecScope = "executed_outside_worker"
+    return (
+      <board>
+        <resistor name="R1" resistance="1k" />
+      </board>
+    )
+  }
+
+  await worker.executeComponent(<MyComponent />)
 
   await worker.renderUntilSettled()
   const circuitJson = await worker.getCircuitJson()
@@ -20,6 +25,8 @@ test("CircuitWebWorker.executeComponent with factory function", async () => {
     (el: any) => el.type === "source_component" && el.name === "R1",
   )
   expect(R1).toBeDefined()
+
+  expect(testExecScope).toBe("executed_outside_worker")
 
   await worker.kill()
 })
