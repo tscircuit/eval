@@ -102,6 +102,25 @@ export class CircuitRunner implements CircuitRunnerApi {
     await importEvalPath("./entrypoint.tsx", this._executionContext)
   }
 
+  async executeComponent(component: any, opts: { name?: string } = {}) {
+    if (this._circuitRunnerConfiguration.verbose) {
+      console.log("[CircuitRunner] executeComponent called")
+    }
+
+    this._executionContext = createExecutionContext(
+      this._circuitRunnerConfiguration,
+      {
+        ...opts,
+        platform: this._circuitRunnerConfiguration.platform,
+      },
+    )
+    this._bindEventListeners(this._executionContext.circuit)
+    ;(globalThis as any).__tscircuit_circuit = this._executionContext.circuit
+
+    const element = typeof component === "function" ? component() : component
+    this._executionContext.circuit.add(element as any)
+  }
+
   on(event: string, callback: (...args: any[]) => void) {
     this._eventListeners[event] ??= []
     this._eventListeners[event].push(callback)

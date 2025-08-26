@@ -30,6 +30,40 @@ const circuitRunnerConfiguration: WebWorkerConfiguration = {
 
 const eventListeners: Record<string, ((...args: any[]) => void)[]> = {}
 
+// Helper to deserialize React elements from cross-worker communication
+function deserializeReactElement(serialized: any): any {
+  if (!serialized || typeof serialized !== "object") {
+    return serialized
+  }
+
+  if (serialized.__isSerializedReactElement) {
+    const props = deserializeProps(serialized.props)
+    return React.createElement(serialized.type, props)
+  }
+
+  return serialized
+}
+
+function deserializeProps(props: any): any {
+  if (!props || typeof props !== "object") {
+    return props
+  }
+
+  const deserialized: any = {}
+  for (const [key, value] of Object.entries(props)) {
+    if (key === "children") {
+      if (Array.isArray(value)) {
+        deserialized.children = value.map(deserializeReactElement)
+      } else {
+        deserialized.children = deserializeReactElement(value)
+      }
+    } else {
+      deserialized[key] = value
+    }
+  }
+  return deserialized
+}
+
 function bindEventListeners(circuit: RootCircuit) {
   for (const event in eventListeners) {
     for (const listener of eventListeners[event]) {
@@ -100,6 +134,28 @@ const webWorkerApi = {
     await importEvalPath("./entrypoint.tsx", executionContext)
   },
 
+  async executeComponent(component: any, opts: { name?: string } = {}) {
+    if (circuitRunnerConfiguration.verbose) {
+      console.log("[Worker] executeComponent called")
+    }
+    executionContext = createExecutionContext(circuitRunnerConfiguration, {
+      ...opts,
+      platform: circuitRunnerConfiguration.platform,
+    })
+    bindEventListeners(executionContext.circuit)
+    ;(globalThis as any).__tscircuit_circuit = executionContext.circuit
+
+    let element: any
+    if (typeof component === "function") {
+      element = component()
+    } else if (component && component.__isSerializedReactElement) {
+      element = deserializeReactElement(component)
+    } else {
+      element = component
+    }
+    executionContext.circuit.add(element as any)
+  },
+
   on: (event: string, callback: (...args: any[]) => void) => {
     eventListeners[event] ??= []
     eventListeners[event].push(callback)
@@ -131,7 +187,7 @@ const webWorkerApi = {
               listener: (...args: any[]) => void,
             ) => void
           }
-          if (typeof circuit.removeListener === "function") {
+          if (circuit.removeListener) {
             circuit.removeListener(event, listener)
           }
         }
