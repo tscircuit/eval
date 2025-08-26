@@ -127,7 +127,7 @@ export const createCircuitWebWorker = async (
     if (!element || typeof element !== "object") {
       return element
     }
-    
+
     if (element.type && element.props !== undefined) {
       // This is a React element
       return {
@@ -137,15 +137,15 @@ export const createCircuitWebWorker = async (
         key: element.key,
       }
     }
-    
+
     return element
   }
-  
+
   function serializeProps(props: any): any {
     if (!props || typeof props !== "object") {
       return props
     }
-    
+
     const serialized: any = {}
     for (const [key, value] of Object.entries(props)) {
       if (key === "children") {
@@ -160,7 +160,6 @@ export const createCircuitWebWorker = async (
     }
     return serialized
   }
-
 
   // Conditionally override global fetch inside the worker to route through the parent
   // Only enable when explicitly requested via configuration
@@ -193,18 +192,20 @@ export const createCircuitWebWorker = async (
           "CircuitWebWorker was terminated, can't executeComponent",
         )
       }
-      
+
       // If it's a function, pass it as-is (will be proxied by Comlink)
       if (typeof component === "function") {
         return comlinkWorker.executeComponent.bind(comlinkWorker)(component)
       }
-      
+
       // If it's a React element, serialize it to a reconstructable format
       if (component && typeof component === "object" && component.type) {
         const serializedElement = serializeReactElement(component)
-        return comlinkWorker.executeComponent.bind(comlinkWorker)(serializedElement)
+        return comlinkWorker.executeComponent.bind(comlinkWorker)(
+          serializedElement,
+        )
       }
-      
+
       return comlinkWorker.executeComponent.bind(comlinkWorker)(component)
     },
     executeWithFsMap: async (...args) => {
