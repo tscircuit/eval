@@ -122,52 +122,45 @@ export const createCircuitWebWorker = async (
 
   rawWorker.removeEventListener("message", earlyMessageHandler)
 
-  // Helper to convert a ReactElement into a factory function string
-  // that can be evaluated inside the worker to recreate the element.
-  function reactElementToFactoryCode(element: any): string {
-    function createElementCode(el: any): string {
-      if (!el || typeof el !== "object") {
-        throw new Error("Invalid React element")
-      }
-      const type = el.type
-      if (typeof type !== "string") {
-        throw new Error(
-          "Only intrinsic elements are supported when passing a ReactElement directly. Pass a factory function instead for component elements.",
-        )
-      }
-      const props = { ...(el.props || {}) }
-      const children = props.children
-      delete (props as any).children
-
-      const propsCode = JSON.stringify(props)
-      const childArray = Array.isArray(children)
-        ? children
-        : children != null
-          ? [children]
-          : []
-      const childCodes = childArray
-        .filter((c) => c !== null && c !== undefined && c !== false)
-        .map((c) => {
-          if (
-            typeof c === "string" ||
-            typeof c === "number" ||
-            typeof c === "boolean"
-          ) {
-            return JSON.stringify(c)
-          }
-          if (typeof c === "object") {
-            return createElementCode(c)
-          }
-          throw new Error("Unsupported child type in React element")
-        })
-
-      const args = [`${JSON.stringify(type)}`, propsCode].concat(childCodes)
-      return `React.createElement(${args.join(", ")})`
+  // Helper to serialize React elements for cross-worker communication
+  function serializeReactElement(element: any): any {
+    if (!element || typeof element !== "object") {
+      return element
     }
-
-    const code = createElementCode(element)
-    return `(() => ${code})`
+    
+    if (element.type && element.props !== undefined) {
+      // This is a React element
+      return {
+        __isSerializedReactElement: true,
+        type: element.type,
+        props: serializeProps(element.props),
+        key: element.key,
+      }
+    }
+    
+    return element
   }
+  
+  function serializeProps(props: any): any {
+    if (!props || typeof props !== "object") {
+      return props
+    }
+    
+    const serialized: any = {}
+    for (const [key, value] of Object.entries(props)) {
+      if (key === "children") {
+        if (Array.isArray(value)) {
+          serialized.children = value.map(serializeReactElement)
+        } else {
+          serialized.children = serializeReactElement(value)
+        }
+      } else {
+        serialized[key] = value
+      }
+    }
+    return serialized
+  }
+
 
   // Conditionally override global fetch inside the worker to route through the parent
   // Only enable when explicitly requested via configuration
@@ -200,13 +193,19 @@ export const createCircuitWebWorker = async (
           "CircuitWebWorker was terminated, can't executeComponent",
         )
       }
-      let factoryCode: string
+      
+      // If it's a function, pass it as-is (will be proxied by Comlink)
       if (typeof component === "function") {
-        factoryCode = `(${component.toString()})`
-      } else {
-        factoryCode = reactElementToFactoryCode(component)
+        return comlinkWorker.executeComponent.bind(comlinkWorker)(component)
       }
-      return comlinkWorker.executeComponent.bind(comlinkWorker)(factoryCode)
+      
+      // If it's a React element, serialize it to a reconstructable format
+      if (component && typeof component === "object" && component.type) {
+        const serializedElement = serializeReactElement(component)
+        return comlinkWorker.executeComponent.bind(comlinkWorker)(serializedElement)
+      }
+      
+      return comlinkWorker.executeComponent.bind(comlinkWorker)(component)
     },
     executeWithFsMap: async (...args) => {
       if (isTerminated) {
