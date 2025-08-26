@@ -127,25 +127,30 @@ export const createCircuitWebWorker = async (
     if (!element || typeof element !== "object") {
       return element
     }
-    
+
     if (element.type && element.props !== undefined) {
       // This is a React element
       return {
         __isSerializedReactElement: true,
-        type: element.type,
+        typeName: getTypeName(element.type),
         props: serializeProps(element.props),
         key: element.key,
       }
     }
-    
+
     return element
   }
-  
+
+  function getTypeName(type: any): string {
+    if (typeof type === "string") return type
+    return type?.displayName || type?.name || "Unknown"
+  }
+
   function serializeProps(props: any): any {
     if (!props || typeof props !== "object") {
       return props
     }
-    
+
     const serialized: any = {}
     for (const [key, value] of Object.entries(props)) {
       if (key === "children") {
@@ -161,6 +166,34 @@ export const createCircuitWebWorker = async (
     return serialized
   }
 
+  // Resolve any function components to plain element trees (strings + props) so
+  // the worker never needs to execute user code or receive functions.
+  function isElementLike(el: any): el is { type: any; props: any; key?: any } {
+    return el && typeof el === "object" && "type" in el && "props" in el
+  }
+
+  function resolveFunctionalElementTree(el: any): any {
+    let current = el
+    // Unwrap top-level functional components
+    while (isElementLike(current) && typeof current.type === "function") {
+      current = current.type(current.props)
+    }
+    if (!isElementLike(current)) return current
+
+    const props = current.props || {}
+    let children = props.children
+    if (Array.isArray(children)) {
+      children = children.map(resolveFunctionalElementTree)
+    } else {
+      children = resolveFunctionalElementTree(children)
+    }
+
+    return {
+      type: current.type,
+      props: { ...props, children },
+      key: current.key,
+    }
+  }
 
   // Conditionally override global fetch inside the worker to route through the parent
   // Only enable when explicitly requested via configuration
@@ -193,19 +226,25 @@ export const createCircuitWebWorker = async (
           "CircuitWebWorker was terminated, can't executeComponent",
         )
       }
-      
-      // If it's a function, pass it as-is (will be proxied by Comlink)
+
+      // Always resolve functional components on the main thread to avoid cloning/proxy issues
+      let element: any
       if (typeof component === "function") {
-        return comlinkWorker.executeComponent.bind(comlinkWorker)(component)
+        element = component()
+      } else {
+        element = component
       }
-      
-      // If it's a React element, serialize it to a reconstructable format
-      if (component && typeof component === "object" && component.type) {
-        const serializedElement = serializeReactElement(component)
-        return comlinkWorker.executeComponent.bind(comlinkWorker)(serializedElement)
+
+      // If it's a React element, resolve any nested function components before serializing
+      if (element && typeof element === "object" && (element as any).type) {
+        const resolved = resolveFunctionalElementTree(element)
+        const serializedElement = serializeReactElement(resolved)
+        return comlinkWorker.executeComponent.bind(comlinkWorker)(
+          serializedElement,
+        )
       }
-      
-      return comlinkWorker.executeComponent.bind(comlinkWorker)(component)
+
+      return comlinkWorker.executeComponent.bind(comlinkWorker)(element)
     },
     executeWithFsMap: async (...args) => {
       if (isTerminated) {

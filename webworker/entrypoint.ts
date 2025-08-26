@@ -13,6 +13,7 @@ import {
 import { importEvalPath } from "./import-eval-path"
 import { normalizeFsMap } from "lib/runner/normalizeFsMap"
 import type { RootCircuit } from "@tscircuit/core"
+import * as tscircuitCore from "@tscircuit/core"
 import { setupDefaultEntrypointIfNeeded } from "lib/runner/setupDefaultEntrypointIfNeeded"
 import { setupFetchProxy } from "./fetchProxy"
 
@@ -35,12 +36,13 @@ function deserializeReactElement(serialized: any): any {
   if (!serialized || typeof serialized !== "object") {
     return serialized
   }
-  
+
   if (serialized.__isSerializedReactElement) {
     const props = deserializeProps(serialized.props)
-    return React.createElement(serialized.type, props)
+    const type = serialized.typeName
+    return React.createElement(type as any, props)
   }
-  
+
   return serialized
 }
 
@@ -48,7 +50,7 @@ function deserializeProps(props: any): any {
   if (!props || typeof props !== "object") {
     return props
   }
-  
+
   const deserialized: any = {}
   for (const [key, value] of Object.entries(props)) {
     if (key === "children") {
@@ -134,10 +136,7 @@ const webWorkerApi = {
     await importEvalPath("./entrypoint.tsx", executionContext)
   },
 
-  async executeComponent(
-    component: any,
-    opts: { name?: string } = {},
-  ) {
+  async executeComponent(component: any, opts: { name?: string } = {}) {
     if (circuitRunnerConfiguration.verbose) {
       console.log("[Worker] executeComponent called")
     }
