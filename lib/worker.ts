@@ -198,7 +198,7 @@ export const createCircuitWebWorker = async (
       } else {
         factoryCode = reactElementToFactoryCode(component)
       }
-      return comlinkWorker.executeComponent(factoryCode)
+      return comlinkWorker.executeComponent.bind(comlinkWorker)(factoryCode)
     },
     executeWithFsMap: async (...args) => {
       if (isTerminated) {

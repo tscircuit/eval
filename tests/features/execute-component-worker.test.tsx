@@ -16,10 +16,10 @@ test("CircuitWebWorker.executeComponent with factory function", async () => {
 
   await worker.renderUntilSettled()
   const circuitJson = await worker.getCircuitJson()
-  const w1 = circuitJson.find(
+  const R1 = circuitJson.find(
     (el: any) => el.type === "source_component" && el.name === "R1",
   )
-  expect(w1).toBeDefined()
+  expect(R1).toBeDefined()
 
   await worker.kill()
 })
