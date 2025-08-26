@@ -140,11 +140,19 @@ export const createCircuitWebWorker = async (
       delete (props as any).children
 
       const propsCode = JSON.stringify(props)
-      const childArray = Array.isArray(children) ? children : children != null ? [children] : []
+      const childArray = Array.isArray(children)
+        ? children
+        : children != null
+          ? [children]
+          : []
       const childCodes = childArray
         .filter((c) => c !== null && c !== undefined && c !== false)
         .map((c) => {
-          if (typeof c === "string" || typeof c === "number" || typeof c === "boolean") {
+          if (
+            typeof c === "string" ||
+            typeof c === "number" ||
+            typeof c === "boolean"
+          ) {
             return JSON.stringify(c)
           }
           if (typeof c === "object") {
