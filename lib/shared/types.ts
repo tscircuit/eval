@@ -36,6 +36,7 @@ export interface CircuitRunnerApi {
       name?: string
     },
   ) => Promise<void>
+  executeComponent: (component: any) => Promise<void>
   executeWithFsMap(opts: {
     entrypoint?: string
     fsMap: Record<string, string>
@@ -57,6 +58,7 @@ export type InternalWebWorkerApi = CircuitRunnerApi
 
 export type CircuitWebWorker = {
   execute: (code: string) => Promise<void>
+  executeComponent: (component: any) => Promise<void>
   executeWithFsMap: (opts: {
     entrypoint?: string
     mainComponentPath?: string

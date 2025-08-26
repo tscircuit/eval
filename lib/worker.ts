@@ -122,6 +122,45 @@ export const createCircuitWebWorker = async (
 
   rawWorker.removeEventListener("message", earlyMessageHandler)
 
+  // Helper to convert a ReactElement into a factory function string
+  // that can be evaluated inside the worker to recreate the element.
+  function reactElementToFactoryCode(element: any): string {
+    function createElementCode(el: any): string {
+      if (!el || typeof el !== "object") {
+        throw new Error("Invalid React element")
+      }
+      const type = el.type
+      if (typeof type !== "string") {
+        throw new Error(
+          "Only intrinsic elements are supported when passing a ReactElement directly. Pass a factory function instead for component elements.",
+        )
+      }
+      const props = { ...(el.props || {}) }
+      const children = props.children
+      delete (props as any).children
+
+      const propsCode = JSON.stringify(props)
+      const childArray = Array.isArray(children) ? children : children != null ? [children] : []
+      const childCodes = childArray
+        .filter((c) => c !== null && c !== undefined && c !== false)
+        .map((c) => {
+          if (typeof c === "string" || typeof c === "number" || typeof c === "boolean") {
+            return JSON.stringify(c)
+          }
+          if (typeof c === "object") {
+            return createElementCode(c)
+          }
+          throw new Error("Unsupported child type in React element")
+        })
+
+      const args = [`${JSON.stringify(type)}`, propsCode].concat(childCodes)
+      return `React.createElement(${args.join(", ")})`
+    }
+
+    const code = createElementCode(element)
+    return `(() => ${code})`
+  }
+
   // Conditionally override global fetch inside the worker to route through the parent
   // Only enable when explicitly requested via configuration
   if (configuration.enableFetchProxy) {
@@ -146,6 +185,20 @@ export const createCircuitWebWorker = async (
         throw new Error("CircuitWebWorker was terminated, can't execute")
       }
       return comlinkWorker.execute.bind(comlinkWorker)(...args)
+    },
+    executeComponent: async (component: any) => {
+      if (isTerminated) {
+        throw new Error(
+          "CircuitWebWorker was terminated, can't executeComponent",
+        )
+      }
+      let factoryCode: string
+      if (typeof component === "function") {
+        factoryCode = `(${component.toString()})`
+      } else {
+        factoryCode = reactElementToFactoryCode(component)
+      }
+      return comlinkWorker.executeComponent(factoryCode)
     },
     executeWithFsMap: async (...args) => {
       if (isTerminated) {

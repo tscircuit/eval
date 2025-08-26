@@ -100,6 +100,38 @@ const webWorkerApi = {
     await importEvalPath("./entrypoint.tsx", executionContext)
   },
 
+  async executeComponent(
+    componentFactoryCode: string,
+    opts: { name?: string } = {},
+  ) {
+    if (circuitRunnerConfiguration.verbose) {
+      console.log("[Worker] executeComponent called")
+    }
+    executionContext = createExecutionContext(circuitRunnerConfiguration, {
+      ...opts,
+      platform: circuitRunnerConfiguration.platform,
+    })
+    bindEventListeners(executionContext.circuit)
+    ;(globalThis as any).__tscircuit_circuit = executionContext.circuit
+
+    let factory: any
+    try {
+      // Evaluate the provided factory code inside the worker context
+      factory = (0, eval)(componentFactoryCode)
+    } catch (e: any) {
+      throw new Error(
+        `Failed to evaluate component factory: ${e?.message ?? e}`,
+      )
+    }
+    if (typeof factory !== "function") {
+      throw new Error(
+        "executeComponent expects a function string that returns a React element",
+      )
+    }
+    const element = factory()
+    executionContext.circuit.add(element as any)
+  },
+
   on: (event: string, callback: (...args: any[]) => void) => {
     eventListeners[event] ??= []
     eventListeners[event].push(callback)
