@@ -109,5 +109,8 @@
     "circuit-json": "*",
     "jscad-fiber": "*",
     "zod": "3"
+  },
+  "dependencies": {
+    "@tscircuit/schematic-trace-solver": "^0.0.15"
   }
 }
