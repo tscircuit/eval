@@ -1,3 +1,4 @@
+// @ts-ignore
 import corePackageJson from "@tscircuit/core/package.json" with { type: "json" }
 import currentPackageJson from "../package.json"
 import { join } from "node:path"
