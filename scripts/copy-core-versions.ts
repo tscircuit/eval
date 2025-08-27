@@ -2,7 +2,6 @@ import { readFileSync } from "node:fs"
 import { join } from "node:path"
 import currentPackageJson from "../package.json"
 
-// Read the core package.json directly since exports field blocks direct import
 const corePackageJsonPath = join(
   process.cwd(),
   "node_modules",
