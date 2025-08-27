@@ -70,6 +70,7 @@
     "@tscircuit/props": "^0.0.287",
     "@tscircuit/schematic-autolayout": "^0.0.6",
     "@tscircuit/schematic-match-adapt": "^0.0.16",
+    "@tscircuit/schematic-trace-solver": "^0.0.15",
     "@tscircuit/simple-3d-svg": "^0.0.38",
     "@types/babel__standalone": "^7.1.9",
     "@types/bun": "^1.2.16",
@@ -108,8 +109,5 @@
     "circuit-json": "*",
     "jscad-fiber": "*",
     "zod": "3"
-  },
-  "dependencies": {
-    "@tscircuit/schematic-trace-solver": "^0.0.15"
   }
 }
