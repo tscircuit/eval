@@ -1,6 +1,15 @@
-import corePackageJson from "@tscircuit/core/package.json" with { type: "json" }
-import currentPackageJson from "../package.json"
+import { readFileSync } from "node:fs"
 import { join } from "node:path"
+import currentPackageJson from "../package.json"
+
+const corePackageJsonPath = join(
+  process.cwd(),
+  "node_modules",
+  "@tscircuit",
+  "core",
+  "package.json",
+)
+const corePackageJson = JSON.parse(readFileSync(corePackageJsonPath, "utf-8"))
 
 const DONT_SYNC_FROM_CORE: string[] = []
 
