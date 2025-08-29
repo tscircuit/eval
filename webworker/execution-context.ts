@@ -2,7 +2,6 @@ import { RootCircuit } from "@tscircuit/core"
 import type { WebWorkerConfiguration } from "lib/shared/types"
 import * as tscircuitCore from "@tscircuit/core"
 import * as React from "react"
-import * as jscadFiber from "jscad-fiber"
 import * as tscircuitMathUtils from "@tscircuit/math-utils"
 import type { PlatformConfig } from "@tscircuit/props"
 import { getPlatformConfig } from "lib/getPlatformConfig"
@@ -42,7 +41,6 @@ export function createExecutionContext(
       tscircuit: tscircuitCore,
       "@tscircuit/math-utils": tscircuitMathUtils,
       react: React,
-      "jscad-fiber": jscadFiber,
 
       // This is usually used as a type import, we can remove the shim when we
       // ignore type imports in getImportsFromCode

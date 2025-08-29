@@ -92,7 +92,6 @@
     "debug": "^4.3.6",
     "graphics-debug": "^0.0.60",
     "howfat": "^0.3.8",
-    "jscad-fiber": "^0.0.83",
     "live-server": "^1.2.2",
     "looks-same": "^9.0.1",
     "pkg-pr-new": "^0.0.37",
@@ -108,7 +107,6 @@
     "typescript": "^5.0.0",
     "@tscircuit/core": "*",
     "circuit-json": "*",
-    "jscad-fiber": "*",
     "zod": "3"
   }
 }

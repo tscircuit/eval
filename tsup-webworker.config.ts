@@ -11,7 +11,6 @@ export default defineConfig({
   noExternal: [
     "@tscircuit/core",
     "circuit-json",
-    "jscad-fiber",
     "@tscircuit/parts-engine",
     "@babel/standalone",
     "@tscircuit/math-utils",
