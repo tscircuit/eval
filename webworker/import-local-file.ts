@@ -34,6 +34,13 @@ export const importLocalFile = async (
       __esModule: true,
       default: jsonData,
     }
+  } else if (fsPath.endsWith(".obj")) {
+    const objBlob = new Blob([fileContent], { type: "model/obj" })
+    const objUrl = URL.createObjectURL(objBlob)
+    preSuppliedImports[fsPath] = {
+      __esModule: true,
+      default: objUrl,
+    }
   } else if (fsPath.endsWith(".tsx") || fsPath.endsWith(".ts")) {
     const importNames = getImportsFromCode(fileContent)
 

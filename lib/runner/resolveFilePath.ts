@@ -51,7 +51,7 @@ export const resolveFilePath = (
   }
 
   // Search for file with a set of different extensions
-  const extension = ["tsx", "ts", "json", "js", "jsx"]
+  const extension = ["tsx", "ts", "json", "js", "jsx", "obj"]
   for (const ext of extension) {
     const possibleFilePath = `${normalizedResolvedPath}.${ext}`
     if (normalizedFilePathMap.has(possibleFilePath)) {
