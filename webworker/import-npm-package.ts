@@ -35,9 +35,7 @@ export async function importNpmPackage(
 
   const requireRegex = /\brequire\s*\(\s*["']([^"']+)["']\s*\)/g
   const dependencies = new Set<string>()
-  let match
-  // biome-ignore lint/suspicious/noAssignInExpressions: <explanation>
-  while ((match = requireRegex.exec(content!))) {
+  for (const match of content!.matchAll(requireRegex)) {
     dependencies.add(match[1])
   }
 
