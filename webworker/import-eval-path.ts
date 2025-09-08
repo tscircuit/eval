@@ -6,6 +6,7 @@ import { importSnippet } from "./import-snippet"
 import { resolveFilePath } from "lib/runner/resolveFilePath"
 import { resolveNodeModule } from "lib/utils/resolve-node-module"
 import { importNodeModule } from "./import-node-module"
+import { importNpmPackage } from "./import-npm-package"
 import Debug from "debug"
 
 const debug = Debug("tsci:eval:import-eval-path")
@@ -57,6 +58,10 @@ export async function importEvalPath(
 
   if (importName.startsWith("@tsci/")) {
     return importSnippet(importName, ctx, depth)
+  }
+
+  if (!importName.startsWith(".") && !importName.startsWith("/")) {
+    return importNpmPackage(importName, ctx, depth)
   }
 
   throw new Error(
