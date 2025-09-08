@@ -9,7 +9,15 @@ export const getPlatformConfig = (): PlatformConfig => ({
     kicad: async (footprintName: string) => {
       const url = `${KICAD_FOOTPRINT_CACHE_URL}/${footprintName}.circuit.json`
       const res = await fetch(url)
-      return { footprintCircuitJson: await res.json() }
+      const raw = await res.json()
+      // Filter pcb_silkscreen_text to only keep entries with text === "REF**"
+      // Apply filtering only to elements coming from the kicad_mod_server response
+      const filtered = Array.isArray(raw)
+        ? raw.filter((el) =>
+            el?.type === "pcb_silkscreen_text" ? el?.text === "REF**" : true,
+          )
+        : raw
+      return { footprintCircuitJson: filtered }
     },
   },
 })
