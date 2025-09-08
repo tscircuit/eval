@@ -1,5 +1,6 @@
 import { createCircuitWebWorker } from "lib/index"
 import { expect, test } from "bun:test"
+import { convertCircuitJsonToPcbSvg } from "circuit-to-svg"
 
 test("example18-kicad-footprint-server", async () => {
   const circuitWebWorker = await createCircuitWebWorker({
@@ -29,6 +30,10 @@ test("example18-kicad-footprint-server", async () => {
   const pcb_trace = circuitJson.filter((el: any) => el.type === "pcb_trace")
   expect(pcb_trace).toBeDefined()
   expect(pcb_trace.length).toBe(1)
+
+  expect(convertCircuitJsonToPcbSvg(circuitJson)).toMatchSvgSnapshot(
+    import.meta.path,
+  )
 
   await circuitWebWorker.kill()
 })

@@ -1,4 +1,5 @@
 import { afterEach } from "bun:test"
+import "bun-match-svg"
 
 // Clean up all workers after each test
 afterEach(async () => {
