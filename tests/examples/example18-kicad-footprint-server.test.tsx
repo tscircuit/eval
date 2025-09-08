@@ -26,7 +26,6 @@ test("example18-kicad-footprint-server", async () => {
 
   const circuitJson = await circuitWebWorker.getCircuitJson()
 
-  Bun.write("circuit.json", JSON.stringify(circuitJson, null, 2))
 
   const pcb_trace = circuitJson.filter((el: any) => el.type === "pcb_trace")
   expect(pcb_trace).toBeDefined()
