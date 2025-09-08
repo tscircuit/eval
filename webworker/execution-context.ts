@@ -21,6 +21,7 @@ export function createExecutionContext(
   opts: {
     name?: string
     platform?: PlatformConfig
+    debugNamespace?: string
   } = {},
 ): ExecutionContext {
   globalThis.React = React
@@ -33,6 +34,10 @@ export function createExecutionContext(
     circuit.name = opts.name
   }
 
+  if (opts.debugNamespace) {
+    ;(circuit as any).enableDebug?.(opts.debugNamespace)
+  }
+
   return {
     fsMap: {},
     entrypoint: "",
@@ -41,6 +46,7 @@ export function createExecutionContext(
       tscircuit: tscircuitCore,
       "@tscircuit/math-utils": tscircuitMathUtils,
       react: React,
+      debug: Debug,
 
       // This is usually used as a type import, we can remove the shim when we
       // ignore type imports in getImportsFromCode

@@ -20,6 +20,7 @@ globalThis.React = React
 setupFetchProxy()
 
 let executionContext: ExecutionContext | null = null
+let debugNamespace: string | undefined
 
 const circuitRunnerConfiguration: WebWorkerConfiguration = {
   snippetsApiBaseUrl: "https://registry-api.tscircuit.com",
@@ -80,6 +81,14 @@ const webWorkerApi = {
     circuitRunnerConfiguration.platform = platform
   },
 
+  enableDebug: async (namespace: string) => {
+    debugNamespace = namespace
+    if (executionContext) {
+      const circuit = executionContext.circuit as any
+      circuit.enableDebug?.(namespace)
+    }
+  },
+
   version: async () => {
     return "0.0.0"
   },
@@ -104,6 +113,7 @@ const webWorkerApi = {
     executionContext = createExecutionContext(circuitRunnerConfiguration, {
       name: opts.name,
       platform: circuitRunnerConfiguration.platform,
+      debugNamespace,
     })
     bindEventListeners(executionContext.circuit)
     executionContext.fsMap = normalizeFsMap(opts.fsMap)
@@ -126,6 +136,7 @@ const webWorkerApi = {
     executionContext = createExecutionContext(circuitRunnerConfiguration, {
       ...opts,
       platform: circuitRunnerConfiguration.platform,
+      debugNamespace,
     })
     bindEventListeners(executionContext.circuit)
     executionContext.fsMap["entrypoint.tsx"] = code
@@ -141,6 +152,7 @@ const webWorkerApi = {
     executionContext = createExecutionContext(circuitRunnerConfiguration, {
       ...opts,
       platform: circuitRunnerConfiguration.platform,
+      debugNamespace,
     })
     bindEventListeners(executionContext.circuit)
     ;(globalThis as any).__tscircuit_circuit = executionContext.circuit

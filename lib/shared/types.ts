@@ -46,6 +46,7 @@ export interface CircuitRunnerApi {
   getCircuitJson: () => Promise<AnyCircuitElement[]>
   setSnippetsApiBaseUrl: (baseUrl: string) => Promise<void>
   setPlatformConfig: (platform: PlatformConfig) => Promise<void>
+  enableDebug: (namespace: string) => Promise<void>
   on: (event: RootCircuitEventName, callback: (...args: any[]) => void) => void
   clearEventListeners: () => void
   kill: () => Promise<void>
@@ -68,6 +69,7 @@ export type CircuitWebWorker = {
   getCircuitJson: () => Promise<AnyCircuitElement[]>
   on: (event: RootCircuitEventName, callback: (...args: any[]) => void) => void
   clearEventListeners: () => void
+  enableDebug: (namespace: string) => Promise<void>
   version: () => Promise<string>
   kill: () => Promise<void>
 }
