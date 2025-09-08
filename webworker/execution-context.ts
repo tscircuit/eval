@@ -35,7 +35,7 @@ export function createExecutionContext(
   }
 
   if (opts.debugNamespace) {
-    ;(circuit as any).enableDebug?.(opts.debugNamespace)
+    circuit.enableDebug(opts.debugNamespace)
   }
 
   return {
