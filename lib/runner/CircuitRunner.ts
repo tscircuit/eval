@@ -22,6 +22,7 @@ export class CircuitRunner implements CircuitRunnerApi {
     verbose: false,
   }
   _eventListeners: Record<string, ((...args: any[]) => void)[]> = {}
+  _debugNamespace: string | undefined
 
   constructor(configuration: Partial<CircuitRunnerConfiguration> = {}) {
     Object.assign(this._circuitRunnerConfiguration, configuration)
@@ -62,6 +63,7 @@ export class CircuitRunner implements CircuitRunnerApi {
       {
         name: opts.name,
         platform: this._circuitRunnerConfiguration.platform,
+        debugNamespace: this._debugNamespace,
       },
     )
     this._bindEventListeners(this._executionContext.circuit)
@@ -93,6 +95,7 @@ export class CircuitRunner implements CircuitRunnerApi {
       {
         ...opts,
         platform: this._circuitRunnerConfiguration.platform,
+        debugNamespace: this._debugNamespace,
       },
     )
     this._bindEventListeners(this._executionContext.circuit)
@@ -112,6 +115,7 @@ export class CircuitRunner implements CircuitRunnerApi {
       {
         ...opts,
         platform: this._circuitRunnerConfiguration.platform,
+        debugNamespace: this._debugNamespace,
       },
     )
     this._bindEventListeners(this._executionContext.circuit)
@@ -170,6 +174,14 @@ export class CircuitRunner implements CircuitRunnerApi {
 
   async setPlatformConfig(platform: PlatformConfig) {
     this._circuitRunnerConfiguration.platform = platform
+  }
+
+  async enableDebug(namespace: string) {
+    this._debugNamespace = namespace
+    if (this._executionContext) {
+      const circuit = this._executionContext.circuit as any
+      circuit.enableDebug?.(namespace)
+    }
   }
 
   private _bindEventListeners(circuit: RootCircuit) {

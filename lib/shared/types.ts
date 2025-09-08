@@ -1,6 +1,8 @@
 import type { AnyCircuitElement } from "circuit-json"
-import type { RootCircuitEventName } from "@tscircuit/core"
+import type { RootCircuitEventName as CoreRootCircuitEventName } from "@tscircuit/core"
 import type { PlatformConfig } from "@tscircuit/props"
+
+export type RootCircuitEventName = CoreRootCircuitEventName | "debug:logOutput"
 
 export interface CircuitRunnerConfiguration {
   snippetsApiBaseUrl: string
@@ -46,6 +48,7 @@ export interface CircuitRunnerApi {
   getCircuitJson: () => Promise<AnyCircuitElement[]>
   setSnippetsApiBaseUrl: (baseUrl: string) => Promise<void>
   setPlatformConfig: (platform: PlatformConfig) => Promise<void>
+  enableDebug: (namespace: string) => Promise<void>
   on: (event: RootCircuitEventName, callback: (...args: any[]) => void) => void
   clearEventListeners: () => void
   kill: () => Promise<void>
@@ -68,6 +71,7 @@ export type CircuitWebWorker = {
   getCircuitJson: () => Promise<AnyCircuitElement[]>
   on: (event: RootCircuitEventName, callback: (...args: any[]) => void) => void
   clearEventListeners: () => void
+  enableDebug: (namespace: string) => Promise<void>
   version: () => Promise<string>
   kill: () => Promise<void>
 }
