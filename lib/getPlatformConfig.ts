@@ -1,7 +1,7 @@
 import type { PlatformConfig } from "@tscircuit/props"
 import { jlcPartsEngine } from "@tscircuit/parts-engine"
 
-const KICAD_FOOTPRINT_CACHE_URL = "https://kicad-mod-cache.tscircuit.com/"
+const KICAD_FOOTPRINT_CACHE_URL = "https://kicad-mod-cache.tscircuit.com"
 
 export const getPlatformConfig = (): PlatformConfig => ({
   partsEngine: jlcPartsEngine,
