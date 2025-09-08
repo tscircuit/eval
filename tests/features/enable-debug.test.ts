@@ -11,17 +11,16 @@ test("CircuitWebWorker emits debug log", async () => {
   worker.on("debug:logOutput", (output) => {
     logs.push(output)
   })
-  await worker.enableDebug("Group_doInitialPcbTraceRender")
+  await worker.enableDebug("Group_doInitialSchematicTraceRender")
   await worker.execute(`
     circuit.add(<board>
-      <resistor name="R1" resistance="1k" footprint="0402" />
-      <resistor name="R2" resistance="1k" footprint="0402" connections={{  pin1: "R1.pin1" }} />
+      <resistor name="R1" resistance="1k" footprint="0402" schX={-2} />
+      <resistor name="R2" resistance="1k" footprint="0402" connections={{  pin1: "R1.pin1" }} schX={2} />
     </board>)
   `)
 
   await worker.renderUntilSettled()
 
-  console.log("logs", logs)
   expect(logs).toHaveLength(1)
   await worker.kill()
 })
