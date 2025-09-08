@@ -5,7 +5,7 @@ import type {
   WebWorkerConfiguration,
   CircuitWebWorker,
 } from "./shared/types"
-import type { RootCircuitEventName } from "@tscircuit/core"
+import type { RootCircuitEventName } from "./shared/types"
 
 export type { CircuitWebWorker, WebWorkerConfiguration }
 

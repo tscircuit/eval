@@ -1,6 +1,8 @@
 import type { AnyCircuitElement } from "circuit-json"
-import type { RootCircuitEventName } from "@tscircuit/core"
+import type { RootCircuitEventName as CoreRootCircuitEventName } from "@tscircuit/core"
 import type { PlatformConfig } from "@tscircuit/props"
+
+export type RootCircuitEventName = CoreRootCircuitEventName | "debug:logOutput"
 
 export interface CircuitRunnerConfiguration {
   snippetsApiBaseUrl: string
