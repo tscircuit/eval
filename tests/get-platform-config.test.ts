@@ -11,7 +11,9 @@ test("kicad footprint returns cadModel with wrl url", async () => {
     json: async () => mockJson,
   })) as any
 
-  const result = await platform.footprintLibraryMap?.kicad?.("resistor")
+  const result = await (platform.footprintLibraryMap?.kicad as any)?.(
+    "resistor",
+  )
 
   globalThis.fetch = originalFetch
 
