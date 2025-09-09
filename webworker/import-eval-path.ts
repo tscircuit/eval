@@ -61,7 +61,7 @@ export async function importEvalPath(
   }
 
   if (!importName.startsWith(".") && !importName.startsWith("/")) {
-    return importNpmPackage(importName, ctx, depth)
+    return importNpmPackage(importName, ctx)
   }
 
   throw new Error(

@@ -2,14 +2,31 @@ import { test, expect } from "bun:test"
 import { runTscircuitCode } from "lib/runner"
 
 test(
-  "should support importing from npm via unpkg",
+  "should support importing various npm packages",
   async () => {
     const circuitJson = await runTscircuitCode(
       `
-    import isOdd from "is-odd"
+    import _ from "lodash"
+    import { v4 as uuidv4 } from "uuid"
+    import dayjs from "dayjs"
 
     export default () => {
-      if (!isOdd(3)) throw new Error("isOdd failed")
+      // Test lodash
+      if (!_.isEqual({ a: 1 }, { a: 1 })) {
+        throw new Error("_.isEqual failed")
+      }
+
+      // Test uuid
+      const uuid = uuidv4()
+      if (typeof uuid !== "string" || uuid.length < 36) {
+        throw new Error("uuid.v4 failed to generate a valid uuid")
+      }
+
+      // Test dayjs
+      if (!dayjs().isValid()) {
+        throw new Error("dayjs().isValid() failed")
+      }
+      
       return <resistor name="R1" resistance="1k" />
     }
     `,
