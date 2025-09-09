@@ -7,19 +7,27 @@ test("kicad footprint returns cadModel with wrl url", async () => {
   const mockJson: any[] = []
   const originalFetch = globalThis.fetch
 
-  globalThis.fetch = (async (url: string) => ({
-    json: async () => mockJson,
-  })) as any
+  const mockFetch: typeof fetch = async (_url: RequestInfo | URL) =>
+    new Response(JSON.stringify(mockJson))
+  mockFetch.preconnect = originalFetch.preconnect
+  globalThis.fetch = mockFetch
 
-  const result = await (platform.footprintLibraryMap?.kicad as any)?.(
-    "resistor",
-  )
+  const kicadLoader = platform.footprintLibraryMap?.kicad
+  const result =
+    typeof kicadLoader === "function"
+      ? await kicadLoader("resistor")
+      : undefined
+
+  const typedResult = result as {
+    footprintCircuitJson: any[]
+    cadModel?: { model_wrl_url: string }
+  }
 
   globalThis.fetch = originalFetch
 
-  expect(result?.footprintCircuitJson).toEqual(mockJson)
-  expect(result?.cadModel).toBeDefined()
-  expect(result?.cadModel?.model_wrl_url).toBe(
+  expect(typedResult.footprintCircuitJson).toEqual(mockJson)
+  expect(typedResult.cadModel).toBeDefined()
+  expect(typedResult.cadModel?.model_wrl_url).toBe(
     "https://kicad-mod-cache.tscircuit.com/resistor.wrl",
   )
 })
