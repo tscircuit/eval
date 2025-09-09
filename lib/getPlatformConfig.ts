@@ -21,7 +21,7 @@ export const getPlatformConfig = (): PlatformConfig => ({
       const wrlUrl = `${baseUrl}.wrl`
       return {
         footprintCircuitJson: filtered,
-        cadModel: { model_wrl_url: wrlUrl },
+        cadComponent: { model_wrl_url: wrlUrl },
       }
     },
   },
