@@ -1,5 +1,8 @@
 import * as Babel from "@babel/standalone"
-import { resolveFilePathOrThrow } from "lib/runner/resolveFilePath"
+import {
+  resolveFilePath,
+  resolveFilePathOrThrow,
+} from "lib/runner/resolveFilePath"
 import { dirname } from "lib/utils/dirname"
 import { getImportsFromCode } from "lib/utils/get-imports-from-code"
 import { evalCompiledJs } from "./eval-compiled-js"
@@ -40,6 +43,61 @@ export const importLocalFile = async (
     preSuppliedImports[fsPath] = {
       __esModule: true,
       default: objUrl,
+    }
+  } else if (fsPath.endsWith(".gltf")) {
+    const gltfJson = JSON.parse(fileContent)
+    const fileDir = dirname(fsPath)
+
+    const inlineUri = (uri: string) => {
+      if (uri && !uri.startsWith("data:") && !uri.startsWith("http")) {
+        const assetPath = resolveFilePath(uri, fsMap, fileDir)
+        if (!assetPath) {
+          console.warn(`Asset not found for URI: ${uri} in ${fsPath}`)
+          return uri
+        }
+        const assetContentStr = fsMap[assetPath]
+
+        try {
+          const base64Content = btoa(assetContentStr)
+
+          let mimeType = "application/octet-stream"
+          if (assetPath.endsWith(".bin")) {
+            mimeType = "application/octet-stream"
+          } else if (assetPath.endsWith(".png")) {
+            mimeType = "image/png"
+          } else if (
+            assetPath.endsWith(".jpeg") ||
+            assetPath.endsWith(".jpg")
+          ) {
+            mimeType = "image/jpeg"
+          }
+
+          return `data:${mimeType};base64,${base64Content}`
+        } catch (e) {
+          console.error(`Failed to encode asset to base64: ${assetPath}`, e)
+          return uri
+        }
+      }
+      return uri
+    }
+
+    if (gltfJson.buffers) {
+      for (const buffer of gltfJson.buffers) {
+        if (buffer.uri) buffer.uri = inlineUri(buffer.uri)
+      }
+    }
+    if (gltfJson.images) {
+      for (const image of gltfJson.images) {
+        if (image.uri) image.uri = inlineUri(image.uri)
+      }
+    }
+
+    const gltfContent = JSON.stringify(gltfJson)
+    const gltfBlob = new Blob([gltfContent], { type: "model/gltf+json" })
+    const gltfUrl = URL.createObjectURL(gltfBlob)
+    preSuppliedImports[fsPath] = {
+      __esModule: true,
+      default: gltfUrl,
     }
   } else if (fsPath.endsWith(".tsx") || fsPath.endsWith(".ts")) {
     const importNames = getImportsFromCode(fileContent)
