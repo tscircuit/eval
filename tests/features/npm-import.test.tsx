@@ -6,11 +6,16 @@ test(
   async () => {
     const circuitJson = await runTscircuitCode(
       `
+    import isOdd from "is-odd"
     import _ from "lodash"
     import { v4 as uuidv4 } from "uuid"
     import dayjs from "dayjs"
 
     export default () => {
+      // Test is-odd
+      if (!isOdd(3)) {
+        throw new Error("isOdd(3) should be true")
+      }
       // Test lodash
       if (!_.isEqual({ a: 1 }, { a: 1 })) {
         throw new Error("_.isEqual failed")

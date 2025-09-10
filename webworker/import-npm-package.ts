@@ -3,6 +3,8 @@ import type { ExecutionContext } from "./execution-context"
 import * as Babel from "@babel/standalone"
 import { dirname } from "lib/utils/dirname"
 import Debug from "debug"
+import { getImportsFromCode } from "lib/utils/get-imports-from-code"
+import { importEvalPath } from "./import-eval-path"
 
 const debug = Debug("tsci:eval:import-npm-package")
 
@@ -17,6 +19,7 @@ function extractPackagePathFromJSDelivr(url: string) {
 export async function importNpmPackage(
   importName: string,
   ctx: ExecutionContext,
+  depth = 0,
 ) {
   debug(`importing npm package: ${importName}`)
   const { preSuppliedImports } = ctx
@@ -43,6 +46,18 @@ export async function importNpmPackage(
     throw error
   }
 
+  const finalImportName = extractPackagePathFromJSDelivr(finalUrl!)
+  const cwd = dirname(finalImportName)
+
+  const importNames = getImportsFromCode(content!)
+  for (const subImportName of importNames) {
+    if (!preSuppliedImports[subImportName]) {
+      await importEvalPath(subImportName, ctx, depth + 1, {
+        cwd,
+      })
+    }
+  }
+
   const transpiled = Babel.transform(content!, {
     presets: ["react", "env"],
     plugins: ["transform-modules-commonjs"],
@@ -53,8 +68,6 @@ export async function importNpmPackage(
     throw new Error(`Babel transpilation failed for ${importName}`)
   }
   try {
-    const finalImportName = extractPackagePathFromJSDelivr(finalUrl!)
-    const cwd = dirname(finalImportName)
     const exports = evalCompiledJs(
       transpiled.code!,
       preSuppliedImports,
