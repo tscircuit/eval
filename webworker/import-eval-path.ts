@@ -37,6 +37,16 @@ export async function importEvalPath(
     return
   }
 
+  if (importName.startsWith("/npm/")) {
+    const pkgName = importName.replace(/^\/npm\//, "").replace(/\/\+esm$/, "")
+    await importNpmPackage(pkgName, ctx, depth)
+    const pkg = preSuppliedImports[pkgName]
+    if (pkg) {
+      preSuppliedImports[importName] = pkg
+    }
+    return
+  }
+
   const resolvedLocalImportPath = resolveFilePath(
     importName,
     ctx.fsMap,
@@ -61,7 +71,7 @@ export async function importEvalPath(
   }
 
   if (!importName.startsWith(".") && !importName.startsWith("/")) {
-    return importNpmPackage(importName, ctx)
+    return importNpmPackage(importName, ctx, depth)
   }
 
   throw new Error(
