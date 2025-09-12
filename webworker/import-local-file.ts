@@ -44,6 +44,14 @@ export const importLocalFile = async (
       __esModule: true,
       default: objUrl,
     }
+  } else if (fsPath.endsWith(".glb")) {
+    const glbArray = Uint8Array.from(fileContent, (c) => c.charCodeAt(0))
+    const glbBlob = new Blob([glbArray], { type: "model/gltf-binary" })
+    const glbUrl = URL.createObjectURL(glbBlob)
+    preSuppliedImports[fsPath] = {
+      __esModule: true,
+      default: glbUrl,
+    }
   } else if (fsPath.endsWith(".gltf")) {
     const gltfJson = JSON.parse(fileContent)
     const fileDir = dirname(fsPath)
