@@ -11,6 +11,7 @@ import * as React from "react"
 import { importEvalPath } from "webworker/import-eval-path"
 import { setupDefaultEntrypointIfNeeded } from "./setupDefaultEntrypointIfNeeded"
 import Debug from "debug"
+import { getPlatformConfig } from "../getPlatformConfig"
 
 const debug = Debug("tsci:eval:CircuitRunner")
 
@@ -26,6 +27,14 @@ export class CircuitRunner implements CircuitRunnerApi {
 
   constructor(configuration: Partial<CircuitRunnerConfiguration> = {}) {
     Object.assign(this._circuitRunnerConfiguration, configuration)
+  }
+
+  private _getPlatformConfig(): PlatformConfig {
+    return {
+      ...getPlatformConfig(),
+      ...this._circuitRunnerConfiguration.platform,
+      ...this._circuitRunnerConfiguration.projectConfig,
+    }
   }
 
   async version(): Promise<string> {
@@ -62,7 +71,7 @@ export class CircuitRunner implements CircuitRunnerApi {
       this._circuitRunnerConfiguration,
       {
         name: opts.name,
-        platform: this._circuitRunnerConfiguration.platform,
+        platform: this._getPlatformConfig(),
         debugNamespace: this._debugNamespace,
       },
     )
@@ -94,7 +103,7 @@ export class CircuitRunner implements CircuitRunnerApi {
       this._circuitRunnerConfiguration,
       {
         ...opts,
-        platform: this._circuitRunnerConfiguration.platform,
+        platform: this._getPlatformConfig(),
         debugNamespace: this._debugNamespace,
       },
     )
@@ -114,7 +123,7 @@ export class CircuitRunner implements CircuitRunnerApi {
       this._circuitRunnerConfiguration,
       {
         ...opts,
-        platform: this._circuitRunnerConfiguration.platform,
+        platform: this._getPlatformConfig(),
         debugNamespace: this._debugNamespace,
       },
     )
