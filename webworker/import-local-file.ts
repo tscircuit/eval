@@ -9,6 +9,7 @@ import { evalCompiledJs } from "./eval-compiled-js"
 import type { ExecutionContext } from "./execution-context"
 import { importEvalPath } from "./import-eval-path"
 import Debug from "debug"
+import { isStaticAssetPath } from "lib/shared/static-asset-extensions"
 
 const debug = Debug("tsci:eval:import-local-file")
 
@@ -37,75 +38,13 @@ export const importLocalFile = async (
       __esModule: true,
       default: jsonData,
     }
-  } else if (fsPath.endsWith(".obj")) {
-    const objBlob = new Blob([fileContent], { type: "model/obj" })
-    const objUrl = URL.createObjectURL(objBlob)
+  } else if (isStaticAssetPath(fsPath)) {
+    const platformConfig = ctx.circuit.platform
+    // Use projectBaseUrl for static file imports
+    const staticUrl = `${platformConfig?.projectBaseUrl ?? ""}/${fsPath.startsWith("./") ? fsPath.slice(2) : fsPath}`
     preSuppliedImports[fsPath] = {
       __esModule: true,
-      default: objUrl,
-    }
-  } else if (fsPath.endsWith(".glb")) {
-    const glbArray = Uint8Array.from(fileContent, (c) => c.charCodeAt(0))
-    const glbBlob = new Blob([glbArray], { type: "model/gltf-binary" })
-    const glbUrl = URL.createObjectURL(glbBlob)
-    preSuppliedImports[fsPath] = {
-      __esModule: true,
-      default: glbUrl,
-    }
-  } else if (fsPath.endsWith(".gltf")) {
-    const gltfJson = JSON.parse(fileContent)
-    const fileDir = dirname(fsPath)
-
-    const inlineUri = (uri: string) => {
-      if (uri && !uri.startsWith("data:") && !uri.startsWith("http")) {
-        const assetPath = resolveFilePath(uri, fsMap, fileDir)
-        if (!assetPath) {
-          console.warn(`Asset not found for URI: ${uri} in ${fsPath}`)
-          return uri
-        }
-        const assetContentStr = fsMap[assetPath]
-
-        try {
-          const base64Content = btoa(assetContentStr)
-
-          let mimeType = "application/octet-stream"
-          if (assetPath.endsWith(".bin")) {
-            mimeType = "application/octet-stream"
-          } else if (assetPath.endsWith(".png")) {
-            mimeType = "image/png"
-          } else if (
-            assetPath.endsWith(".jpeg") ||
-            assetPath.endsWith(".jpg")
-          ) {
-            mimeType = "image/jpeg"
-          }
-
-          return `data:${mimeType};base64,${base64Content}`
-        } catch (e) {
-          console.error(`Failed to encode asset to base64: ${assetPath}`, e)
-          return uri
-        }
-      }
-      return uri
-    }
-
-    if (gltfJson.buffers) {
-      for (const buffer of gltfJson.buffers) {
-        if (buffer.uri) buffer.uri = inlineUri(buffer.uri)
-      }
-    }
-    if (gltfJson.images) {
-      for (const image of gltfJson.images) {
-        if (image.uri) image.uri = inlineUri(image.uri)
-      }
-    }
-
-    const gltfContent = JSON.stringify(gltfJson)
-    const gltfBlob = new Blob([gltfContent], { type: "model/gltf+json" })
-    const gltfUrl = URL.createObjectURL(gltfBlob)
-    preSuppliedImports[fsPath] = {
-      __esModule: true,
-      default: gltfUrl,
+      default: staticUrl,
     }
   } else if (fsPath.endsWith(".tsx") || fsPath.endsWith(".ts")) {
     const importNames = getImportsFromCode(fileContent)

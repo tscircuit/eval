@@ -67,7 +67,7 @@
     "@tscircuit/math-utils": "^0.0.21",
     "@tscircuit/miniflex": "^0.0.4",
     "@tscircuit/parts-engine": "^0.0.8",
-    "@tscircuit/props": "0.0.319",
+    "@tscircuit/props": "0.0.320",
     "@tscircuit/schematic-autolayout": "^0.0.6",
     "@tscircuit/schematic-match-adapt": "^0.0.16",
     "@tscircuit/schematic-trace-solver": "^0.0.36",
