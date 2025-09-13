@@ -39,7 +39,7 @@ export default () => {
   const circuitJson = await worker.getCircuitJson()
   expect(circuitJson).toBeDefined()
 
-  const cadComponent = circuitJson.find((e) => e.type === "cad_component")
+  const cadComponent = circuitJson.find((e) => e.type === "cad_component")!
 
   expect(cadComponent.model_glb_url).toBe(
     "https://example.com/assets/model.glb",
