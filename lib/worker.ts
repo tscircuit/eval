@@ -6,6 +6,7 @@ import type {
   CircuitWebWorker,
 } from "./shared/types"
 import type { RootCircuitEventName } from "./shared/types"
+import { getPlatformConfig } from "./getPlatformConfig"
 
 export type { CircuitWebWorker, WebWorkerConfiguration }
 
@@ -170,8 +171,17 @@ export const createCircuitWebWorker = async (
   if (configuration.snippetsApiBaseUrl) {
     await comlinkWorker.setSnippetsApiBaseUrl(configuration.snippetsApiBaseUrl)
   }
-  if (configuration.platform) {
-    await comlinkWorker.setPlatformConfig(configuration.platform)
+  const finalPlatformConfig =
+    configuration.platform || configuration.projectConfig
+      ? {
+          ...getPlatformConfig(),
+          ...configuration.platform,
+          ...configuration.projectConfig,
+        }
+      : undefined
+
+  if (finalPlatformConfig) {
+    await comlinkWorker.setPlatformConfig(finalPlatformConfig)
   }
 
   let isTerminated = false
