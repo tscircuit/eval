@@ -27,6 +27,7 @@ const circuitRunnerConfiguration: WebWorkerConfiguration = {
   cjsRegistryUrl: "https://cjs.tscircuit.com",
   verbose: false,
   platform: undefined,
+  projectConfig: undefined,
 }
 
 const eventListeners: Record<string, ((...args: any[]) => void)[]> = {}
@@ -80,6 +81,9 @@ const webWorkerApi = {
   setPlatformConfig: async (platform: PlatformConfig) => {
     circuitRunnerConfiguration.platform = platform
   },
+  setProjectConfig: async (project: Partial<PlatformConfig>) => {
+    circuitRunnerConfiguration.projectConfig = project
+  },
 
   enableDebug: async (namespace: string) => {
     debugNamespace = namespace
@@ -113,6 +117,7 @@ const webWorkerApi = {
     executionContext = createExecutionContext(circuitRunnerConfiguration, {
       name: opts.name,
       platform: circuitRunnerConfiguration.platform,
+      projectConfig: circuitRunnerConfiguration.projectConfig,
       debugNamespace,
     })
     bindEventListeners(executionContext.circuit)
@@ -136,6 +141,7 @@ const webWorkerApi = {
     executionContext = createExecutionContext(circuitRunnerConfiguration, {
       ...opts,
       platform: circuitRunnerConfiguration.platform,
+      projectConfig: circuitRunnerConfiguration.projectConfig,
       debugNamespace,
     })
     bindEventListeners(executionContext.circuit)
@@ -152,6 +158,7 @@ const webWorkerApi = {
     executionContext = createExecutionContext(circuitRunnerConfiguration, {
       ...opts,
       platform: circuitRunnerConfiguration.platform,
+      projectConfig: circuitRunnerConfiguration.projectConfig,
       debugNamespace,
     })
     bindEventListeners(executionContext.circuit)
