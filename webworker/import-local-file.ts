@@ -9,7 +9,7 @@ import { evalCompiledJs } from "./eval-compiled-js"
 import type { ExecutionContext } from "./execution-context"
 import { importEvalPath } from "./import-eval-path"
 import Debug from "debug"
-import { isStaticAssetPath } from "./static-asset-extensions"
+import { isStaticAssetPath } from "lib/shared/static-asset-extensions"
 
 const debug = Debug("tsci:eval:import-local-file")
 
