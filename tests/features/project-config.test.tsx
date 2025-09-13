@@ -1,9 +1,9 @@
 import { CircuitRunner } from "lib/runner/CircuitRunner"
 import { expect, test } from "bun:test"
 
-test("projectSettings overrides default platform config", async () => {
+test("projectConfig overrides default platform config", async () => {
   const runner = new CircuitRunner({
-    projectSettings: {
+    projectConfig: {
       projectBaseUrl: "https://example.com/assets",
     },
   })

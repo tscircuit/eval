@@ -21,15 +21,15 @@ export function createExecutionContext(
   opts: {
     name?: string
     platform?: PlatformConfig
-    projectSettings?: Partial<PlatformConfig>
+    projectConfig?: Partial<PlatformConfig>
     debugNamespace?: string
   } = {},
 ): ExecutionContext {
   globalThis.React = React
 
   const basePlatform = opts.platform || getPlatformConfig()
-  const platform = opts.projectSettings
-    ? { ...basePlatform, ...opts.projectSettings }
+  const platform = opts.projectConfig
+    ? { ...basePlatform, ...opts.projectConfig }
     : basePlatform
 
   const circuit = new RootCircuit({

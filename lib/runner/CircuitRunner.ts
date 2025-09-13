@@ -63,7 +63,7 @@ export class CircuitRunner implements CircuitRunnerApi {
       {
         name: opts.name,
         platform: this._circuitRunnerConfiguration.platform,
-        projectSettings: this._circuitRunnerConfiguration.projectSettings,
+        projectConfig: this._circuitRunnerConfiguration.projectConfig,
         debugNamespace: this._debugNamespace,
       },
     )
@@ -96,7 +96,7 @@ export class CircuitRunner implements CircuitRunnerApi {
       {
         ...opts,
         platform: this._circuitRunnerConfiguration.platform,
-        projectSettings: this._circuitRunnerConfiguration.projectSettings,
+        projectConfig: this._circuitRunnerConfiguration.projectConfig,
         debugNamespace: this._debugNamespace,
       },
     )
@@ -117,7 +117,7 @@ export class CircuitRunner implements CircuitRunnerApi {
       {
         ...opts,
         platform: this._circuitRunnerConfiguration.platform,
-        projectSettings: this._circuitRunnerConfiguration.projectSettings,
+        projectConfig: this._circuitRunnerConfiguration.projectConfig,
         debugNamespace: this._debugNamespace,
       },
     )
@@ -179,8 +179,8 @@ export class CircuitRunner implements CircuitRunnerApi {
     this._circuitRunnerConfiguration.platform = platform
   }
 
-  async setProjectSettings(project: Partial<PlatformConfig>) {
-    this._circuitRunnerConfiguration.projectSettings = project
+  async setProjectConfig(project: Partial<PlatformConfig>) {
+    this._circuitRunnerConfiguration.projectConfig = project
   }
 
   async enableDebug(namespace: string) {

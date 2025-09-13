@@ -173,8 +173,8 @@ export const createCircuitWebWorker = async (
   if (configuration.platform) {
     await comlinkWorker.setPlatformConfig(configuration.platform)
   }
-  if (configuration.projectSettings) {
-    await comlinkWorker.setProjectSettings(configuration.projectSettings)
+  if (configuration.projectConfig) {
+    await comlinkWorker.setProjectConfig(configuration.projectConfig)
   }
 
   let isTerminated = false

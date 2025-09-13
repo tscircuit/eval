@@ -9,7 +9,7 @@ export interface CircuitRunnerConfiguration {
   cjsRegistryUrl: string
   verbose?: boolean
   platform?: PlatformConfig
-  projectSettings?: Partial<PlatformConfig>
+  projectConfig?: Partial<PlatformConfig>
 }
 
 export interface WebWorkerConfiguration extends CircuitRunnerConfiguration {
@@ -49,7 +49,7 @@ export interface CircuitRunnerApi {
   getCircuitJson: () => Promise<AnyCircuitElement[]>
   setSnippetsApiBaseUrl: (baseUrl: string) => Promise<void>
   setPlatformConfig: (platform: PlatformConfig) => Promise<void>
-  setProjectSettings: (project: Partial<PlatformConfig>) => Promise<void>
+  setProjectConfig: (project: Partial<PlatformConfig>) => Promise<void>
   enableDebug: (namespace: string) => Promise<void>
   on: (event: RootCircuitEventName, callback: (...args: any[]) => void) => void
   clearEventListeners: () => void
