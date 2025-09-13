@@ -41,4 +41,18 @@ jobs:
 
       - run: bun run build
       - name: Run tests for ${{ matrix.test-dir }}
-        run: bun test tests/${{ matrix.test-dir }} --timeout 30000
+        run: |
+          set +e
+          for i in 1 2 3; do
+            bun test tests/${{ matrix.test-dir }} --timeout 30000
+            code=$?
+            if [ $code -eq 0 ]; then
+              exit 0
+            fi
+            if [ $code -ne 139 ]; then
+              exit $code
+            fi
+            echo "Segmentation fault detected, retrying ($i/3)..."
+          done
+          echo "Tests failed due to segmentation fault after 3 attempts."
+          exit 139
