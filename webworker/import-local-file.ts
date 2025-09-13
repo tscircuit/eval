@@ -25,8 +25,9 @@ export const importLocalFile = async (
   const { fsMap, preSuppliedImports } = ctx
 
   const fsPath = resolveFilePathOrThrow(importName, fsMap)
+  const isStaticAsset = isStaticAssetPath(fsPath)
   debug("fsPath:", fsPath)
-  if (!ctx.fsMap[fsPath]) {
+  if (!ctx.fsMap[fsPath] && !isStaticAsset) {
     debug("fsPath not found in fsMap:", fsPath)
     throw new Error(`File "${fsPath}" not found`)
   }
@@ -38,7 +39,7 @@ export const importLocalFile = async (
       __esModule: true,
       default: jsonData,
     }
-  } else if (isStaticAssetPath(fsPath)) {
+  } else if (isStaticAsset) {
     const platformConfig = ctx.circuit.platform
     // Use projectBaseUrl for static file imports
     const staticUrl = `${platformConfig?.projectBaseUrl ?? ""}/${fsPath.startsWith("./") ? fsPath.slice(2) : fsPath}`
