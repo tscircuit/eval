@@ -44,13 +44,31 @@ export const importLocalFile = async (
       __esModule: true,
       default: objUrl,
     }
-  } else if (fsPath.endsWith(".glb")) {
-    const glbArray = Uint8Array.from(fileContent, (c) => c.charCodeAt(0))
-    const glbBlob = new Blob([glbArray], { type: "model/gltf-binary" })
-    const glbUrl = URL.createObjectURL(glbBlob)
-    preSuppliedImports[fsPath] = {
-      __esModule: true,
-      default: glbUrl,
+  } else if (fsPath.endsWith(".glb") || fsPath.endsWith(".kicad_mod")) {
+    // Check if platformConfig has projectBaseUrl for static file serving
+    const platformConfig = ctx.circuit.platform as any
+    if (platformConfig?.projectBaseUrl) {
+      // Use projectBaseUrl for static file imports
+      const staticUrl = `${platformConfig.projectBaseUrl}/${fsPath.startsWith('./') ? fsPath.slice(2) : fsPath}`
+      preSuppliedImports[fsPath] = {
+        __esModule: true,
+        default: staticUrl,
+      }
+    } else if (fsPath.endsWith(".glb")) {
+      // Fallback to blob URL for .glb files when no projectBaseUrl
+      const glbArray = Uint8Array.from(fileContent, (c) => c.charCodeAt(0))
+      const glbBlob = new Blob([glbArray], { type: "model/gltf-binary" })
+      const glbUrl = URL.createObjectURL(glbBlob)
+      preSuppliedImports[fsPath] = {
+        __esModule: true,
+        default: glbUrl,
+      }
+    } else {
+      // For .kicad_mod files without projectBaseUrl, return the content as string
+      preSuppliedImports[fsPath] = {
+        __esModule: true,
+        default: fileContent,
+      }
     }
   } else if (fsPath.endsWith(".gltf")) {
     const gltfJson = JSON.parse(fileContent)
