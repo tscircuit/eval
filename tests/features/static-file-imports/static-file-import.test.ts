@@ -1,9 +1,10 @@
 import { expect, test } from "bun:test"
 import { createCircuitWebWorker } from "lib"
+import { repoFileUrl } from "tests/fixtures/resourcePaths"
 
 test("should import .glb file as string URL when projectBaseUrl is configured", async () => {
   const circuitWebWorker = createCircuitWebWorker({
-    webWorkerUrl: new URL("../../webworker/entrypoint.ts", import.meta.url),
+    webWorkerUrl: repoFileUrl("dist/webworker/entrypoint.js").href,
     platform: {
       projectBaseUrl: "https://example.com/assets",
     },
