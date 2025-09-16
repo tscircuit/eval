@@ -44,7 +44,7 @@ jobs:
         run: |
           set +e
           for i in 1 2 3; do
-            bun test tests/${{ matrix.test-dir }} --timeout 30000
+            bun test tests/${{ matrix.test-dir }} --timeout 30000 -t ""
             code=$?
             if [ $code -eq 0 ]; then
               exit 0
