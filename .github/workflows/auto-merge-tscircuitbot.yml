@@ -5,38 +5,35 @@ on:
     types: [opened, synchronize, reopened]
   check_suite:
     types: [completed]
-
+# github.event.pull_request.user.login == 'tscircuitbot' && 
 jobs:
   auto-merge:
     runs-on: ubuntu-latest
     if: >
-      github.event.pull_request.user.login == 'tscircuitbot' && 
+      
       contains(github.event.pull_request.title, 'chore: update @tscircuit/core')
     
     steps:
-      - name: Wait for status checks
-        uses: lewagon/wait-on-check-action@v1.4.0
+      - name: Wait for all required checks
+        uses: fountainhead/action-wait-for-check@v1.2.0
         with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          checkName: test
           ref: ${{ github.event.pull_request.head.sha }}
-          check-name: 'test'
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
-          wait-interval: 20
           
-      - name: Wait for type check
-        uses: lewagon/wait-on-check-action@v1.4.0
+      - name: Wait for type check completion
+        uses: fountainhead/action-wait-for-check@v1.2.0
         with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          checkName: type-check
           ref: ${{ github.event.pull_request.head.sha }}
-          check-name: 'type-check'
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
-          wait-interval: 20
           
-      - name: Wait for format check
-        uses: lewagon/wait-on-check-action@v1.4.0
+      - name: Wait for format check completion
+        uses: fountainhead/action-wait-for-check@v1.2.0
         with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          checkName: format-check
           ref: ${{ github.event.pull_request.head.sha }}
-          check-name: 'format-check'
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
-          wait-interval: 120
           
       - name: Enable auto-merge
         uses: peter-evans/enable-pull-request-automerge@v3
