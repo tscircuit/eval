@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     if: >
       github.event.pull_request.user.login == 'tscircuitbot' && 
-      contains(github.event.pull_request.title, 'update @tscircuit/core')
+      contains(github.event.pull_request.title, 'chore: update @tscircuit/core')
     
     steps:
       - name: Wait for status checks
