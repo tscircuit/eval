@@ -4,11 +4,16 @@ import type { PlatformConfig } from "@tscircuit/props"
 
 export type RootCircuitEventName = CoreRootCircuitEventName | "debug:logOutput"
 
+export interface ProjectConfig {
+  projectBaseUrl?: string
+}
+
 export interface CircuitRunnerConfiguration {
   snippetsApiBaseUrl: string
   cjsRegistryUrl: string
   verbose?: boolean
   platform?: PlatformConfig
+  projectConfig?: ProjectConfig
 }
 
 export interface WebWorkerConfiguration extends CircuitRunnerConfiguration {
