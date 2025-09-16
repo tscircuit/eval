@@ -38,6 +38,29 @@ export const importLocalFile = async (
       __esModule: true,
       default: jsonData,
     }
+  } else if (fsPath.endsWith(".kicad_mod")) {
+    // Special handling for kicad_mod files - convert to circuit json
+    try {
+      const { parseKicadModToCircuitJson } = await import(
+        "kicad-component-converter"
+      )
+      const footprintCircuitJson = await parseKicadModToCircuitJson(fileContent)
+      preSuppliedImports[fsPath] = {
+        __esModule: true,
+        default: { footprintCircuitJson },
+      }
+    } catch (error: any) {
+      debug(
+        "Failed to parse kicad_mod file, falling back to static asset:",
+        error,
+      )
+      const platformConfig = ctx.circuit.platform
+      const staticUrl = `${platformConfig?.projectBaseUrl ?? ""}/${fsPath.startsWith("./") ? fsPath.slice(2) : fsPath}`
+      preSuppliedImports[fsPath] = {
+        __esModule: true,
+        default: staticUrl,
+      }
+    }
   } else if (isStaticAssetPath(fsPath)) {
     const platformConfig = ctx.circuit.platform
     // Use projectBaseUrl for static file imports

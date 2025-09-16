@@ -94,6 +94,7 @@
     "flatbush": "^4.5.0",
     "graphics-debug": "^0.0.60",
     "howfat": "^0.3.8",
+    "kicad-component-converter": "^0.1.19",
     "live-server": "^1.2.2",
     "looks-same": "^9.0.1",
     "minicssgrid": "^0.0.9",
