@@ -54,4 +54,4 @@ jobs:
           author: tscircuitbot <bot@tscircuit.com>
           labels: |
             auto-merge
-            dependencies
+            core
