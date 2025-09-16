@@ -10,6 +10,7 @@ import type { ExecutionContext } from "./execution-context"
 import { importEvalPath } from "./import-eval-path"
 import Debug from "debug"
 import { isStaticAssetPath } from "lib/shared/static-asset-extensions"
+import { parseKicadModToCircuitJson } from "kicad-component-converter"
 
 const debug = Debug("tsci:eval:import-local-file")
 
@@ -41,9 +42,6 @@ export const importLocalFile = async (
   } else if (fsPath.endsWith(".kicad_mod")) {
     // Special handling for kicad_mod files - convert to circuit json
     try {
-      const { parseKicadModToCircuitJson } = await import(
-        "kicad-component-converter"
-      )
       const footprintCircuitJson = await parseKicadModToCircuitJson(fileContent)
       preSuppliedImports[fsPath] = {
         __esModule: true,
