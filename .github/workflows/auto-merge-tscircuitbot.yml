@@ -5,12 +5,29 @@ on:
     types: [opened, synchronize, reopened]
   check_suite:
     types: [completed]
-# github.event.pull_request.user.login == 'tscircuitbot' && 
+
 jobs:
+  debug:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Debug event context
+        run: |
+          echo "Event name: ${{ github.event_name }}"
+          echo "PR number: ${{ github.event.pull_request.number }}"
+          echo "PR title: ${{ github.event.pull_request.title }}"
+          echo "PR user: ${{ github.event.pull_request.user.login }}"
+          echo "PR head sha: ${{ github.event.pull_request.head.sha }}"
+          echo "Check suite conclusion: ${{ github.event.check_suite.conclusion }}"
+          echo "Repository: ${{ github.repository }}"
+          echo "Actor: ${{ github.actor }}"
+          
   auto-merge:
     runs-on: ubuntu-latest
+    needs: debug
     if: >
-      
+      github.event.pull_request &&
+      (github.event.pull_request.user.login == 'tscircuitbot' || 
+       github.actor == 'tscircuitbot') &&
       contains(github.event.pull_request.title, 'chore: update @tscircuit/core')
     
     steps:
