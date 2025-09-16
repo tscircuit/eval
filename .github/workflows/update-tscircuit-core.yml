@@ -21,7 +21,7 @@ jobs:
           GH_TOKEN: ${{ secrets.TSCIRCUIT_BOT_GITHUB_TOKEN }}
         
       - name: Update @tscircuit/core
-        run: bun update --latest @tscircuit/core
+        run: bun add --no-cache @tscircuit/core@latest
         
       - name: Copy core dependencies (update to versions that core uses)
         run: bun scripts/copy-core-versions.ts
@@ -47,8 +47,6 @@ jobs:
             Automated update of @tscircuit/core to v${{ steps.get-version.outputs.new_version }}.
             
             This PR was created automatically by the update-tscircuit-core GitHub workflow.
-            
-            🤖 This PR will be automatically merged when all tests pass.
           branch: update-tscircuit-core
           base: main
           token: ${{ secrets.TSCIRCUIT_BOT_GITHUB_TOKEN }}
