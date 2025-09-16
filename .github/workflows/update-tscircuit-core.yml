@@ -47,8 +47,13 @@ jobs:
             Automated update of @tscircuit/core to v${{ steps.get-version.outputs.new_version }}.
             
             This PR was created automatically by the update-tscircuit-core GitHub workflow.
+            
+            🤖 This PR will be automatically merged when all tests pass.
           branch: update-tscircuit-core
           base: main
           token: ${{ secrets.TSCIRCUIT_BOT_GITHUB_TOKEN }}
           committer: tscircuitbot <bot@tscircuit.com>
           author: tscircuitbot <bot@tscircuit.com>
+          labels: |
+            auto-merge
+            dependencies

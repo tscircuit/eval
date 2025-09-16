@@ -1,0 +1,46 @@
+name: Auto-merge tscircuitbot PRs
+
+on:
+  pull_request_target:
+    types: [opened, synchronize, reopened]
+  check_suite:
+    types: [completed]
+
+jobs:
+  auto-merge:
+    runs-on: ubuntu-latest
+    if: >
+      github.event.pull_request.user.login == 'tscircuitbot' && 
+      contains(github.event.pull_request.title, 'update @tscircuit/core')
+    
+    steps:
+      - name: Wait for status checks
+        uses: lewagon/wait-on-check-action@v1.4.0
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          check-name: 'test'
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          wait-interval: 20
+          
+      - name: Wait for type check
+        uses: lewagon/wait-on-check-action@v1.4.0
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          check-name: 'type-check'
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          wait-interval: 20
+          
+      - name: Wait for format check
+        uses: lewagon/wait-on-check-action@v1.4.0
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          check-name: 'format-check'
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          wait-interval: 120
+          
+      - name: Enable auto-merge
+        uses: peter-evans/enable-pull-request-automerge@v3
+        with:
+          token: ${{ secrets.TSCIRCUIT_BOT_GITHUB_TOKEN }}
+          pull-request-number: ${{ github.event.pull_request.number }}
+          merge-method: squash
