@@ -21,7 +21,7 @@ jobs:
           GH_TOKEN: ${{ secrets.TSCIRCUIT_BOT_GITHUB_TOKEN }}
         
       - name: Update @tscircuit/core
-        run: bun add --no-cache @tscircuit/core@latest  
+        run: bun update --latest @tscircuit/core
         
       - name: Copy core dependencies (update to versions that core uses)
         run: bun scripts/copy-core-versions.ts
