@@ -43,7 +43,7 @@ jobs:
       - name: Run tests for ${{ matrix.test-dir }}
         run: |
           set +e
-          for i in 1 2 3; do
+          for i in 1 2 3 4; do
             bun test tests/${{ matrix.test-dir }} --timeout 30000
             code=$?
             if [ $code -eq 0 ]; then
@@ -52,7 +52,7 @@ jobs:
             if [ $code -ne 139 ]; then
               exit $code
             fi
-            echo "Segmentation fault detected, retrying ($i/3)..."
+            echo "Segmentation fault detected, retrying ($i/4)..."
           done
-          echo "Tests failed due to segmentation fault after 3 attempts."
+          echo "Tests failed due to segmentation fault after 4 attempts."
           exit 139
