@@ -31,11 +31,60 @@ jobs:
       contains(github.event.pull_request.title, 'chore: update @tscircuit/core')
     
     steps:
-      - name: Wait for all required checks
+      - name: Wait for Playwright tests
         uses: fountainhead/action-wait-for-check@v1.2.0
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           checkName: test
+          ref: ${{ github.event.pull_request.head.sha }}
+          
+      - name: Wait for test (circuit-runner)
+        uses: fountainhead/action-wait-for-check@v1.2.0
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          checkName: test (circuit-runner)
+          ref: ${{ github.event.pull_request.head.sha }}
+          
+      - name: Wait for test (custom-component-with-fsmap)
+        uses: fountainhead/action-wait-for-check@v1.2.0
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          checkName: test (custom-component-with-fsmap)
+          ref: ${{ github.event.pull_request.head.sha }}
+          
+      - name: Wait for test (examples)
+        uses: fountainhead/action-wait-for-check@v1.2.0
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          checkName: test (examples)
+          ref: ${{ github.event.pull_request.head.sha }}
+          
+      - name: Wait for test (features)
+        uses: fountainhead/action-wait-for-check@v1.2.0
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          checkName: test (features)
+          ref: ${{ github.event.pull_request.head.sha }}
+          
+      - name: Wait for test (node-resolution)
+        uses: fountainhead/action-wait-for-check@v1.2.0
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          checkName: test (node-resolution)
+          ref: ${{ github.event.pull_request.head.sha }}
+          
+      - name: Wait for test (repros)
+        uses: fountainhead/action-wait-for-check@v1.2.0
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          checkName: test (repros)
+          ref: ${{ github.event.pull_request.head.sha }}
+          
+      - name: Wait for test (util-fns)
+        uses: fountainhead/action-wait-for-check@v1.2.0
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          checkName: test (util-fns)
           ref: ${{ github.event.pull_request.head.sha }}
           
       - name: Wait for type check completion
