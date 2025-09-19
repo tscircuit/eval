@@ -1,6 +1,4 @@
-import { evalCompiledJs } from "./eval-compiled-js"
 import type { ExecutionContext } from "./execution-context"
-import * as Babel from "@babel/standalone"
 import { importLocalFile } from "./import-local-file"
 import { importSnippet } from "./import-snippet"
 import { resolveFilePath } from "lib/runner/resolveFilePath"

@@ -1,6 +1,6 @@
 # @tscircuit/eval
 
-Evaluate code in a full tscircuit runtime environment, including babel
+Evaluate code in a full tscircuit runtime environment, including Sucrase
 transpilation and execution, so you just need to send the code to be executed
 with automatic handling of imports from `@tsci/*`
 

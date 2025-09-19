@@ -50,7 +50,6 @@
     }
   },
   "devDependencies": {
-    "@babel/standalone": "^7.28.0",
     "@biomejs/biome": "^1.8.3",
     "@playwright/test": "^1.50.1",
     "@tscircuit/capacity-autorouter": "^0.0.107",
@@ -72,7 +71,7 @@
     "@tscircuit/schematic-match-adapt": "^0.0.16",
     "@tscircuit/schematic-trace-solver": "^0.0.37",
     "@tscircuit/simple-3d-svg": "^0.0.41",
-    "@types/babel__standalone": "^7.1.9",
+    "sucrase": "^3.35.0",
     "@types/bun": "^1.2.16",
     "@types/debug": "^4.1.12",
     "@types/react": "^19.1.8",

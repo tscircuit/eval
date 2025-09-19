@@ -1,4 +1,3 @@
-import * as Babel from "@babel/standalone"
 import {
   resolveFilePath,
   resolveFilePathOrThrow,
@@ -10,6 +9,7 @@ import type { ExecutionContext } from "./execution-context"
 import { importEvalPath } from "./import-eval-path"
 import Debug from "debug"
 import { isStaticAssetPath } from "lib/shared/static-asset-extensions"
+import { transformWithSucrase } from "./transform-with-sucrase"
 
 const debug = Debug("tsci:eval:import-local-file")
 
@@ -57,23 +57,14 @@ export const importLocalFile = async (
       }
     }
 
-    const result = Babel.transform(fileContent, {
-      presets: ["react", "typescript"],
-      plugins: ["transform-modules-commonjs"],
-      filename: "virtual.tsx",
-    })
-
-    if (!result || !result.code) {
-      throw new Error("Failed to transform code")
-    }
-
     try {
+      const transformedCode = transformWithSucrase(fileContent, fsPath)
       debug("evalCompiledJs called with:", {
-        code: result.code?.slice(0, 100),
+        code: transformedCode.slice(0, 100),
         dirname: dirname(fsPath),
       })
       const importRunResult = evalCompiledJs(
-        result.code,
+        transformedCode,
         preSuppliedImports,
         dirname(fsPath),
       )
@@ -89,18 +80,8 @@ export const importLocalFile = async (
     }
   } else if (fsPath.endsWith(".js")) {
     // For .js files, especially from node_modules, we need to transform them
-    const result = Babel.transform(fileContent, {
-      presets: ["env"],
-      plugins: ["transform-modules-commonjs"],
-      filename: fsPath,
-    })
-
-    if (!result || !result.code) {
-      throw new Error("Failed to transform JS code")
-    }
-
     preSuppliedImports[fsPath] = evalCompiledJs(
-      result.code,
+      transformWithSucrase(fileContent, fsPath),
       preSuppliedImports,
       dirname(fsPath),
     ).exports

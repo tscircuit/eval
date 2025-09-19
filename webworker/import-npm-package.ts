@@ -1,10 +1,10 @@
 import { evalCompiledJs } from "./eval-compiled-js"
 import type { ExecutionContext } from "./execution-context"
-import * as Babel from "@babel/standalone"
 import { dirname } from "lib/utils/dirname"
 import Debug from "debug"
 import { getImportsFromCode } from "lib/utils/get-imports-from-code"
 import { importEvalPath } from "./import-eval-path"
+import { transformWithSucrase } from "./transform-with-sucrase"
 
 const debug = Debug("tsci:eval:import-npm-package")
 
@@ -58,18 +58,13 @@ export async function importNpmPackage(
     }
   }
 
-  const transpiled = Babel.transform(content!, {
-    presets: ["react", "env"],
-    plugins: ["transform-modules-commonjs"],
-    filename: importName,
-  })
-
-  if (!transpiled.code) {
-    throw new Error(`Babel transpilation failed for ${importName}`)
-  }
+  const transformedCode = transformWithSucrase(
+    content!,
+    finalImportName || importName,
+  )
   try {
     const exports = evalCompiledJs(
-      transpiled.code!,
+      transformedCode,
       preSuppliedImports,
       cwd,
     ).exports

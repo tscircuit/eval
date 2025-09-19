@@ -12,7 +12,7 @@ export default defineConfig({
     "@tscircuit/core",
     "circuit-json",
     "@tscircuit/parts-engine",
-    "@babel/standalone",
+    "sucrase",
     "@tscircuit/math-utils",
     "zod",
   ],
