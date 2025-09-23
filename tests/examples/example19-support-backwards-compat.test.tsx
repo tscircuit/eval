@@ -14,7 +14,7 @@ test("support backwards compat for the `.ts` extension files", async () => {
             <resistor name="R1" resistance="1k" />
           </board>
         )
-      `
+      `,
     },
     entrypoint: "index.ts",
   })
