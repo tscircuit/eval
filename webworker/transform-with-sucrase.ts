@@ -1,7 +1,7 @@
 import { transform, type Transform as SucraseTransform } from "sucrase"
 
 const TS_EXTENSIONS = new Set([".ts", ".tsx", ".mts", ".cts"])
-const JSX_EXTENSIONS = new Set([".tsx", ".jsx"])
+const JSX_EXTENSIONS = new Set([".tsx", ".jsx", ".ts"])
 
 const stripQueryAndHash = (filePath: string) => {
   const queryIndex = filePath.indexOf("?")
