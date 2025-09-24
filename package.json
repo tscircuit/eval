@@ -56,7 +56,7 @@
     "@tscircuit/checks": "^0.0.75",
     "@tscircuit/circuit-json-flex": "^0.0.3",
     "@tscircuit/circuit-json-util": "^0.0.67",
-    "@tscircuit/core": "^0.0.745",
+    "@tscircuit/core": "^0.0.746",
     "@tscircuit/footprinter": "^0.0.236",
     "@tscircuit/import-snippet": "^0.0.4",
     "@tscircuit/infgrid-ijump-astar": "^0.0.33",
@@ -99,7 +99,7 @@
     "pkg-pr-new": "^0.0.37",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
-    "schematic-symbols": "^0.0.201",
+    "schematic-symbols": "^0.0.202",
     "ts-expect": "^1.3.0",
     "tsup": "^8.2.4"
   },
