@@ -1,6 +1,6 @@
 import type { PlatformConfig } from "@tscircuit/props"
 import { jlcPartsEngine } from "@tscircuit/parts-engine"
-
+import { parseKicadModToCircuitJson } from "kicad-component-converter"
 const KICAD_FOOTPRINT_CACHE_URL = "https://kicad-mod-cache.tscircuit.com"
 
 export const getPlatformConfig = (): PlatformConfig => ({
@@ -23,6 +23,20 @@ export const getPlatformConfig = (): PlatformConfig => ({
         footprintCircuitJson: filtered,
         cadModel: { wrlUrl, modelUnitToMmScale: 2.54 },
       }
+    },
+  },
+  footprintFileParserMap: {
+    kicad_mod: {
+      loadFromUrl: async (url: string) => {
+        const kicadJson = await parseKicadModToCircuitJson(
+          atob(url.replace("data:text/plain;base64,", "")),
+        )
+        return {
+          footprintCircuitJson: Array.isArray(kicadJson)
+            ? kicadJson
+            : [kicadJson],
+        }
+      },
     },
   },
 })

@@ -1,41 +1,19 @@
 import { CircuitRunner } from "lib/index"
-import { getPlatformConfig } from "lib/getPlatformConfig"
 import { test } from "bun:test"
 import { convertCircuitJsonToPcbSvg } from "circuit-to-svg"
 import { expect } from "bun:test"
-import { parseKicadModToCircuitJson } from "kicad-component-converter"
 
 test(
   "example20-kicad-direct-import",
   async () => {
-    const basePlatformConfig = getPlatformConfig()
-
-    const runner = new CircuitRunner({
-      platform: {
-        ...basePlatformConfig,
-        footprintFileParserMap: {
-          kicad_mod: {
-            loadFromUrl: async (url: string) => {
-              const kicadJson = await parseKicadModToCircuitJson(
-                atob(url.replace("data:text/plain;base64,", "")),
-              )
-              return {
-                footprintCircuitJson: Array.isArray(kicadJson)
-                  ? kicadJson
-                  : [kicadJson],
-              }
-            },
-          },
-        },
-      },
-    })
+    const runner = new CircuitRunner()
 
     await runner.executeWithFsMap({
       entrypoint: "index.tsx",
       fsMap: {
         "index.tsx": `
 			import kicadMod from "./poly.kicad_mod"
-					
+
 			circuit.add(
 			  <board width="10mm" height="10mm">
 				<chip
