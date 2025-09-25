@@ -43,7 +43,11 @@ export const importLocalFile = async (
     const fileExtension = fsPath.split(".").pop()
     const footprintParser =
       platformConfig?.footprintFileParserMap?.[fileExtension!]
-    if (fileExtension == 'kicad_mod' && footprintParser && footprintParser.loadFromUrl) {
+    if (
+      fileExtension == "kicad_mod" &&
+      footprintParser &&
+      footprintParser.loadFromUrl
+    ) {
       try {
         const contentUrl = `data:text/plain;base64,${btoa(fileContent)}`
         const result = await footprintParser.loadFromUrl(contentUrl)
