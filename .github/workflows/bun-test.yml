@@ -5,28 +5,42 @@ on:
   pull_request:
 
 jobs:
+  check-skip-condition:
+    runs-on: ubuntu-latest
+    outputs:
+      should-skip: ${{ steps.skip-check.outputs.should-skip }}
+    steps:
+      - name: Check if tests should be skipped
+        id: skip-check
+        run: |
+          if [[ "${{ github.event_name }}" != "pull_request" || "${{ github.event.pull_request.title }}" != "chore: bump version" ]]; then
+            echo "should-skip=false" >> $GITHUB_OUTPUT
+          else
+            echo "should-skip=true" >> $GITHUB_OUTPUT
+          fi
+
   validate-test-matrix:
     runs-on: ubuntu-latest
-    if: "${{ github.event_name != 'pull_request' || github.event.pull_request.title != 'chore: bump version' }}"
+    needs: check-skip-condition
+    if: needs.check-skip-condition.outputs.should-skip == 'false'
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      
+
       - name: Setup bun
         uses: oven-sh/setup-bun@v2
         with:
           bun-version: latest
-      
+
       - name: Validate test matrix covers all directories
         run: bun run scripts/validate-test-matrix.js
 
   test:
     runs-on: ubuntu-latest
-    if: "${{ github.event_name != 'pull_request' || github.event.pull_request.title != 'chore: bump version' }}"
-    
     timeout-minutes: 5
-    needs: validate-test-matrix
+    needs: [check-skip-condition, validate-test-matrix]
+    if: needs.check-skip-condition.outputs.should-skip == 'false'
     strategy:
       matrix:
         test-dir: [circuit-runner, custom-component-with-fsmap, examples, features, node-resolution, repros, util-fns]
