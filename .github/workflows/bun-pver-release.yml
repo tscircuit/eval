@@ -25,7 +25,7 @@ jobs:
         with:
           node-version: 22
           registry-url: https://registry.npmjs.org/
-      - run: npm install -g pver
+      - run: npm install -g pver@0.0.41
       - run: bun install --frozen-lockfile
       - run: bun run build
       - run: pver release --no-push-main
