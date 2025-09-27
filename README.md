@@ -4,6 +4,8 @@ Evaluate code in a full tscircuit runtime environment, including Sucrase
 transpilation and execution, so you just need to send the code to be executed
 with automatic handling of imports from `@tsci/*`
 
+[Contributor Getting Started Video](https://share.cleanshot.com/x3DTVyGM) &middot; [NPM Package](https://npmjs.org/package/@tscircuit/eval)
+
 The `circuit` object from `@tscircuit/core` is already exposed on the global
 scope. All imports from `@tsci/*` are automatically handled.
 
