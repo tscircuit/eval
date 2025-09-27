@@ -4,61 +4,72 @@ name: Bun Test
 on:
   pull_request:
 
-jobs:
-  check-skip-condition:
-    runs-on: ubuntu-latest
-    outputs:
-      should-skip: ${{ steps.skip-check.outputs.should-skip }}
-    steps:
-      - name: Check if tests should be skipped
-        id: skip-check
-        run: |
-          if [[ "${{ github.event_name }}" != "pull_request" || "${{ github.event.pull_request.title }}" != "chore: bump version" ]]; then
-            echo "should-skip=false" >> $GITHUB_OUTPUT
-          else
-            echo "should-skip=true" >> $GITHUB_OUTPUT
-          fi
+env:
+  SKIP_PR_TITLE: "chore: bump version"
 
+jobs:
   validate-test-matrix:
     runs-on: ubuntu-latest
-    needs: check-skip-condition
-    if: needs.check-skip-condition.outputs.should-skip == 'false'
-
     steps:
+      - name: Check if should skip
+        id: should-skip
+        run: |
+          if [[ "${{ github.event.pull_request.title }}" == "${{ env.SKIP_PR_TITLE }}" ]]; then
+            echo "Skipping validation - this is a version bump PR"
+            exit 0
+          fi
+
       - name: Checkout code
+        if: github.event.pull_request.title != env.SKIP_PR_TITLE
         uses: actions/checkout@v4
 
       - name: Setup bun
+        if: github.event.pull_request.title != env.SKIP_PR_TITLE
         uses: oven-sh/setup-bun@v2
         with:
           bun-version: latest
 
       - name: Validate test matrix covers all directories
+        if: github.event.pull_request.title != env.SKIP_PR_TITLE
         run: bun run scripts/validate-test-matrix.js
 
   test:
     runs-on: ubuntu-latest
     timeout-minutes: 5
-    needs: [check-skip-condition, validate-test-matrix]
-    if: needs.check-skip-condition.outputs.should-skip == 'false'
+    needs: validate-test-matrix
     strategy:
       matrix:
         test-dir: [circuit-runner, custom-component-with-fsmap, examples, features, node-resolution, repros, util-fns]
 
     steps:
+      - name: Check if should skip
+        id: should-skip
+        run: |
+          if [[ "${{ github.event.pull_request.title }}" == "${{ env.SKIP_PR_TITLE }}" ]]; then
+            echo "Skipping tests - this is a version bump PR"
+            exit 0
+          fi
+
       - name: Checkout code
+        if: github.event.pull_request.title != env.SKIP_PR_TITLE
         uses: actions/checkout@v4
 
       - name: Setup bun
+        if: github.event.pull_request.title != env.SKIP_PR_TITLE
         uses: oven-sh/setup-bun@v2
         with:
           bun-version: latest
 
       - name: Install dependencies
+        if: github.event.pull_request.title != env.SKIP_PR_TITLE
         run: bun install
 
-      - run: bun run build
+      - name: Build project
+        if: github.event.pull_request.title != env.SKIP_PR_TITLE
+        run: bun run build
+
       - name: Run tests for ${{ matrix.test-dir }}
+        if: github.event.pull_request.title != env.SKIP_PR_TITLE
         run: |
           set +e
           for i in 1 2 3 4; do
