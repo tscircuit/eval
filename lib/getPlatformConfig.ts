@@ -28,9 +28,8 @@ export const getPlatformConfig = (): PlatformConfig => ({
   footprintFileParserMap: {
     kicad_mod: {
       loadFromUrl: async (url: string) => {
-        const kicadJson = await parseKicadModToCircuitJson(
-          atob(url.replace("data:text/plain;base64,", "")),
-        )
+        const kicadContent = await fetch(url).then((res) => res.text())
+        const kicadJson = await parseKicadModToCircuitJson(kicadContent)
         return {
           footprintCircuitJson: Array.isArray(kicadJson)
             ? kicadJson
