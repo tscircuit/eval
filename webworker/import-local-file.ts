@@ -40,35 +40,11 @@ export const importLocalFile = async (
     }
   } else if (isStaticAssetPath(fsPath)) {
     const platformConfig = ctx.circuit.platform
-    const fileExtension = fsPath.split(".").pop()
-    const footprintParser =
-      platformConfig?.footprintFileParserMap?.[fileExtension!]
-    if (
-      fileExtension == "kicad_mod" &&
-      footprintParser &&
-      footprintParser.loadFromUrl
-    ) {
-      try {
-        const contentUrl = `data:text/plain;base64,${btoa(fileContent)}`
-        const result = await footprintParser.loadFromUrl(contentUrl)
-        preSuppliedImports[fsPath] = {
-          __esModule: true,
-          default: result.footprintCircuitJson,
-        }
-      } catch (error) {
-        console.log("here", error)
-        const staticUrl = `${platformConfig?.projectBaseUrl ?? ""}/${fsPath.startsWith("./") ? fsPath.slice(2) : fsPath}`
-        preSuppliedImports[fsPath] = {
-          __esModule: true,
-          default: staticUrl,
-        }
-      }
-    } else {
-      const staticUrl = `${platformConfig?.projectBaseUrl ?? ""}/${fsPath.startsWith("./") ? fsPath.slice(2) : fsPath}`
-      preSuppliedImports[fsPath] = {
-        __esModule: true,
-        default: staticUrl,
-      }
+    // Use projectBaseUrl for static file imports
+    const staticUrl = `${platformConfig?.projectBaseUrl ?? ""}/${fsPath.startsWith("./") ? fsPath.slice(2) : fsPath}`
+    preSuppliedImports[fsPath] = {
+      __esModule: true,
+      default: staticUrl,
     }
   } else if (fsPath.endsWith(".tsx") || fsPath.endsWith(".ts")) {
     const importNames = getImportsFromCode(fileContent)
