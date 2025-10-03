@@ -1,7 +1,7 @@
 {
   "name": "@tscircuit/eval",
   "main": "dist/lib/index.js",
-  "version": "0.0.360",
+  "version": "0.0.361",
   "type": "module",
   "scripts": {
     "build": "bun run build:lib && bun run build:webworker && bun run build:blob-url && bun run build:runner && bun run build:worker-wrapper",
@@ -106,7 +106,8 @@
     "circuit-json-to-gltf": "^0.0.7",
     "poppygl": "^0.0.6",
     "circuit-json-to-spice": "^0.0.10",
-    "spicey": "^0.0.3"},
+    "spicey": "^0.0.3"
+  },
   "peerDependencies": {
     "typescript": "^5.0.0",
     "@tscircuit/core": "*",
