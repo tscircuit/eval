@@ -3,6 +3,9 @@
   "main": "dist/lib/index.js",
   "version": "0.0.363",
   "type": "module",
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "bun run build:lib && bun run build:webworker && bun run build:blob-url && bun run build:runner && bun run build:worker-wrapper",
     "build:lib": "tsup-node --config tsup-lib.config.ts",
