@@ -55,11 +55,11 @@
   "devDependencies": {
     "@biomejs/biome": "^1.8.3",
     "@playwright/test": "^1.50.1",
-    "@tscircuit/capacity-autorouter": "^0.0.129",
+    "@tscircuit/capacity-autorouter": "^0.0.131",
     "@tscircuit/checks": "^0.0.84",
     "@tscircuit/circuit-json-flex": "^0.0.3",
     "@tscircuit/circuit-json-util": "^0.0.67",
-    "@tscircuit/core": "^0.0.767",
+    "@tscircuit/core": "^0.0.768",
     "@tscircuit/footprinter": "^0.0.236",
     "@tscircuit/import-snippet": "^0.0.4",
     "@tscircuit/infgrid-ijump-astar": "^0.0.33",
@@ -109,8 +109,8 @@
     "circuit-json-to-gltf": "^0.0.7",
     "poppygl": "^0.0.6",
     "circuit-json-to-spice": "^0.0.10",
-    "spicey": "^0.0.4"
-  },
+    "spicey": "^0.0.4",
+    "@tscircuit/common": "^0.0.9"},
   "peerDependencies": {
     "typescript": "^5.0.0",
     "@tscircuit/core": "*",
