@@ -71,17 +71,33 @@ jobs:
       - name: Run tests for ${{ matrix.test-dir }}
         if: github.event.pull_request.title != env.SKIP_PR_TITLE
         run: |
-          set +e
-          for i in 1 2 3 4; do
-            bun test tests/${{ matrix.test-dir }} --timeout 30000
-            code=$?
-            if [ $code -eq 0 ]; then
-              exit 0
-            fi
-            if [ $code -ne 139 ]; then
-              exit $code
-            fi
-            echo "Segmentation fault detected, retrying ($i/4)..."
+          mapfile -t test_files < <(find tests/${{ matrix.test-dir }} -type f \( -name "*.test.ts" -o -name "*.test.tsx" \) | sort)
+          if [ ${#test_files[@]} -eq 0 ]; then
+            echo "No test files found in tests/${{ matrix.test-dir }}."
+            exit 0
+          fi
+
+          for test_file in "${test_files[@]}"; do
+            echo "Running tests in $test_file"
+            attempt=1
+            while [ $attempt -le 4 ]; do
+              bun test "$test_file" --timeout 30000
+              code=$?
+
+              if [ $code -eq 0 ]; then
+                break
+              fi
+
+              if [ $code -ne 139 ]; then
+                exit $code
+              fi
+
+              if [ $attempt -eq 4 ]; then
+                echo "Segmentation fault detected for $test_file after $attempt attempts."
+                exit 139
+              fi
+
+              attempt=$((attempt + 1))
+              echo "Segmentation fault detected for $test_file, retrying ($attempt/4)..."
+            done
           done
-          echo "Tests failed due to segmentation fault after 4 attempts."
-          exit 139
