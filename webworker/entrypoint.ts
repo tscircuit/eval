@@ -15,6 +15,7 @@ import { normalizeFsMap } from "lib/runner/normalizeFsMap"
 import type { RootCircuit } from "@tscircuit/core"
 import { setupDefaultEntrypointIfNeeded } from "lib/runner/setupDefaultEntrypointIfNeeded"
 import { setupFetchProxy } from "./fetchProxy"
+import { parseTsconfigPaths } from "lib/utils/parse-tsconfig-paths"
 
 globalThis.React = React
 setupFetchProxy()
@@ -124,9 +125,6 @@ const webWorkerApi = {
     executionContext.fsMap = normalizeFsMap(opts.fsMap)
 
     // Parse tsconfig paths if tsconfig.json exists in fsMap
-    const { parseTsconfigPaths } = await import(
-      "lib/utils/parse-tsconfig-paths"
-    )
     executionContext.tsconfigPaths = parseTsconfigPaths(executionContext.fsMap)
     if (!executionContext.fsMap[entrypoint]) {
       throw new Error(`Entrypoint "${opts.entrypoint}" not found`)
