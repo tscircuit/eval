@@ -114,11 +114,14 @@ const webWorkerApi = {
 
     let entrypoint = opts.entrypoint!
 
+    const tsconfigContent = opts.fsMap["tsconfig.json"]
+
     executionContext = createExecutionContext(circuitRunnerConfiguration, {
       name: opts.name,
       platform: circuitRunnerConfiguration.platform,
       projectConfig: circuitRunnerConfiguration.projectConfig,
       debugNamespace,
+      tsconfigContent,
     })
     bindEventListeners(executionContext.circuit)
     executionContext.fsMap = normalizeFsMap(opts.fsMap)

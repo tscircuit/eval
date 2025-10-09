@@ -1,5 +1,6 @@
 import { normalizeFilePath } from "./normalizeFsMap"
 import { dirname } from "lib/utils/dirname"
+import { getTsConfigPaths } from "lib/utils/get-ts-config-paths"
 
 function resolveRelativePath(importPath: string, cwd: string): string {
   // Handle parent directory navigation
@@ -22,8 +23,9 @@ function resolveRelativePath(importPath: string, cwd: string): string {
 export const resolveFilePath = (
   unknownFilePath: string,
   fsMapOrAllFilePaths: Record<string, string> | string[],
-  cwd?: string,
-) => {
+  opts: { cwd?: string; tsconfigContent?: string } = {},
+): string | null => {
+  const { cwd, tsconfigContent } = opts
   // Handle parent directory navigation properly
   const resolvedPath = cwd
     ? resolveRelativePath(unknownFilePath, cwd)
@@ -59,6 +61,27 @@ export const resolveFilePath = (
     }
   }
 
+  const tsconfigPaths = getTsConfigPaths(tsconfigContent)
+
+  if (tsconfigPaths) {
+    for (const [alias, paths] of Object.entries(tsconfigPaths)) {
+      const aliasRegex = new RegExp(`^${alias.replace("*", "(.*)")}$`)
+      const match = unknownFilePath.match(aliasRegex)
+
+      if (match) {
+        for (const p of paths) {
+          const resolvedAliasPath = p.replace("*", match[1] ?? "")
+          let filePath: string | null = null
+          filePath = resolveFilePath(resolvedAliasPath, fsMapOrAllFilePaths, {
+            ...opts,
+            cwd: "", // Don't use cwd for alias resolution
+          })
+          if (filePath) return filePath
+        }
+      }
+    }
+  }
+
   // Check if it's an absolute import
   if (!unknownFilePath.startsWith("./") && !unknownFilePath.startsWith("../")) {
     const normalizedUnknownFilePath = normalizeFilePath(unknownFilePath)
@@ -79,11 +102,18 @@ export const resolveFilePath = (
 export const resolveFilePathOrThrow = (
   unknownFilePath: string,
   fsMapOrAllFilePaths: Record<string, string> | string[],
+  opts: { cwd?: string; tsconfigContent?: string } = {},
 ) => {
-  const resolvedFilePath = resolveFilePath(unknownFilePath, fsMapOrAllFilePaths)
+  const resolvedFilePath = resolveFilePath(
+    unknownFilePath,
+    fsMapOrAllFilePaths,
+    opts,
+  )
   if (!resolvedFilePath) {
     throw new Error(
-      `File not found "${unknownFilePath}", available paths:\n\n${Object.keys(fsMapOrAllFilePaths).join(", ")}`,
+      `File not found "${unknownFilePath}", available paths:\n\n${Object.keys(
+        fsMapOrAllFilePaths,
+      ).join(", ")}`,
     )
   }
   return resolvedFilePath

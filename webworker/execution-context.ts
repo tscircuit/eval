@@ -14,6 +14,8 @@ export interface ExecutionContext extends WebWorkerConfiguration {
   entrypoint: string
   preSuppliedImports: Record<string, any>
   circuit: RootCircuit
+  tsconfigContent?: string
+  cwd?: string
 }
 
 export function createExecutionContext(
@@ -23,6 +25,7 @@ export function createExecutionContext(
     platform?: PlatformConfig
     projectConfig?: Partial<PlatformConfig>
     debugNamespace?: string
+    tsconfigContent?: string
   } = {},
 ): ExecutionContext {
   globalThis.React = React
@@ -59,6 +62,7 @@ export function createExecutionContext(
       "@tscircuit/props": {},
     },
     circuit,
+    tsconfigContent: opts.tsconfigContent,
     ...webWorkerConfiguration,
   }
 }

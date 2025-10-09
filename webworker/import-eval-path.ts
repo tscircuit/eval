@@ -45,12 +45,11 @@ export async function importEvalPath(
     return
   }
 
-  const resolvedLocalImportPath = resolveFilePath(
-    importName,
-    ctx.fsMap,
-    opts.cwd,
-  )
+  const resolvedLocalImportPath = resolveFilePath(importName, ctx.fsMap, {
+    cwd: opts.cwd,
+  })
   if (resolvedLocalImportPath) {
+    ctx.cwd = opts.cwd
     return importLocalFile(resolvedLocalImportPath, ctx, depth)
   }
 
