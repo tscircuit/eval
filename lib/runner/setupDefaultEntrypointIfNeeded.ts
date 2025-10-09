@@ -42,7 +42,7 @@ export const setupDefaultEntrypointIfNeeded = (opts: {
     const mainComponentCode =
       opts.fsMap[
         resolveFilePathOrThrow(opts.mainComponentPath, {
-          fsMapOrAllFilePaths: opts.fsMap,
+          fsMap: opts.fsMap,
         })
       ]
     if (!mainComponentCode) {

@@ -27,15 +27,14 @@ function resolveRelativePath(importPath: string, cwd: string): string {
 export const resolveFilePath = (
   unknownFilePath: string,
   opts: {
-    fsMapOrAllFilePaths: Record<string, string> | string[]
+    fsMap?: Record<string, string>
+    filePaths?: string[]
     cwd?: string
     tsconfigPaths?: TsconfigPaths | null
   },
 ) => {
   const filePaths = new Set(
-    Array.isArray(opts.fsMapOrAllFilePaths)
-      ? opts.fsMapOrAllFilePaths
-      : Object.keys(opts.fsMapOrAllFilePaths),
+    opts.filePaths ?? (opts.fsMap ? Object.keys(opts.fsMap) : []),
   )
 
   const normalizedFilePathMap = new Map<string, string>()
@@ -124,16 +123,15 @@ export const resolveFilePath = (
 export const resolveFilePathOrThrow = (
   unknownFilePath: string,
   opts: {
-    fsMapOrAllFilePaths: Record<string, string> | string[]
+    fsMap?: Record<string, string>
+    filePaths?: string[]
     cwd?: string
     tsconfigPaths?: TsconfigPaths | null
   },
 ) => {
   const resolvedFilePath = resolveFilePath(unknownFilePath, opts)
   if (!resolvedFilePath) {
-    const paths = Array.isArray(opts.fsMapOrAllFilePaths)
-      ? opts.fsMapOrAllFilePaths
-      : Object.keys(opts.fsMapOrAllFilePaths)
+    const paths = opts.filePaths ?? (opts.fsMap ? Object.keys(opts.fsMap) : [])
     throw new Error(
       `File not found "${unknownFilePath}", available paths:\n\n${paths.join(", ")}`,
     )

@@ -17,17 +17,24 @@ export const importLocalFile = async (
   importName: string,
   ctx: ExecutionContext,
   depth = 0,
+  opts: {
+    /** The resolved file system path (if different from importName) */
+    resolvedPath?: string
+  } = {},
 ) => {
   debug("importLocalFile called with:", {
     importName,
+    opts,
   })
 
   const { fsMap, preSuppliedImports } = ctx
 
-  const fsPath = resolveFilePathOrThrow(importName, {
-    fsMapOrAllFilePaths: fsMap,
-    tsconfigPaths: ctx.tsconfigPaths,
-  })
+  const fsPath =
+    opts.resolvedPath ??
+    resolveFilePathOrThrow(importName, {
+      fsMap,
+      tsconfigPaths: ctx.tsconfigPaths,
+    })
   debug("fsPath:", fsPath)
   if (!ctx.fsMap[fsPath]) {
     debug("fsPath not found in fsMap:", fsPath)
@@ -37,7 +44,7 @@ export const importLocalFile = async (
   debug("fileContent:", fileContent?.slice(0, 100))
   if (fsPath.endsWith(".json")) {
     const jsonData = JSON.parse(fileContent)
-    preSuppliedImports[fsPath] = {
+    preSuppliedImports[importName] = {
       __esModule: true,
       default: jsonData,
     }
@@ -45,7 +52,7 @@ export const importLocalFile = async (
     const platformConfig = ctx.circuit.platform
     // Use projectBaseUrl for static file imports
     const staticUrl = `${platformConfig?.projectBaseUrl ?? ""}/${fsPath.startsWith("./") ? fsPath.slice(2) : fsPath}`
-    preSuppliedImports[fsPath] = {
+    preSuppliedImports[importName] = {
       __esModule: true,
       default: staticUrl,
     }
@@ -75,7 +82,7 @@ export const importLocalFile = async (
         fsPath,
         importRunResult,
       })
-      preSuppliedImports[fsPath] = importRunResult.exports
+      preSuppliedImports[importName] = importRunResult.exports
     } catch (error: any) {
       throw new Error(
         `Eval compiled js error for "${importName}": ${error.message}`,
@@ -83,7 +90,7 @@ export const importLocalFile = async (
     }
   } else if (fsPath.endsWith(".js")) {
     // For .js files, especially from node_modules, we need to transform them
-    preSuppliedImports[fsPath] = evalCompiledJs(
+    preSuppliedImports[importName] = evalCompiledJs(
       transformWithSucrase(fileContent, fsPath),
       preSuppliedImports,
       dirname(fsPath),

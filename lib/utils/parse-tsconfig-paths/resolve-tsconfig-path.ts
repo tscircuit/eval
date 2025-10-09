@@ -1,72 +1,7 @@
 import Debug from "debug"
+import type { TsconfigPaths } from "./types"
 
-const debug = Debug("tsci:eval:parse-tsconfig-paths")
-
-export interface TsconfigPaths {
-  baseUrl?: string
-  paths?: Record<string, string[]>
-}
-
-/**
- * Parse tsconfig.json from fsMap to extract path mappings
- */
-export function parseTsconfigPaths(
-  fsMap: Record<string, string>,
-): TsconfigPaths | null {
-  // Try common tsconfig locations
-  const possibleTsconfigPaths = [
-    "tsconfig.json",
-    "./tsconfig.json",
-    "src/tsconfig.json",
-    "./src/tsconfig.json",
-  ]
-
-  for (const tsconfigPath of possibleTsconfigPaths) {
-    const content = fsMap[tsconfigPath]
-    if (content) {
-      try {
-        // Remove comments from JSON (tsconfig allows comments)
-        const jsonContent = removeJsonComments(content)
-        const tsconfig = JSON.parse(jsonContent)
-
-        const compilerOptions = tsconfig.compilerOptions
-        if (!compilerOptions) {
-          continue
-        }
-
-        const result: TsconfigPaths = {}
-
-        if (compilerOptions.baseUrl) {
-          result.baseUrl = compilerOptions.baseUrl
-        }
-
-        if (compilerOptions.paths) {
-          result.paths = compilerOptions.paths
-        }
-
-        debug("Parsed tsconfig paths:", result)
-        return result
-      } catch (error: any) {
-        debug(`Failed to parse tsconfig at ${tsconfigPath}:`, error.message)
-      }
-    }
-  }
-
-  return null
-}
-
-/**
- * Remove single-line and multi-line comments from JSON string
- */
-function removeJsonComments(jsonString: string): string {
-  // Remove single-line comments (// ...)
-  let result = jsonString.replace(/\/\/.*$/gm, "")
-
-  // Remove multi-line comments (/* ... */)
-  result = result.replace(/\/\*[\s\S]*?\*\//g, "")
-
-  return result
-}
+const debug = Debug("tsci:eval:resolve-tsconfig-path")
 
 /**
  * Resolve an import path using tsconfig path mappings

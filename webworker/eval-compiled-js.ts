@@ -7,7 +7,7 @@ export function evalCompiledJs(
 ) {
   ;(globalThis as any).__tscircuit_require = (name: string) => {
     const resolvedFilePath = resolveFilePath(name, {
-      fsMapOrAllFilePaths: preSuppliedImports,
+      fsMap: preSuppliedImports,
       cwd,
     })
 
