@@ -25,6 +25,7 @@ export const resolveFilePath = (
   fsMapOrAllFilePaths: Record<string, string> | string[],
   opts: { cwd?: string; tsconfigContent?: string } = {},
 ): string | null => {
+  console.log("resolveFilePath", { unknownFilePath, opts })
   const { cwd, tsconfigContent } = opts
   // Handle parent directory navigation properly
   const resolvedPath = cwd

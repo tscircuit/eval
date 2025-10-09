@@ -23,7 +23,7 @@ export const createProject = async (fsMap: Record<string, string>) => {
             entrypoint: "index.tsx",
           })
 
-          runner.render(document.getElementById("root"))
+          await runner.renderUntilSettled()
         </script>
       `)
     } else {
