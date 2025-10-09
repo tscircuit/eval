@@ -18,10 +18,14 @@ export const createProject = async (fsMap: Record<string, string>) => {
           })
           window.runner = runner
 
-          await runner.executeWithFsMap({
-            fsMap: ${JSON.stringify(fsMap)},
-            entrypoint: "index.tsx",
-          })
+          try {
+            await runner.executeWithFsMap({
+              fsMap: ${JSON.stringify(fsMap)},
+              entrypoint: "index.tsx",
+            })
+          } catch (e) {
+            console.error(e)
+          }
 
           await runner.renderUntilSettled()
         </script>
