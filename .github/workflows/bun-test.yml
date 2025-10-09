@@ -88,16 +88,16 @@ jobs:
                 break
               fi
 
-              if [ $code -ne 139 ]; then
+              if [ $code -ne 139 ] && [ $code -ne 132 ]; then
                 exit $code
               fi
 
               if [ $attempt -eq 4 ]; then
-                echo "Segmentation fault detected for $test_file after $attempt attempts."
-                exit 139
+                echo "Segmentation fault or illegal instruction detected for $test_file after $attempt attempts (exit=$code)."
+                exit $code
               fi
 
               attempt=$((attempt + 1))
-              echo "Segmentation fault detected for $test_file, retrying ($attempt/4)..."
+              echo "Segfault (139) or illegal instruction (132) detected for $test_file, retrying ($attempt/4)..."
             done
           done

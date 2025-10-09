@@ -1,23 +1,7 @@
 import { normalizeFilePath } from "./normalizeFsMap"
 import { dirname } from "lib/utils/dirname"
-
-function resolveRelativePath(importPath: string, cwd: string): string {
-  // Handle parent directory navigation
-  if (importPath.startsWith("../")) {
-    const parentDir = dirname(cwd)
-    return resolveRelativePath(importPath.slice(3), parentDir)
-  }
-  // Handle current directory
-  if (importPath.startsWith("./")) {
-    return resolveRelativePath(importPath.slice(2), cwd)
-  }
-  // Handle absolute path
-  if (importPath.startsWith("/")) {
-    return importPath.slice(1)
-  }
-  // Handle relative path
-  return `${cwd}/${importPath}`
-}
+import { getTsConfig, resolveWithTsconfigPaths } from "./tsconfigPaths"
+import { resolveRelativePath } from "lib/utils/resolveRelativePath"
 
 export const resolveFilePath = (
   unknownFilePath: string,
@@ -57,6 +41,23 @@ export const resolveFilePath = (
     if (normalizedFilePathMap.has(possibleFilePath)) {
       return normalizedFilePathMap.get(possibleFilePath)!
     }
+  }
+
+  // Try resolving using tsconfig "paths" mapping when the import is non-relative
+  const tsConfig =
+    !Array.isArray(fsMapOrAllFilePaths) &&
+    typeof fsMapOrAllFilePaths === "object"
+      ? getTsConfig(fsMapOrAllFilePaths)
+      : null
+
+  if (!unknownFilePath.startsWith("./") && !unknownFilePath.startsWith("../")) {
+    const viaTsconfig = resolveWithTsconfigPaths({
+      importPath: unknownFilePath,
+      normalizedFilePathMap,
+      extensions: extension,
+      tsConfig,
+    })
+    if (viaTsconfig) return viaTsconfig
   }
 
   // Check if it's an absolute import
