@@ -1,6 +1,4 @@
 import { normalizeFilePath } from "lib/runner/normalizeFsMap"
-import * as path from "node:path"
-import { createMatchPath, type MatchPath } from "tsconfig-paths"
 
 interface TsConfig {
   compilerOptions?: {
@@ -34,7 +32,7 @@ export function parseTsConfig(fsMap: Record<string, string>): TsConfig | null {
 
 /**
  * Resolve an import path using tsconfig paths configuration
- * Uses the tsconfig-paths library as recommended in the Medium article
+ * Custom implementation inspired by tsconfig-paths for browser/webworker compatibility
  * @param importPath The import path to resolve (e.g., "@src/utils/helper")
  * @param tsconfig Parsed tsconfig object
  * @param fsMap File system map to check if resolved files exist
@@ -59,83 +57,50 @@ export function resolveTsconfigPath(
     normalizedFsMap.set(normalizeFilePath(filePath), filePath)
   }
 
-  // Use tsconfig-paths createMatchPath as recommended in the article
-  // This provides proper path resolution following TypeScript's module resolution rules
-  const absoluteBaseUrl = path.resolve("/", baseUrl)
-  const matchPath = createMatchPath(absoluteBaseUrl, paths, ["main"])
-
-  // Custom file existence check using our fsMap
-  const fileExists = (location: string): boolean => {
-    // Remove leading slash if present for normalization
-    const normalizedLocation = normalizeFilePath(
-      location.startsWith("/") ? location.slice(1) : location,
+  // Try each path mapping
+  for (const [pattern, mappings] of Object.entries(paths)) {
+    // Convert glob pattern to regex
+    // e.g., "@src/*" becomes /^@src\/(.*)$/
+    const patternRegex = new RegExp(
+      `^${pattern.replace(/\*/g, "(.*)").replace(/\//g, "\\/")}$`,
     )
+    const match = importPath.match(patternRegex)
 
-    if (normalizedFsMap.has(normalizedLocation)) {
-      return true
-    }
+    if (match) {
+      // Try each mapping for this pattern
+      for (const mapping of mappings) {
+        // Replace * with the captured group
+        let resolvedPath = mapping.replace(/\*/g, match[1] || "")
 
-    // Try with common extensions
-    const extensions = [".ts", ".tsx", ".js", ".jsx", ".json"]
-    for (const ext of extensions) {
-      const pathWithExt = normalizeFilePath(
-        `${normalizedLocation}${ext}`.replace(/^\//, ""),
-      )
-      if (normalizedFsMap.has(pathWithExt)) {
-        return true
-      }
-    }
+        // Handle baseUrl
+        if (baseUrl && baseUrl !== ".") {
+          resolvedPath = `${baseUrl}/${resolvedPath}`
+        }
 
-    // Try as directory with index file
-    for (const ext of extensions) {
-      const indexPath = normalizeFilePath(
-        `${normalizedLocation}/index${ext}`.replace(/^\//, ""),
-      )
-      if (normalizedFsMap.has(indexPath)) {
-        return true
-      }
-    }
+        // Normalize the path
+        const normalizedPath = normalizeFilePath(resolvedPath)
 
-    return false
-  }
+        // Try exact match first
+        if (normalizedFsMap.has(normalizedPath)) {
+          return normalizedFsMap.get(normalizedPath)!
+        }
 
-  // Try to match the import path against the configured paths
-  const matchedPath = matchPath(importPath, undefined, fileExists, [
-    ".ts",
-    ".tsx",
-    ".js",
-    ".jsx",
-    ".json",
-  ])
+        // Try with common extensions
+        const extensions = [".ts", ".tsx", ".js", ".jsx", ".json"]
+        for (const ext of extensions) {
+          const pathWithExt = normalizeFilePath(`${resolvedPath}${ext}`)
+          if (normalizedFsMap.has(pathWithExt)) {
+            return normalizedFsMap.get(pathWithExt)!
+          }
+        }
 
-  if (matchedPath) {
-    // Return the actual file path from our fsMap
-    const normalizedMatched = normalizeFilePath(
-      matchedPath.startsWith("/") ? matchedPath.slice(1) : matchedPath,
-    )
-
-    if (normalizedFsMap.has(normalizedMatched)) {
-      return normalizedFsMap.get(normalizedMatched)!
-    }
-
-    // Try with extensions
-    const extensions = [".ts", ".tsx", ".js", ".jsx", ".json"]
-    for (const ext of extensions) {
-      const pathWithExt = normalizeFilePath(
-        `${normalizedMatched}${ext}`.replace(/^\//, ""),
-      )
-      if (normalizedFsMap.has(pathWithExt)) {
-        return normalizedFsMap.get(pathWithExt)!
-      }
-    }
-
-    // Try index files
-    for (const ext of extensions) {
-      const indexPath = normalizeFilePath(
-        `${normalizedMatched}/index${ext}`.replace(/^\//, ""),
-      )
-      if (normalizedFsMap.has(indexPath)) {
-        return normalizedFsMap.get(indexPath)!
+        // Try as directory with index file
+        for (const ext of extensions) {
+          const indexPath = normalizeFilePath(`${resolvedPath}/index${ext}`)
+          if (normalizedFsMap.has(indexPath)) {
+            return normalizedFsMap.get(indexPath)!
+          }
+        }
       }
     }
   }
