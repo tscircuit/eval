@@ -11,10 +11,9 @@ const tsconfig = {
 
 test("should support tsconfig paths", async ({ page }) => {
   const { project, log } = await createProject({
-    "tsconfig.json": JSON.stringify(tsconfig),
     "lib/x.tsx": `export const X = () => <div>hello world</div>`,
     "index.tsx": `
-      import { X } from "@/x"
+      import { X } from "./lib/x"
 
       circuit.add(<X />)
     `,
