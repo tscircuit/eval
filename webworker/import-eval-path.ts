@@ -45,12 +45,11 @@ export async function importEvalPath(
     return
   }
 
-  const resolvedLocalImportPath = resolveFilePath(
-    importName,
-    ctx.fsMap,
-    opts.cwd,
-    ctx.tsconfigPaths,
-  )
+  const resolvedLocalImportPath = resolveFilePath(importName, {
+    fsMapOrAllFilePaths: ctx.fsMap,
+    cwd: opts.cwd,
+    tsconfigPaths: ctx.tsconfigPaths,
+  })
   if (resolvedLocalImportPath) {
     await importLocalFile(resolvedLocalImportPath, ctx, depth)
     // If the import was resolved using tsconfig paths, also register it under the original alias

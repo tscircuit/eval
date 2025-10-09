@@ -26,14 +26,16 @@ function resolveRelativePath(importPath: string, cwd: string): string {
 
 export const resolveFilePath = (
   unknownFilePath: string,
-  fsMapOrAllFilePaths: Record<string, string> | string[],
-  cwd?: string,
-  tsconfigPaths?: TsconfigPaths | null,
+  opts: {
+    fsMapOrAllFilePaths: Record<string, string> | string[]
+    cwd?: string
+    tsconfigPaths?: TsconfigPaths | null
+  },
 ) => {
   const filePaths = new Set(
-    Array.isArray(fsMapOrAllFilePaths)
-      ? fsMapOrAllFilePaths
-      : Object.keys(fsMapOrAllFilePaths),
+    Array.isArray(opts.fsMapOrAllFilePaths)
+      ? opts.fsMapOrAllFilePaths
+      : Object.keys(opts.fsMapOrAllFilePaths),
   )
 
   const normalizedFilePathMap = new Map<string, string>()
@@ -48,13 +50,13 @@ export const resolveFilePath = (
     !unknownFilePath.startsWith("./") &&
     !unknownFilePath.startsWith("../") &&
     !unknownFilePath.startsWith("/") &&
-    tsconfigPaths
+    opts.tsconfigPaths
   ) {
     debug(`Attempting to resolve "${unknownFilePath}" using tsconfig paths`)
     const possiblePaths = resolveTsconfigPath(
       unknownFilePath,
-      tsconfigPaths,
-      cwd,
+      opts.tsconfigPaths,
+      opts.cwd,
     )
 
     if (possiblePaths) {
@@ -80,8 +82,8 @@ export const resolveFilePath = (
   }
 
   // Handle parent directory navigation properly
-  const resolvedPath = cwd
-    ? resolveRelativePath(unknownFilePath, cwd)
+  const resolvedPath = opts.cwd
+    ? resolveRelativePath(unknownFilePath, opts.cwd)
     : unknownFilePath
 
   if (filePaths.has(resolvedPath)) {
@@ -121,19 +123,19 @@ export const resolveFilePath = (
 
 export const resolveFilePathOrThrow = (
   unknownFilePath: string,
-  fsMapOrAllFilePaths: Record<string, string> | string[],
-  cwd?: string,
-  tsconfigPaths?: TsconfigPaths | null,
+  opts: {
+    fsMapOrAllFilePaths: Record<string, string> | string[]
+    cwd?: string
+    tsconfigPaths?: TsconfigPaths | null
+  },
 ) => {
-  const resolvedFilePath = resolveFilePath(
-    unknownFilePath,
-    fsMapOrAllFilePaths,
-    cwd,
-    tsconfigPaths,
-  )
+  const resolvedFilePath = resolveFilePath(unknownFilePath, opts)
   if (!resolvedFilePath) {
+    const paths = Array.isArray(opts.fsMapOrAllFilePaths)
+      ? opts.fsMapOrAllFilePaths
+      : Object.keys(opts.fsMapOrAllFilePaths)
     throw new Error(
-      `File not found "${unknownFilePath}", available paths:\n\n${Object.keys(fsMapOrAllFilePaths).join(", ")}`,
+      `File not found "${unknownFilePath}", available paths:\n\n${paths.join(", ")}`,
     )
   }
   return resolvedFilePath
