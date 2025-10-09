@@ -122,9 +122,11 @@ const webWorkerApi = {
     })
     bindEventListeners(executionContext.circuit)
     executionContext.fsMap = normalizeFsMap(opts.fsMap)
-    
+
     // Parse tsconfig paths if tsconfig.json exists in fsMap
-    const { parseTsconfigPaths } = await import("lib/utils/parse-tsconfig-paths")
+    const { parseTsconfigPaths } = await import(
+      "lib/utils/parse-tsconfig-paths"
+    )
     executionContext.tsconfigPaths = parseTsconfigPaths(executionContext.fsMap)
     if (!executionContext.fsMap[entrypoint]) {
       throw new Error(`Entrypoint "${opts.entrypoint}" not found`)

@@ -24,7 +24,12 @@ export const importLocalFile = async (
 
   const { fsMap, preSuppliedImports } = ctx
 
-  const fsPath = resolveFilePathOrThrow(importName, fsMap, undefined, ctx.tsconfigPaths)
+  const fsPath = resolveFilePathOrThrow(
+    importName,
+    fsMap,
+    undefined,
+    ctx.tsconfigPaths,
+  )
   debug("fsPath:", fsPath)
   if (!ctx.fsMap[fsPath]) {
     debug("fsPath not found in fsMap:", fsPath)

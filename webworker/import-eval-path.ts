@@ -58,7 +58,8 @@ export async function importEvalPath(
       resolvedLocalImportPath !== importName &&
       preSuppliedImports[resolvedLocalImportPath]
     ) {
-      preSuppliedImports[importName] = preSuppliedImports[resolvedLocalImportPath]
+      preSuppliedImports[importName] =
+        preSuppliedImports[resolvedLocalImportPath]
     }
     return
   }
