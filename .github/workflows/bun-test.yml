@@ -72,13 +72,8 @@ jobs:
         if: github.event.pull_request.title != env.SKIP_PR_TITLE
         run: |
           set +e
-          WORKERS_FLAG=""
-          if [ "${{ matrix.test-dir }}" = "features" ]; then
-            echo "Using 4 workers for 'features' suite"
-            WORKERS_FLAG="--workers=4"
-          fi
           for i in 1 2 3 4; do
-            bun test tests/${{ matrix.test-dir }} --timeout 30000 $WORKERS_FLAG
+            bun test tests/${{ matrix.test-dir }} --timeout 30000
             code=$?
             if [ $code -eq 0 ]; then
               exit 0
