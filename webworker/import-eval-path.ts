@@ -49,9 +49,18 @@ export async function importEvalPath(
     importName,
     ctx.fsMap,
     opts.cwd,
+    ctx.tsconfigPaths,
   )
   if (resolvedLocalImportPath) {
-    return importLocalFile(resolvedLocalImportPath, ctx, depth)
+    await importLocalFile(resolvedLocalImportPath, ctx, depth)
+    // If the import was resolved using tsconfig paths, also register it under the original alias
+    if (
+      resolvedLocalImportPath !== importName &&
+      preSuppliedImports[resolvedLocalImportPath]
+    ) {
+      preSuppliedImports[importName] = preSuppliedImports[resolvedLocalImportPath]
+    }
+    return
   }
 
   // Try to resolve from node_modules

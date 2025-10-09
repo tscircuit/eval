@@ -4,7 +4,7 @@ import type {
   CircuitRunnerConfiguration,
 } from "lib/shared/types"
 import type { PlatformConfig } from "@tscircuit/props"
-import { createExecutionContext } from "../../webworker/execution-context"
+import { createExecutionContext } from "webworker/execution-context"
 import { normalizeFsMap } from "./normalizeFsMap"
 import type { RootCircuit } from "@tscircuit/core"
 import * as React from "react"

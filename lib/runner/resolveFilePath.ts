@@ -1,5 +1,10 @@
 import { normalizeFilePath } from "./normalizeFsMap"
 import { dirname } from "lib/utils/dirname"
+import type { TsconfigPaths } from "lib/utils/parse-tsconfig-paths"
+import { resolveTsconfigPath } from "lib/utils/parse-tsconfig-paths"
+import Debug from "debug"
+
+const debug = Debug("tsci:eval:resolve-file-path")
 
 function resolveRelativePath(importPath: string, cwd: string): string {
   // Handle parent directory navigation
@@ -23,25 +28,64 @@ export const resolveFilePath = (
   unknownFilePath: string,
   fsMapOrAllFilePaths: Record<string, string> | string[],
   cwd?: string,
+  tsconfigPaths?: TsconfigPaths | null,
 ) => {
-  // Handle parent directory navigation properly
-  const resolvedPath = cwd
-    ? resolveRelativePath(unknownFilePath, cwd)
-    : unknownFilePath
-
   const filePaths = new Set(
     Array.isArray(fsMapOrAllFilePaths)
       ? fsMapOrAllFilePaths
       : Object.keys(fsMapOrAllFilePaths),
   )
 
-  if (filePaths.has(resolvedPath)) {
-    return resolvedPath
-  }
-
   const normalizedFilePathMap = new Map<string, string>()
   for (const filePath of filePaths) {
     normalizedFilePathMap.set(normalizeFilePath(filePath), filePath)
+  }
+
+  const extension = ["tsx", "ts", "json", "js", "jsx", "obj", "gltf", "glb"]
+
+  // First, try to resolve using tsconfig paths for non-relative imports
+  if (
+    !unknownFilePath.startsWith("./") &&
+    !unknownFilePath.startsWith("../") &&
+    !unknownFilePath.startsWith("/") &&
+    tsconfigPaths
+  ) {
+    debug(`Attempting to resolve "${unknownFilePath}" using tsconfig paths`)
+    const possiblePaths = resolveTsconfigPath(
+      unknownFilePath,
+      tsconfigPaths,
+      cwd,
+    )
+
+    if (possiblePaths) {
+      for (const possiblePath of possiblePaths) {
+        const normalizedPath = normalizeFilePath(possiblePath)
+        debug(`Checking tsconfig resolved path: ${normalizedPath}`)
+
+        if (normalizedFilePathMap.has(normalizedPath)) {
+          debug(`Found match: ${normalizedPath}`)
+          return normalizedFilePathMap.get(normalizedPath)!
+        }
+
+        // Try with extensions
+        for (const ext of extension) {
+          const pathWithExt = `${normalizedPath}.${ext}`
+          if (normalizedFilePathMap.has(pathWithExt)) {
+            debug(`Found match with extension: ${pathWithExt}`)
+            return normalizedFilePathMap.get(pathWithExt)!
+          }
+        }
+      }
+    }
+  }
+
+  // Handle parent directory navigation properly
+  const resolvedPath = cwd
+    ? resolveRelativePath(unknownFilePath, cwd)
+    : unknownFilePath
+
+  if (filePaths.has(resolvedPath)) {
+    return resolvedPath
   }
 
   const normalizedResolvedPath = normalizeFilePath(resolvedPath)
@@ -51,7 +95,6 @@ export const resolveFilePath = (
   }
 
   // Search for file with a set of different extensions
-  const extension = ["tsx", "ts", "json", "js", "jsx", "obj", "gltf", "glb"]
   for (const ext of extension) {
     const possibleFilePath = `${normalizedResolvedPath}.${ext}`
     if (normalizedFilePathMap.has(possibleFilePath)) {
@@ -59,7 +102,7 @@ export const resolveFilePath = (
     }
   }
 
-  // Check if it's an absolute import
+  // Check if it's an absolute import (for backwards compatibility)
   if (!unknownFilePath.startsWith("./") && !unknownFilePath.startsWith("../")) {
     const normalizedUnknownFilePath = normalizeFilePath(unknownFilePath)
     if (normalizedFilePathMap.has(normalizedUnknownFilePath)) {
@@ -79,8 +122,15 @@ export const resolveFilePath = (
 export const resolveFilePathOrThrow = (
   unknownFilePath: string,
   fsMapOrAllFilePaths: Record<string, string> | string[],
+  cwd?: string,
+  tsconfigPaths?: TsconfigPaths | null,
 ) => {
-  const resolvedFilePath = resolveFilePath(unknownFilePath, fsMapOrAllFilePaths)
+  const resolvedFilePath = resolveFilePath(
+    unknownFilePath,
+    fsMapOrAllFilePaths,
+    cwd,
+    tsconfigPaths,
+  )
   if (!resolvedFilePath) {
     throw new Error(
       `File not found "${unknownFilePath}", available paths:\n\n${Object.keys(fsMapOrAllFilePaths).join(", ")}`,
