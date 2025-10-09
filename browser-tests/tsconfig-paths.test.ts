@@ -16,7 +16,7 @@ test("should support tsconfig paths", async ({ page }) => {
     "index.tsx": `
       import { X } from "@/x"
 
-      export const MyComponent = () => <X />
+      circuit.add(<X />)
     `,
   })
 
