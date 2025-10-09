@@ -20,7 +20,6 @@ export const createProject = async (fsMap: Record<string, string>) => {
 
           await runner.executeWithFsMap({
             fsMap: ${JSON.stringify(fsMap)},
-            entrypoint: "index.tsx",
           })
 
           runner.render(document.getElementById("root"))
