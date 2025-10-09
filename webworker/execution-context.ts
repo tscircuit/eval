@@ -14,6 +14,7 @@ export interface ExecutionContext extends WebWorkerConfiguration {
   entrypoint: string
   preSuppliedImports: Record<string, any>
   circuit: RootCircuit
+  _cachedTsConfig?: any | null | false // Cache for parsed tsconfig.json
 }
 
 export function createExecutionContext(

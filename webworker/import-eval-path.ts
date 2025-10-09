@@ -5,6 +5,10 @@ import { resolveFilePath } from "lib/runner/resolveFilePath"
 import { resolveNodeModule } from "lib/utils/resolve-node-module"
 import { importNodeModule } from "./import-node-module"
 import { importNpmPackage } from "./import-npm-package"
+import {
+  getTsConfig,
+  resolveTsconfigPath,
+} from "lib/utils/resolve-tsconfig-paths"
 import Debug from "debug"
 
 const debug = Debug("tsci:eval:import-eval-path")
@@ -43,6 +47,29 @@ export async function importEvalPath(
       preSuppliedImports[importName] = pkg
     }
     return
+  }
+
+  // Try to resolve using tsconfig paths first
+  const tsconfig = getTsConfig(ctx)
+  if (tsconfig) {
+    const tsconfigResolvedPath = resolveTsconfigPath(
+      importName,
+      tsconfig,
+      ctx.fsMap,
+      opts.cwd,
+    )
+    if (tsconfigResolvedPath) {
+      debug(
+        `Resolved "${importName}" via tsconfig paths to "${tsconfigResolvedPath}"`,
+      )
+      await importLocalFile(tsconfigResolvedPath, ctx, depth)
+      // Map the original import name to the resolved path's exports
+      if (preSuppliedImports[tsconfigResolvedPath]) {
+        preSuppliedImports[importName] =
+          preSuppliedImports[tsconfigResolvedPath]
+      }
+      return
+    }
   }
 
   const resolvedLocalImportPath = resolveFilePath(
