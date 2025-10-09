@@ -1,12 +1,17 @@
 import { resolveFilePath } from "lib/runner/resolveFilePath"
+import type { TsconfigPathsConfig } from "lib/utils/tsconfig-paths"
 
 export function evalCompiledJs(
   compiledCode: string,
   preSuppliedImports: Record<string, any>,
   cwd?: string,
+  tsconfigPaths?: TsconfigPathsConfig | null,
 ) {
   ;(globalThis as any).__tscircuit_require = (name: string) => {
-    const resolvedFilePath = resolveFilePath(name, preSuppliedImports, cwd)
+    const resolvedFilePath = resolveFilePath(name, preSuppliedImports, {
+      cwd,
+      tsconfigPaths,
+    })
 
     const hasResolvedFilePath =
       resolvedFilePath && preSuppliedImports[resolvedFilePath]

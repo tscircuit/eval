@@ -15,6 +15,7 @@ import { normalizeFsMap } from "lib/runner/normalizeFsMap"
 import type { RootCircuit } from "@tscircuit/core"
 import { setupDefaultEntrypointIfNeeded } from "lib/runner/setupDefaultEntrypointIfNeeded"
 import { setupFetchProxy } from "./fetchProxy"
+import { createTsconfigPathsConfig } from "lib/utils/tsconfig-paths"
 
 globalThis.React = React
 setupFetchProxy()
@@ -122,6 +123,9 @@ const webWorkerApi = {
     })
     bindEventListeners(executionContext.circuit)
     executionContext.fsMap = normalizeFsMap(opts.fsMap)
+    executionContext.tsconfigPaths = createTsconfigPathsConfig(
+      executionContext.fsMap,
+    )
     if (!executionContext.fsMap[entrypoint]) {
       throw new Error(`Entrypoint "${opts.entrypoint}" not found`)
     }
@@ -146,6 +150,7 @@ const webWorkerApi = {
     })
     bindEventListeners(executionContext.circuit)
     executionContext.fsMap["entrypoint.tsx"] = code
+    executionContext.tsconfigPaths = null
     ;(globalThis as any).__tscircuit_circuit = executionContext.circuit
 
     await importEvalPath("./entrypoint.tsx", executionContext)
@@ -162,6 +167,7 @@ const webWorkerApi = {
       debugNamespace,
     })
     bindEventListeners(executionContext.circuit)
+    executionContext.tsconfigPaths = null
     ;(globalThis as any).__tscircuit_circuit = executionContext.circuit
 
     let element: any

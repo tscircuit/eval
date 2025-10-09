@@ -24,7 +24,9 @@ export const importLocalFile = async (
 
   const { fsMap, preSuppliedImports } = ctx
 
-  const fsPath = resolveFilePathOrThrow(importName, fsMap)
+  const fsPath = resolveFilePathOrThrow(importName, fsMap, {
+    tsconfigPaths: ctx.tsconfigPaths,
+  })
   debug("fsPath:", fsPath)
   if (!ctx.fsMap[fsPath]) {
     debug("fsPath not found in fsMap:", fsPath)
@@ -67,6 +69,7 @@ export const importLocalFile = async (
         transformedCode,
         preSuppliedImports,
         dirname(fsPath),
+        ctx.tsconfigPaths,
       )
       debug("importRunResult:", {
         fsPath,
@@ -84,6 +87,7 @@ export const importLocalFile = async (
       transformWithSucrase(fileContent, fsPath),
       preSuppliedImports,
       dirname(fsPath),
+      ctx.tsconfigPaths,
     ).exports
   } else {
     throw new Error(

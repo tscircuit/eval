@@ -23,6 +23,8 @@ export async function importSnippet(
     preSuppliedImports[importName] = evalCompiledJs(
       cjs!,
       preSuppliedImports,
+      undefined,
+      ctx.tsconfigPaths,
     ).exports
   } catch (e) {
     console.error("Error importing snippet", e)

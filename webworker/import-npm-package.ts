@@ -67,6 +67,7 @@ export async function importNpmPackage(
       transformedCode,
       preSuppliedImports,
       cwd,
+      ctx.tsconfigPaths,
     ).exports
     preSuppliedImports[importName] = exports
     preSuppliedImports[finalImportName] = exports

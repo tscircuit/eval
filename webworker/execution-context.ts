@@ -6,6 +6,7 @@ import * as tscircuitMathUtils from "@tscircuit/math-utils"
 import type { PlatformConfig } from "@tscircuit/props"
 import { getPlatformConfig } from "lib/getPlatformConfig"
 import Debug from "debug"
+import type { TsconfigPathsConfig } from "lib/utils/tsconfig-paths"
 
 const debug = Debug("tsci:eval:execution-context")
 
@@ -14,6 +15,7 @@ export interface ExecutionContext extends WebWorkerConfiguration {
   entrypoint: string
   preSuppliedImports: Record<string, any>
   circuit: RootCircuit
+  tsconfigPaths: TsconfigPathsConfig | null
 }
 
 export function createExecutionContext(
@@ -59,6 +61,7 @@ export function createExecutionContext(
       "@tscircuit/props": {},
     },
     circuit,
+    tsconfigPaths: null,
     ...webWorkerConfiguration,
   }
 }
