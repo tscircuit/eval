@@ -65,6 +65,7 @@ export class CircuitRunner implements CircuitRunnerApi {
         platform: this._circuitRunnerConfiguration.platform,
         projectConfig: this._circuitRunnerConfiguration.projectConfig,
         debugNamespace: this._debugNamespace,
+        tsconfigContent: opts.fsMap["tsconfig.json"],
       },
     )
     this._bindEventListeners(this._executionContext.circuit)

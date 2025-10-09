@@ -15,10 +15,13 @@ export const createProject = async (fsMap: Record<string, string>) => {
         <script type="module">
           const runner = new CircuitRunner({
             isWebView: true,
+          })
+          window.runner = runner
+
+          await runner.executeWithFsMap({
             fsMap: ${JSON.stringify(fsMap)},
             entrypoint: "index.tsx",
           })
-          window.runner = runner
 
           runner.render(document.getElementById("root"))
         </script>
