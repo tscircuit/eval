@@ -69,6 +69,8 @@ export const setupDefaultEntrypointIfNeeded = (opts: {
                : ""
            }
 
+      console.log("Rendering component", { ComponentToRender, UserComponents })
+
       circuit.add(       
           <ComponentToRender ${opts.mainComponentProps ? `{...${JSON.stringify(opts.mainComponentProps, null, 2)}}` : ""} /> 
       );
