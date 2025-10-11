@@ -8,8 +8,8 @@ test("resolves imports using tsconfig paths aliases", async () => {
         compilerOptions: {
           baseUrl: ".",
           paths: {
-            "@src/*": ["src/*"],
-            "@utils/*": ["src/utils/*"],
+            "@src/*": ["./src/*"],
+            "@utils/*": ["./src/utils/*"],
           },
         },
       }),
