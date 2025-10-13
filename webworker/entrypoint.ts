@@ -14,6 +14,7 @@ import { importEvalPath } from "./import-eval-path"
 import { normalizeFsMap } from "lib/runner/normalizeFsMap"
 import type { RootCircuit } from "@tscircuit/core"
 import { setupDefaultEntrypointIfNeeded } from "lib/runner/setupDefaultEntrypointIfNeeded"
+import { enhanceRootCircuitHasNoChildrenError } from "lib/utils/enhance-root-circuit-error"
 import { setupFetchProxy } from "./fetchProxy"
 
 globalThis.React = React
@@ -121,6 +122,7 @@ const webWorkerApi = {
       debugNamespace,
     })
     bindEventListeners(executionContext.circuit)
+    executionContext.entrypoint = entrypoint
     executionContext.fsMap = normalizeFsMap(opts.fsMap)
     if (!executionContext.fsMap[entrypoint]) {
       throw new Error(`Entrypoint "${opts.entrypoint}" not found`)
@@ -185,14 +187,28 @@ const webWorkerApi = {
     if (!executionContext) {
       throw new Error("No circuit has been created")
     }
-    await executionContext.circuit.renderUntilSettled()
+    try {
+      await executionContext.circuit.renderUntilSettled()
+    } catch (error) {
+      throw enhanceRootCircuitHasNoChildrenError(
+        error,
+        executionContext.entrypoint,
+      )
+    }
   },
 
   getCircuitJson: async (): Promise<AnyCircuitElement[]> => {
     if (!executionContext) {
       throw new Error("No circuit has been created")
     }
-    return executionContext.circuit.getCircuitJson()
+    try {
+      return executionContext.circuit.getCircuitJson()
+    } catch (error) {
+      throw enhanceRootCircuitHasNoChildrenError(
+        error,
+        executionContext.entrypoint,
+      )
+    }
   },
 
   clearEventListeners: () => {

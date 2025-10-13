@@ -10,6 +10,7 @@ import type { RootCircuit } from "@tscircuit/core"
 import * as React from "react"
 import { importEvalPath } from "webworker/import-eval-path"
 import { setupDefaultEntrypointIfNeeded } from "./setupDefaultEntrypointIfNeeded"
+import { enhanceRootCircuitHasNoChildrenError } from "lib/utils/enhance-root-circuit-error"
 import Debug from "debug"
 
 const debug = Debug("tsci:eval:CircuitRunner")
@@ -69,6 +70,7 @@ export class CircuitRunner implements CircuitRunnerApi {
     )
     this._bindEventListeners(this._executionContext.circuit)
 
+    this._executionContext.entrypoint = opts.entrypoint!
     this._executionContext.fsMap = normalizeFsMap(opts.fsMap)
     if (!this._executionContext.fsMap[opts.entrypoint!]) {
       throw new Error(`Entrypoint "${opts.entrypoint}" not found`)
@@ -138,14 +140,28 @@ export class CircuitRunner implements CircuitRunnerApi {
     if (!this._executionContext) {
       throw new Error("No circuit has been created")
     }
-    await this._executionContext.circuit.renderUntilSettled()
+    try {
+      await this._executionContext.circuit.renderUntilSettled()
+    } catch (error) {
+      throw enhanceRootCircuitHasNoChildrenError(
+        error,
+        this._executionContext.entrypoint,
+      )
+    }
   }
 
   async getCircuitJson(): Promise<AnyCircuitElement[]> {
     if (!this._executionContext) {
       throw new Error("No circuit has been created")
     }
-    return this._executionContext.circuit.getCircuitJson()
+    try {
+      return this._executionContext.circuit.getCircuitJson()
+    } catch (error) {
+      throw enhanceRootCircuitHasNoChildrenError(
+        error,
+        this._executionContext.entrypoint,
+      )
+    }
   }
 
   clearEventListeners() {
