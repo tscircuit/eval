@@ -52,9 +52,9 @@ jobs:
           # Send Slack notification
           curl -X POST $SLACK_AUTOMERGE_ALERT_WEBHOOK_URL \
             -H "Content-Type: application/json" \
-            -d '{
-              \"message\": \"CI failed for automated package update in ${{ github.repository }} - PR #$PR_NUMBER: $PR_URL\"
-            }'
+            -d "{
+              \"MESSAGE\": \"CI failed for automated package update in ${{ github.repository }} - PR #${PR_NUMBER}: ${PR_URL}\"
+            }"
             
           # Optional: Still add a comment to the PR for visibility
           gh pr comment $PR_NUMBER --body "⚠️ **CI checks failed for this automated package update.**
