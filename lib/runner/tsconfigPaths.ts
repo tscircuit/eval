@@ -94,3 +94,25 @@ export function resolveWithTsconfigPaths(opts: {
 
   return null
 }
+
+export function matchesTsconfigPathPattern(
+  importPath: string,
+  tsConfig: TsConfigPathsInfo | null,
+): boolean {
+  if (!tsConfig) return false
+  const { paths } = tsConfig
+
+  for (const [alias] of Object.entries(paths)) {
+    const hasWildcard = alias.includes("*")
+    if (hasWildcard) {
+      const [prefix, suffix] = alias.split("*")
+      if (importPath.startsWith(prefix) && importPath.endsWith(suffix || "")) {
+        return true
+      }
+    } else {
+      if (importPath === alias) return true
+    }
+  }
+
+  return false
+}
