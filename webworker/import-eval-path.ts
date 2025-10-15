@@ -5,6 +5,7 @@ import { resolveFilePath } from "lib/runner/resolveFilePath"
 import { resolveNodeModule } from "lib/utils/resolve-node-module"
 import { importNodeModule } from "./import-node-module"
 import { importNpmPackage } from "./import-npm-package"
+import { getTsConfig, matchesTsconfigPathPattern } from "lib/runner/tsconfigPaths"
 import Debug from "debug"
 
 const debug = Debug("tsci:eval:import-eval-path")
@@ -72,6 +73,15 @@ export async function importEvalPath(
 
   if (importName.startsWith("@tsci/")) {
     return importSnippet(importName, ctx, depth)
+  }
+
+  // Check if this matches a tsconfig path pattern but failed to resolve
+  // If so, throw an error instead of falling back to npm
+  const tsConfig = getTsConfig(ctx.fsMap)
+  if (matchesTsconfigPathPattern(importName, tsConfig)) {
+    throw new Error(
+      `Import "${importName}" matches a tsconfig path alias but could not be resolved to an existing file${opts.cwd ? ` from directory "${opts.cwd}"` : ""}`,
+    )
   }
 
   if (!importName.startsWith(".") && !importName.startsWith("/")) {

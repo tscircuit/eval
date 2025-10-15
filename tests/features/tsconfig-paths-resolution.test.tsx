@@ -37,3 +37,29 @@ test("resolves imports using tsconfig paths aliases", async () => {
   expect(resistor).toBeDefined()
   expect(resistor.resistance).toBe(1000)
 })
+
+test("throws error when tsconfig path alias cannot be resolved (instead of trying jsdelivr)", async () => {
+  expect(
+    runTscircuitCode(
+      {
+        "tsconfig.json": JSON.stringify({
+          compilerOptions: {
+            baseUrl: ".",
+            paths: {
+              "@utils/*": ["./src/utils/*"],
+            },
+          },
+        }),
+        "user.tsx": `
+          import { something } from "@utils/missing"
+          export default () => (<resistor name="R1" resistance="1k" />)
+        `,
+      },
+      {
+        mainComponentPath: "user",
+      },
+    ),
+  ).rejects.toThrow(
+    'Import "@utils/missing" matches a tsconfig path alias but could not be resolved to an existing file',
+  )
+})
