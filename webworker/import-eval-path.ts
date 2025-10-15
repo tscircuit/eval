@@ -64,6 +64,15 @@ export async function importEvalPath(
     return
   }
 
+  // Check if this matches a tsconfig path pattern but failed to resolve
+  // If so, throw an error instead of falling back to npm
+  const tsConfig = getTsConfig(ctx.fsMap)
+  if (matchesTsconfigPathPattern(importName, tsConfig)) {
+    throw new Error(
+      `Import "${importName}" matches a tsconfig path alias but could not be resolved to an existing file${opts.cwd ? ` from directory "${opts.cwd}"` : ""}`,
+    )
+  }
+
   // Try to resolve from node_modules
   const resolvedNodeModulePath = resolveNodeModule(
     importName,
@@ -76,15 +85,6 @@ export async function importEvalPath(
 
   if (importName.startsWith("@tsci/")) {
     return importSnippet(importName, ctx, depth)
-  }
-
-  // Check if this matches a tsconfig path pattern but failed to resolve
-  // If so, throw an error instead of falling back to npm
-  const tsConfig = getTsConfig(ctx.fsMap)
-  if (matchesTsconfigPathPattern(importName, tsConfig)) {
-    throw new Error(
-      `Import "${importName}" matches a tsconfig path alias but could not be resolved to an existing file${opts.cwd ? ` from directory "${opts.cwd}"` : ""}`,
-    )
   }
 
   if (!importName.startsWith(".") && !importName.startsWith("/")) {
