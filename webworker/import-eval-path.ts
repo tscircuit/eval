@@ -26,13 +26,21 @@ export async function importEvalPath(
     depth,
     opts,
   })
+  ctx.logger.info(
+    `importEvalPath("${importName}", {cwd: "${opts.cwd}", depth: ${depth}})`,
+  )
 
   debug(`${"  ".repeat(depth)}➡️`, importName)
   const { preSuppliedImports } = ctx
 
-  if (preSuppliedImports[importName]) return
-  if (importName.startsWith("./") && preSuppliedImports[importName.slice(2)])
+  if (preSuppliedImports[importName]) {
+    ctx.logger.info(`Import "${importName}" in preSuppliedImports[1]`)
     return
+  }
+  if (importName.startsWith("./") && preSuppliedImports[importName.slice(2)]) {
+    ctx.logger.info(`Import "${importName}" in preSuppliedImports[2]`)
+    return
+  }
 
   if (depth > 5) {
     console.log("Max depth for imports reached")
@@ -41,6 +49,7 @@ export async function importEvalPath(
 
   if (importName.startsWith("/npm/")) {
     const pkgName = importName.replace(/^\/npm\//, "").replace(/\/\+esm$/, "")
+    ctx.logger.info(`importNpmPackage("${pkgName}")`)
     await importNpmPackage(pkgName, ctx, depth)
     const pkg = preSuppliedImports[pkgName]
     if (pkg) {
@@ -55,6 +64,7 @@ export async function importEvalPath(
     opts.cwd,
   )
   if (resolvedLocalImportPath) {
+    ctx.logger.info(`importLocalFile("${resolvedLocalImportPath}")`)
     await importLocalFile(resolvedLocalImportPath, ctx, depth)
     // Map the original import name (which might be a tsconfig path alias) to the resolved module
     if (importName !== resolvedLocalImportPath) {
@@ -64,6 +74,15 @@ export async function importEvalPath(
     return
   }
 
+  // Check if this matches a tsconfig path pattern but failed to resolve
+  // If so, throw an error instead of falling back to npm
+  const tsConfig = getTsConfig(ctx.fsMap)
+  if (matchesTsconfigPathPattern(importName, tsConfig)) {
+    throw new Error(
+      `Import "${importName}" matches a tsconfig path alias but could not be resolved to an existing file${opts.cwd ? ` from directory "${opts.cwd}"` : ""}\n\n${ctx.logger.stringifyLogs()}`,
+    )
+  }
+
   // Try to resolve from node_modules
   const resolvedNodeModulePath = resolveNodeModule(
     importName,
@@ -71,27 +90,22 @@ export async function importEvalPath(
     opts.cwd || "",
   )
   if (resolvedNodeModulePath) {
+    ctx.logger.info(`resolvedNodeModulePath="${resolvedNodeModulePath}"`)
+    ctx.logger.info(`importNodeModule("${importName}")`)
     return importNodeModule(importName, ctx, depth)
   }
 
   if (importName.startsWith("@tsci/")) {
+    ctx.logger.info(`importSnippet("${importName}")`)
     return importSnippet(importName, ctx, depth)
   }
 
-  // Check if this matches a tsconfig path pattern but failed to resolve
-  // If so, throw an error instead of falling back to npm
-  const tsConfig = getTsConfig(ctx.fsMap)
-  if (matchesTsconfigPathPattern(importName, tsConfig)) {
-    throw new Error(
-      `Import "${importName}" matches a tsconfig path alias but could not be resolved to an existing file${opts.cwd ? ` from directory "${opts.cwd}"` : ""}`,
-    )
-  }
-
   if (!importName.startsWith(".") && !importName.startsWith("/")) {
+    ctx.logger.info(`importNpmPackage("${importName}")`)
     return importNpmPackage(importName, ctx, depth)
   }
 
   throw new Error(
-    `Unresolved import "${importName}" ${opts.cwd ? `from directory "${opts.cwd}"` : ""}`,
+    `Unresolved import "${importName}" ${opts.cwd ? `from directory "${opts.cwd}"` : ""}\n\n${ctx.logger.stringifyLogs()}`,
   )
 }

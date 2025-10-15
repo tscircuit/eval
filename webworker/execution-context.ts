@@ -9,11 +9,18 @@ import Debug from "debug"
 
 const debug = Debug("tsci:eval:execution-context")
 
+interface StoredLogger {
+  info: (message: string) => void
+  getLogs: () => Array<{ msg: string }>
+  stringifyLogs: () => string
+}
+
 export interface ExecutionContext extends WebWorkerConfiguration {
   fsMap: Record<string, string>
   entrypoint: string
   preSuppliedImports: Record<string, any>
   circuit: RootCircuit
+  logger: StoredLogger
 }
 
 export function createExecutionContext(
@@ -44,9 +51,18 @@ export function createExecutionContext(
     circuit.enableDebug(opts.debugNamespace)
   }
 
+  const logs: Array<{ msg: string }> = []
+
   return {
     fsMap: {},
     entrypoint: "",
+    logger: {
+      info: (message: string) => {
+        logs.push({ msg: message })
+      },
+      getLogs: () => logs,
+      stringifyLogs: () => logs.map((log) => log.msg).join("\n"),
+    },
     preSuppliedImports: {
       "@tscircuit/core": tscircuitCore,
       tscircuit: tscircuitCore,
