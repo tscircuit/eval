@@ -12,6 +12,7 @@ import {
 } from "./execution-context"
 import { importEvalPath } from "./import-eval-path"
 import { normalizeFsMap } from "lib/runner/normalizeFsMap"
+import { getTsConfig } from "lib/runner/tsconfigPaths"
 import type { RootCircuit } from "@tscircuit/core"
 import { setupDefaultEntrypointIfNeeded } from "lib/runner/setupDefaultEntrypointIfNeeded"
 import { enhanceRootCircuitHasNoChildrenError } from "lib/utils/enhance-root-circuit-error"
@@ -124,6 +125,7 @@ const webWorkerApi = {
     bindEventListeners(executionContext.circuit)
     executionContext.entrypoint = entrypoint
     executionContext.fsMap = normalizeFsMap(opts.fsMap)
+    executionContext.tsConfig = getTsConfig(executionContext.fsMap)
     if (!executionContext.fsMap[entrypoint]) {
       throw new Error(`Entrypoint "${opts.entrypoint}" not found`)
     }
@@ -148,6 +150,7 @@ const webWorkerApi = {
     })
     bindEventListeners(executionContext.circuit)
     executionContext.fsMap["entrypoint.tsx"] = code
+    executionContext.tsConfig = getTsConfig(executionContext.fsMap)
     ;(globalThis as any).__tscircuit_circuit = executionContext.circuit
 
     await importEvalPath("./entrypoint.tsx", executionContext)
@@ -165,6 +168,7 @@ const webWorkerApi = {
     })
     bindEventListeners(executionContext.circuit)
     ;(globalThis as any).__tscircuit_circuit = executionContext.circuit
+    executionContext.tsConfig = null
 
     let element: any
     if (typeof component === "function") {

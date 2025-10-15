@@ -1,31 +1,28 @@
 import { normalizeFilePath } from "./normalizeFsMap"
 
-type RawTsConfig = {
+export type TsConfig = {
   compilerOptions?: {
     baseUrl?: string
     paths?: Record<string, string[]>
+    [key: string]: unknown
   }
-}
-
-export type TsConfigPathsInfo = {
-  baseUrl: string
-  paths: Record<string, string[]>
+  extends?: string | string[]
+  files?: string[]
+  references?: Array<Record<string, unknown>>
+  include?: string[]
+  exclude?: string[]
+  [key: string]: unknown
 }
 
 export function getTsConfig(
   fsMapOrAllFilePaths: Record<string, string> | string[],
-): TsConfigPathsInfo | null {
+): TsConfig | null {
   if (Array.isArray(fsMapOrAllFilePaths)) return null
   const tsconfigContent = fsMapOrAllFilePaths["tsconfig.json"]
   if (!tsconfigContent) return null
   try {
-    const parsed = JSON.parse(tsconfigContent) as RawTsConfig
-    return parsed?.compilerOptions?.paths
-      ? {
-          baseUrl: parsed.compilerOptions.baseUrl || ".",
-          paths: parsed.compilerOptions.paths,
-        }
-      : null
+    const parsed = JSON.parse(tsconfigContent) as TsConfig
+    return parsed
   } catch {
     return null
   }
@@ -35,11 +32,12 @@ export function resolveWithTsconfigPaths(opts: {
   importPath: string
   normalizedFilePathMap: Map<string, string>
   extensions: string[]
-  tsConfig: TsConfigPathsInfo | null
+  tsConfig: TsConfig | null
 }): string | null {
   const { importPath, normalizedFilePathMap, extensions, tsConfig } = opts
-  if (!tsConfig) return null
-  const { baseUrl, paths } = tsConfig
+  const paths = tsConfig?.compilerOptions?.paths
+  if (!paths) return null
+  const baseUrl = tsConfig?.compilerOptions?.baseUrl || "."
 
   const tryResolveCandidate = (candidate: string) => {
     const normalizedCandidate = normalizeFilePath(candidate)
@@ -97,10 +95,10 @@ export function resolveWithTsconfigPaths(opts: {
 
 export function matchesTsconfigPathPattern(
   importPath: string,
-  tsConfig: TsConfigPathsInfo | null,
+  tsConfig: TsConfig | null,
 ): boolean {
-  if (!tsConfig) return false
-  const { paths } = tsConfig
+  const paths = tsConfig?.compilerOptions?.paths
+  if (!paths) return false
 
   for (const [alias] of Object.entries(paths)) {
     const hasWildcard = alias.includes("*")

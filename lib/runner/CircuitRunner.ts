@@ -6,6 +6,7 @@ import type {
 import type { PlatformConfig } from "@tscircuit/props"
 import { createExecutionContext } from "../../webworker/execution-context"
 import { normalizeFsMap } from "./normalizeFsMap"
+import { getTsConfig } from "./tsconfigPaths"
 import type { RootCircuit } from "@tscircuit/core"
 import * as React from "react"
 import { importEvalPath } from "webworker/import-eval-path"
@@ -72,6 +73,7 @@ export class CircuitRunner implements CircuitRunnerApi {
 
     this._executionContext.entrypoint = opts.entrypoint!
     this._executionContext.fsMap = normalizeFsMap(opts.fsMap)
+    this._executionContext.tsConfig = getTsConfig(this._executionContext.fsMap)
     if (!this._executionContext.fsMap[opts.entrypoint!]) {
       throw new Error(`Entrypoint "${opts.entrypoint}" not found`)
     }
@@ -104,6 +106,7 @@ export class CircuitRunner implements CircuitRunnerApi {
     )
     this._bindEventListeners(this._executionContext.circuit)
     this._executionContext.fsMap["entrypoint.tsx"] = code
+    this._executionContext.tsConfig = getTsConfig(this._executionContext.fsMap)
     ;(globalThis as any).__tscircuit_circuit = this._executionContext.circuit
 
     await importEvalPath("./entrypoint.tsx", this._executionContext)
@@ -125,6 +128,7 @@ export class CircuitRunner implements CircuitRunnerApi {
     )
     this._bindEventListeners(this._executionContext.circuit)
     ;(globalThis as any).__tscircuit_circuit = this._executionContext.circuit
+    this._executionContext.tsConfig = null
 
     const element = typeof component === "function" ? component() : component
     this._executionContext.circuit.add(element as any)
