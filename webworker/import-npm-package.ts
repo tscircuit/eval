@@ -35,7 +35,7 @@ export async function importNpmPackage(
       finalUrl = res.url
       if (!res.ok)
         throw new Error(
-          `Could not fetch "${importName}" from jsdelivr: ${res.statusText}`,
+          `Could not fetch "${importName}" from jsdelivr: ${res.statusText}\n\n${ctx.logger.stringifyLogs()}`,
         )
       return { content: await res.text(), error: null }
     })
@@ -72,6 +72,8 @@ export async function importNpmPackage(
     preSuppliedImports[finalImportName] = exports
     preSuppliedImports[finalUrl!] = exports
   } catch (e: any) {
-    throw new Error(`Eval npm package error for "${importName}": ${e.message}`)
+    throw new Error(
+      `Eval npm package error for "${importName}": ${e.message}\n\n${ctx.logger.stringifyLogs()}`,
+    )
   }
 }
