@@ -1,7 +1,4 @@
-import {
-  resolveFilePath,
-  resolveFilePathOrThrow,
-} from "lib/runner/resolveFilePath"
+import { resolveFilePathOrThrow } from "lib/runner/resolveFilePath"
 import { dirname } from "lib/utils/dirname"
 import { getImportsFromCode } from "lib/utils/get-imports-from-code"
 import { evalCompiledJs } from "./eval-compiled-js"
@@ -24,7 +21,9 @@ export const importLocalFile = async (
 
   const { fsMap, preSuppliedImports } = ctx
 
-  const fsPath = resolveFilePathOrThrow(importName, fsMap)
+  const fsPath = resolveFilePathOrThrow(importName, fsMap, undefined, {
+    tsConfig: ctx.tsConfig,
+  })
   debug("fsPath:", fsPath)
   if (!ctx.fsMap[fsPath]) {
     debug("fsPath not found in fsMap:", fsPath)

@@ -62,6 +62,7 @@ export async function importEvalPath(
     importName,
     ctx.fsMap,
     opts.cwd,
+    { tsConfig: ctx.tsConfig },
   )
   if (resolvedLocalImportPath) {
     ctx.logger.info(`importLocalFile("${resolvedLocalImportPath}")`)
@@ -76,7 +77,10 @@ export async function importEvalPath(
 
   // Check if this matches a tsconfig path pattern but failed to resolve
   // If so, throw an error instead of falling back to npm
-  const tsConfig = getTsConfig(ctx.fsMap)
+  const tsConfig = ctx.tsConfig ?? getTsConfig(ctx.fsMap)
+  if (!ctx.tsConfig && tsConfig) {
+    ctx.tsConfig = tsConfig
+  }
   if (matchesTsconfigPathPattern(importName, tsConfig)) {
     throw new Error(
       `Import "${importName}" matches a tsconfig path alias but could not be resolved to an existing file${opts.cwd ? ` from directory "${opts.cwd}"` : ""}\n\n${ctx.logger.stringifyLogs()}`,

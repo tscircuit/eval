@@ -1,12 +1,13 @@
 import { normalizeFilePath } from "./normalizeFsMap"
 import { dirname } from "lib/utils/dirname"
-import { getTsConfig, resolveWithTsconfigPaths } from "./tsconfigPaths"
+import { resolveWithTsconfigPaths, type TsConfig } from "./tsconfigPaths"
 import { resolveRelativePath } from "lib/utils/resolveRelativePath"
 
 export const resolveFilePath = (
   unknownFilePath: string,
   fsMapOrAllFilePaths: Record<string, string> | string[],
   cwd?: string,
+  opts: { tsConfig?: TsConfig | null } = {},
 ) => {
   // Handle parent directory navigation properly
   const resolvedPath = cwd
@@ -44,11 +45,7 @@ export const resolveFilePath = (
   }
 
   // Try resolving using tsconfig "paths" mapping when the import is non-relative
-  const tsConfig =
-    !Array.isArray(fsMapOrAllFilePaths) &&
-    typeof fsMapOrAllFilePaths === "object"
-      ? getTsConfig(fsMapOrAllFilePaths)
-      : null
+  const tsConfig = opts.tsConfig ?? null
 
   if (!unknownFilePath.startsWith("./") && !unknownFilePath.startsWith("../")) {
     const viaTsconfig = resolveWithTsconfigPaths({
@@ -80,8 +77,15 @@ export const resolveFilePath = (
 export const resolveFilePathOrThrow = (
   unknownFilePath: string,
   fsMapOrAllFilePaths: Record<string, string> | string[],
+  cwd?: string,
+  opts: { tsConfig?: TsConfig | null } = {},
 ) => {
-  const resolvedFilePath = resolveFilePath(unknownFilePath, fsMapOrAllFilePaths)
+  const resolvedFilePath = resolveFilePath(
+    unknownFilePath,
+    fsMapOrAllFilePaths,
+    cwd,
+    opts,
+  )
   if (!resolvedFilePath) {
     throw new Error(
       `File not found "${unknownFilePath}", available paths:\n\n${Object.keys(fsMapOrAllFilePaths).join(", ")}`,
