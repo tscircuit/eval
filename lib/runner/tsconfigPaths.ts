@@ -1,4 +1,5 @@
 import { normalizeFilePath } from "./normalizeFsMap"
+import { joinPath } from "../utils/pathJoin"
 
 type RawTsConfig = {
   compilerOptions?: {
@@ -40,6 +41,13 @@ export function resolveWithTsconfigPaths(opts: {
   const { importPath, normalizedFilePathMap, extensions, tsConfig } = opts
   if (!tsConfig) return null
   const { baseUrl, paths } = tsConfig
+  const normalizedBaseUrl = baseUrl ? normalizeFilePath(baseUrl) : ""
+  const effectiveBaseUrl = normalizedBaseUrl === "." ? "" : normalizedBaseUrl
+
+  const resolveTargetWithBaseUrl = (target: string) => {
+    if (!baseUrl || target.startsWith("/")) return target
+    return joinPath(effectiveBaseUrl, target)
+  }
 
   const tryResolveCandidate = (candidate: string) => {
     const normalizedCandidate = normalizeFilePath(candidate)
@@ -72,20 +80,14 @@ export function resolveWithTsconfigPaths(opts: {
       )
       for (const target of targets) {
         const replaced = target.replace("*", starMatch)
-        const candidate =
-          baseUrl && !replaced.startsWith("./") && !replaced.startsWith("/")
-            ? `${baseUrl}/${replaced}`
-            : replaced
+        const candidate = resolveTargetWithBaseUrl(replaced)
         const resolved = tryResolveCandidate(candidate)
         if (resolved) return resolved
       }
     } else {
       if (importPath !== alias) continue
       for (const target of targets) {
-        const candidate =
-          baseUrl && !target.startsWith("./") && !target.startsWith("/")
-            ? `${baseUrl}/${target}`
-            : target
+        const candidate = resolveTargetWithBaseUrl(target)
         const resolved = tryResolveCandidate(candidate)
         if (resolved) return resolved
       }

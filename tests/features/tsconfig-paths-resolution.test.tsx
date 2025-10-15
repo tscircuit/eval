@@ -63,3 +63,34 @@ test("throws error when tsconfig path alias cannot be resolved (instead of tryin
     'Import "@utils/missing" matches a tsconfig path alias but could not be resolved to an existing file',
   )
 })
+
+test("tsconfig paths honor baseUrl when targets use relative prefixes", async () => {
+  const circuitJson = await runTscircuitCode(
+    {
+      "tsconfig.json": JSON.stringify({
+        compilerOptions: {
+          baseUrl: "./src",
+          paths: {
+            "@components/*": ["./components/*"],
+          },
+        },
+      }),
+      "src/components/res.tsx": `
+        export default () => (<resistor name="Rbase" resistance="1k" />)
+      `,
+      "user.tsx": `
+        import Resistor from "@components/res"
+        export default () => (<Resistor />)
+      `,
+    },
+    {
+      mainComponentPath: "user",
+    },
+  )
+
+  const resistor = circuitJson.find(
+    (el) => el.type === "source_component" && el.name === "Rbase",
+  ) as any
+  expect(resistor).toBeDefined()
+  expect(resistor.resistance).toBe(1000)
+})
