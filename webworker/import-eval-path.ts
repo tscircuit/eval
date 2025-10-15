@@ -5,7 +5,10 @@ import { resolveFilePath } from "lib/runner/resolveFilePath"
 import { resolveNodeModule } from "lib/utils/resolve-node-module"
 import { importNodeModule } from "./import-node-module"
 import { importNpmPackage } from "./import-npm-package"
-import { getTsConfig, matchesTsconfigPathPattern } from "lib/runner/tsconfigPaths"
+import {
+  getTsConfig,
+  matchesTsconfigPathPattern,
+} from "lib/runner/tsconfigPaths"
 import Debug from "debug"
 
 const debug = Debug("tsci:eval:import-eval-path")

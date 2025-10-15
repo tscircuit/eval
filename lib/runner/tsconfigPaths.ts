@@ -106,10 +106,7 @@ export function matchesTsconfigPathPattern(
     const hasWildcard = alias.includes("*")
     if (hasWildcard) {
       const [prefix, suffix] = alias.split("*")
-      if (
-        importPath.startsWith(prefix) &&
-        importPath.endsWith(suffix || "")
-      ) {
+      if (importPath.startsWith(prefix) && importPath.endsWith(suffix || "")) {
         return true
       }
     } else {
