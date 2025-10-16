@@ -19,74 +19,96 @@ export const importLocalFile = async (
     importName,
   })
 
-  const { fsMap, preSuppliedImports } = ctx
+  const { fsMap, preSuppliedImports, importStack, currentlyImporting } = ctx
 
   const fsPath = resolveFilePathOrThrow(importName, fsMap, undefined, {
     tsConfig: ctx.tsConfig,
   })
   debug("fsPath:", fsPath)
+  if (currentlyImporting.has(fsPath)) {
+    const cycleStartIndex = importStack.indexOf(fsPath)
+    const cyclePath =
+      cycleStartIndex >= 0
+        ? importStack.slice(cycleStartIndex).concat(fsPath)
+        : [...importStack, fsPath]
+    throw new Error(
+      `Circular dependency detected while importing "${fsPath}". The following import chain forms a cycle:\n\n${cyclePath.join(
+        " -> ",
+      )}`,
+    )
+  }
+
   if (!ctx.fsMap[fsPath]) {
     debug("fsPath not found in fsMap:", fsPath)
     throw new Error(`File "${fsPath}" not found`)
   }
   const fileContent = fsMap[fsPath]
   debug("fileContent:", fileContent?.slice(0, 100))
-  if (fsPath.endsWith(".json")) {
-    const jsonData = JSON.parse(fileContent)
-    preSuppliedImports[fsPath] = {
-      __esModule: true,
-      default: jsonData,
-    }
-  } else if (isStaticAssetPath(fsPath)) {
-    const platformConfig = ctx.circuit.platform
-    // Use projectBaseUrl for static file imports
-    const staticUrl = `${platformConfig?.projectBaseUrl ?? ""}/${fsPath.startsWith("./") ? fsPath.slice(2) : fsPath}`
-    preSuppliedImports[fsPath] = {
-      __esModule: true,
-      default: staticUrl,
-    }
-  } else if (fsPath.endsWith(".tsx") || fsPath.endsWith(".ts")) {
-    const importNames = getImportsFromCode(fileContent)
-
-    for (const importName of importNames) {
-      if (!preSuppliedImports[importName]) {
-        await importEvalPath(importName, ctx, depth + 1, {
-          cwd: dirname(fsPath),
-        })
+  currentlyImporting.add(fsPath)
+  importStack.push(fsPath)
+  try {
+    if (fsPath.endsWith(".json")) {
+      const jsonData = JSON.parse(fileContent)
+      preSuppliedImports[fsPath] = {
+        __esModule: true,
+        default: jsonData,
       }
-    }
+    } else if (isStaticAssetPath(fsPath)) {
+      const platformConfig = ctx.circuit.platform
+      // Use projectBaseUrl for static file imports
+      const staticUrl = `${platformConfig?.projectBaseUrl ?? ""}/${
+        fsPath.startsWith("./") ? fsPath.slice(2) : fsPath
+      }`
+      preSuppliedImports[fsPath] = {
+        __esModule: true,
+        default: staticUrl,
+      }
+    } else if (fsPath.endsWith(".tsx") || fsPath.endsWith(".ts")) {
+      const importNames = getImportsFromCode(fileContent)
 
-    try {
-      const transformedCode = transformWithSucrase(fileContent, fsPath)
-      debug("evalCompiledJs called with:", {
-        code: transformedCode.slice(0, 100),
-        dirname: dirname(fsPath),
-      })
-      const importRunResult = evalCompiledJs(
-        transformedCode,
+      for (const importName of importNames) {
+        if (!preSuppliedImports[importName]) {
+          await importEvalPath(importName, ctx, depth + 1, {
+            cwd: dirname(fsPath),
+          })
+        }
+      }
+
+      try {
+        const transformedCode = transformWithSucrase(fileContent, fsPath)
+        debug("evalCompiledJs called with:", {
+          code: transformedCode.slice(0, 100),
+          dirname: dirname(fsPath),
+        })
+        const importRunResult = evalCompiledJs(
+          transformedCode,
+          preSuppliedImports,
+          dirname(fsPath),
+        )
+        debug("importRunResult:", {
+          fsPath,
+          importRunResult,
+        })
+        preSuppliedImports[fsPath] = importRunResult.exports
+      } catch (error: any) {
+        throw new Error(
+          `Eval compiled js error for "${importName}": ${error.message}`,
+        )
+      }
+    } else if (fsPath.endsWith(".js")) {
+      // For .js files, especially from node_modules, we need to transform them
+      preSuppliedImports[fsPath] = evalCompiledJs(
+        transformWithSucrase(fileContent, fsPath),
         preSuppliedImports,
         dirname(fsPath),
-      )
-      debug("importRunResult:", {
-        fsPath,
-        importRunResult,
-      })
-      preSuppliedImports[fsPath] = importRunResult.exports
-    } catch (error: any) {
+      ).exports
+    } else {
       throw new Error(
-        `Eval compiled js error for "${importName}": ${error.message}`,
+        `Unsupported file extension "${fsPath.split(".").pop()}" for "${fsPath}"`,
       )
     }
-  } else if (fsPath.endsWith(".js")) {
-    // For .js files, especially from node_modules, we need to transform them
-    preSuppliedImports[fsPath] = evalCompiledJs(
-      transformWithSucrase(fileContent, fsPath),
-      preSuppliedImports,
-      dirname(fsPath),
-    ).exports
-  } else {
-    throw new Error(
-      `Unsupported file extension "${fsPath.split(".").pop()}" for "${fsPath}"`,
-    )
+  } finally {
+    importStack.pop()
+    currentlyImporting.delete(fsPath)
   }
 }
