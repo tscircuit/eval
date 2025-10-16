@@ -97,7 +97,7 @@ export function resolveWithTsconfigPaths(opts: {
     tsConfig,
   })
 
-  if (viaBaseUrl) return viaBaseUrl
+  if (resolvedPathFromBaseUrl) return resolvedPathFromBaseUrl
 
   return null
 }
