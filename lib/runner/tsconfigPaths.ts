@@ -112,23 +112,19 @@ export function resolveWithBaseUrl(opts: {
   const baseUrl = tsConfig?.compilerOptions?.baseUrl
   if (!baseUrl) return null
 
-  const tryResolveCandidate = (candidate: string) => {
-    const normalizedCandidate = normalizeFilePath(candidate)
-    if (normalizedFilePathMap.has(normalizedCandidate)) {
-      return normalizedFilePathMap.get(normalizedCandidate)!
-    }
-    for (const ext of extensions) {
-      const withExt = `${normalizedCandidate}.${ext}`
-      if (normalizedFilePathMap.has(withExt)) {
-        return normalizedFilePathMap.get(withExt)!
-      }
-    }
-    return null
+  const filePathToResolve = `${baseUrl}/${importPath}`
+  const normalizedFilePath = normalizeFilePath(filePathToResolve)
+
+  if (normalizedFilePathMap.has(normalizedFilePath)) {
+    return normalizedFilePathMap.get(normalizedFilePath)!
   }
 
-  const candidate = `${baseUrl}/${importPath}`
-  const resolved = tryResolveCandidate(candidate)
-  if (resolved) return resolved
+  for (const ext of extensions) {
+    const withExt = `${normalizedFilePath}.${ext}`
+    if (normalizedFilePathMap.has(withExt)) {
+      return normalizedFilePathMap.get(withExt)!
+    }
+  }
 
   return null
 }
