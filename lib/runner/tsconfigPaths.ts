@@ -90,7 +90,7 @@ export function resolveWithTsconfigPaths(opts: {
     }
   }
 
-  const viaBaseUrl = resolveWithBaseUrl({
+  const resolvedPathFromBaseUrl = resolveWithBaseUrl({
     importPath,
     normalizedFilePathMap,
     extensions,
