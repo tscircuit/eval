@@ -51,21 +51,21 @@ export const resolveFilePath = (
   const tsConfig = opts.tsConfig ?? null
 
   if (!unknownFilePath.startsWith("./") && !unknownFilePath.startsWith("../")) {
-    const viaPaths = resolveWithTsconfigPaths({
+    const resolvedPathFromPaths = resolveWithTsconfigPaths({
       importPath: unknownFilePath,
       normalizedFilePathMap,
       extensions: extension,
       tsConfig,
     })
-    if (viaPaths) return viaPaths
+    if (resolvedPathFromPaths) return resolvedPathFromPaths
 
-    const viaBaseUrl = resolveWithBaseUrl({
+    const resolvedPathFromBaseUrl = resolveWithBaseUrl({
       importPath: unknownFilePath,
       normalizedFilePathMap,
       extensions: extension,
       tsConfig,
     })
-    if (viaBaseUrl) return viaBaseUrl
+    if (resolvedPathFromBaseUrl) return resolvedPathFromBaseUrl
   }
 
   // Check if it's an absolute import
