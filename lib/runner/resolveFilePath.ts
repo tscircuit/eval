@@ -55,6 +55,23 @@ export const resolveFilePath = (
       tsConfig,
     })
     if (viaTsconfig) return viaTsconfig
+
+    // Try resolving using tsconfig "baseUrl" when paths is not used
+    // This supports TypeScript's behavior of allowing imports from the baseUrl directory
+    const baseUrl = tsConfig?.compilerOptions?.baseUrl
+    if (baseUrl && baseUrl !== ".") {
+      const baseUrlPath = `${baseUrl}/${unknownFilePath}`
+      const normalizedBaseUrlPath = normalizeFilePath(baseUrlPath)
+      if (normalizedFilePathMap.has(normalizedBaseUrlPath)) {
+        return normalizedFilePathMap.get(normalizedBaseUrlPath)!
+      }
+      for (const ext of extension) {
+        const possibleFilePath = `${normalizedBaseUrlPath}.${ext}`
+        if (normalizedFilePathMap.has(possibleFilePath)) {
+          return normalizedFilePathMap.get(possibleFilePath)!
+        }
+      }
+    }
   }
 
   // Check if it's an absolute import
