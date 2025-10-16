@@ -90,6 +90,46 @@ export function resolveWithTsconfigPaths(opts: {
     }
   }
 
+  const viaBaseUrl = resolveWithBaseUrl({
+    importPath,
+    normalizedFilePathMap,
+    extensions,
+    tsConfig,
+  })
+
+  if (viaBaseUrl) return viaBaseUrl
+
+  return null
+}
+
+export function resolveWithBaseUrl(opts: {
+  importPath: string
+  normalizedFilePathMap: Map<string, string>
+  extensions: string[]
+  tsConfig: TsConfig | null
+}): string | null {
+  const { importPath, normalizedFilePathMap, extensions, tsConfig } = opts
+  const baseUrl = tsConfig?.compilerOptions?.baseUrl
+  if (!baseUrl) return null
+
+  const tryResolveCandidate = (candidate: string) => {
+    const normalizedCandidate = normalizeFilePath(candidate)
+    if (normalizedFilePathMap.has(normalizedCandidate)) {
+      return normalizedFilePathMap.get(normalizedCandidate)!
+    }
+    for (const ext of extensions) {
+      const withExt = `${normalizedCandidate}.${ext}`
+      if (normalizedFilePathMap.has(withExt)) {
+        return normalizedFilePathMap.get(withExt)!
+      }
+    }
+    return null
+  }
+
+  const candidate = `${baseUrl}/${importPath}`
+  const resolved = tryResolveCandidate(candidate)
+  if (resolved) return resolved
+
   return null
 }
 

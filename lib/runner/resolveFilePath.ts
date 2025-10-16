@@ -1,7 +1,10 @@
 import { normalizeFilePath } from "./normalizeFsMap"
-import { dirname } from "lib/utils/dirname"
-import { resolveWithTsconfigPaths, type TsConfig } from "./tsconfigPaths"
 import { resolveRelativePath } from "lib/utils/resolveRelativePath"
+import {
+  resolveWithTsconfigPaths,
+  type TsConfig,
+  resolveWithBaseUrl,
+} from "./tsconfigPaths"
 
 export const resolveFilePath = (
   unknownFilePath: string,
@@ -48,13 +51,21 @@ export const resolveFilePath = (
   const tsConfig = opts.tsConfig ?? null
 
   if (!unknownFilePath.startsWith("./") && !unknownFilePath.startsWith("../")) {
-    const viaTsconfig = resolveWithTsconfigPaths({
+    const viaPaths = resolveWithTsconfigPaths({
       importPath: unknownFilePath,
       normalizedFilePathMap,
       extensions: extension,
       tsConfig,
     })
-    if (viaTsconfig) return viaTsconfig
+    if (viaPaths) return viaPaths
+
+    const viaBaseUrl = resolveWithBaseUrl({
+      importPath: unknownFilePath,
+      normalizedFilePathMap,
+      extensions: extension,
+      tsConfig,
+    })
+    if (viaBaseUrl) return viaBaseUrl
   }
 
   // Check if it's an absolute import
