@@ -23,6 +23,8 @@ export interface ExecutionContext extends WebWorkerConfiguration {
   circuit: RootCircuit
   logger: StoredLogger
   tsConfig: TsConfig | null
+  importStack: string[]
+  currentlyImporting: Set<string>
 }
 
 export function createExecutionContext(
@@ -78,6 +80,8 @@ export function createExecutionContext(
     },
     circuit,
     tsConfig: null,
+    importStack: [],
+    currentlyImporting: new Set<string>(),
     ...webWorkerConfiguration,
   }
 }
