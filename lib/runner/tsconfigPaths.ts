@@ -21,10 +21,15 @@ export function getTsConfig(
   const tsconfigContent = fsMapOrAllFilePaths["tsconfig.json"]
   if (!tsconfigContent) return null
   try {
-    const parsed = JSON.parse(tsconfigContent) as TsConfig
+    const sanitizedContent = tsconfigContent.replace(
+      /\/\*[\s\S]*?\*\/|\/\/.*/g,
+      "",
+    ) // remove comments
+
+    const parsed = JSON.parse(sanitizedContent) as TsConfig
     return parsed
-  } catch {
-    return null
+  } catch (e: any) {
+    throw new Error(`Failed to parse tsconfig.json: ${e.message}`)
   }
 }
 

@@ -4,15 +4,30 @@ import { runTscircuitCode } from "lib/runner"
 test("resolves imports using tsconfig paths aliases", async () => {
   const circuitJson = await runTscircuitCode(
     {
-      "tsconfig.json": JSON.stringify({
-        compilerOptions: {
-          baseUrl: ".",
-          paths: {
+      "tsconfig.json": `{
+        "compilerOptions": {
+          "target": "ES6",
+          // "target": "ES6",
+          "module": "ESNext",
+          "jsx": "react-jsx",
+          "outDir": "dist",
+          "strict": true,
+          "esModuleInterop": true,
+          "moduleResolution": "node",
+          "skipLibCheck": true,
+          "forceConsistentCasingInFileNames": true,
+          "resolveJsonModule": true,
+          "sourceMap": true,
+          "allowSyntheticDefaultImports": true,
+          "experimentalDecorators": true,
+          "types": ["tscircuit", "bun"],
+          "baseUrl": ".",
+          "paths": {
             "@src/*": ["./src/*"],
-            "@utils/*": ["./src/utils/*"],
-          },
-        },
-      }),
+            "@utils/*": ["./src/utils/*"]
+          }
+        }
+      }`,
       "src/utils/values.ts": `
         export const resistorName = "Rpaths"
         export const resistance = "1k"
@@ -95,4 +110,18 @@ test("resolves imports using tsconfig baseUrl", async () => {
   ) as any
   expect(resistor).toBeDefined()
   expect(resistor.resistance).toBe(2000)
+})
+
+test("throws error when tsconfig.json is malformed", async () => {
+  await expect(
+    runTscircuitCode(
+      {
+        "tsconfig.json": `{ "compilerOptions": { baseUrl": "src" } }`, // Malformed JSON
+        "user.tsx": `export default () => (<resistor name="R1" resistance="1k" />)`,
+      },
+      {
+        mainComponentPath: "user",
+      },
+    ),
+  ).rejects.toThrow(/Failed to parse tsconfig.json/)
 })
