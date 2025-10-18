@@ -72,7 +72,7 @@ export type CircuitWebWorker = {
   renderUntilSettled: () => Promise<void>
   getCircuitJson: () => Promise<AnyCircuitElement[]>
   on: (event: RootCircuitEventName, callback: (...args: any[]) => void) => void
-  clearEventListeners: () => void
+  clearEventListeners: () => Promise<void>
   enableDebug: (namespace: string) => Promise<void>
   version: () => Promise<string>
   kill: () => Promise<void>
