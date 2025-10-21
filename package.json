@@ -1,7 +1,7 @@
 {
   "name": "@tscircuit/eval",
   "main": "dist/lib/index.js",
-  "version": "0.0.411",
+  "version": "0.0.412",
   "type": "module",
   "files": [
     "dist"
@@ -111,7 +111,8 @@
     "circuit-json-to-spice": "^0.0.15",
     "spicey": "^0.0.10",
     "@tscircuit/common": "^0.0.14",
-    "@resvg/resvg-js": "^2.6.2"},
+    "@resvg/resvg-js": "^2.6.2"
+  },
   "peerDependencies": {
     "typescript": "^5.0.0",
     "@tscircuit/core": "*",
