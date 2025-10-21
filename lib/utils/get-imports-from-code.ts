@@ -12,7 +12,7 @@ export const getImportsFromCode = (code: string): string[] => {
 
   // Match re-exports
   const reExportRegex =
-    /^\s*export\s+(?:\*|(?:\{[\s\w,]+\}))\s+from\s*['"](.+?)['"]/gm
+    /^\s*export\s+(?:type\s+)?(?:\*\s+as\s+[\w$]+|\*|\{[^}]+\})\s+from\s*['"](.+?)['"]/gm
   let reExportMatch: RegExpExecArray | null
   // biome-ignore lint/suspicious/noAssignInExpressions: <explanation>
   while ((reExportMatch = reExportRegex.exec(code)) !== null) {
