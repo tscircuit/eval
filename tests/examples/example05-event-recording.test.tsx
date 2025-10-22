@@ -1,8 +1,7 @@
 import { test, expect } from "bun:test"
 import { createCircuitWebWorker } from "lib/index"
 
-// Skipped for flakiness, re-enable when flakiness is solved
-test.skip("example5-event-recording", async () => {
+test("example5-event-recording", async () => {
   const circuitWebWorker = await createCircuitWebWorker({
     webWorkerUrl: new URL("../../webworker/entrypoint.ts", import.meta.url),
   })
@@ -22,11 +21,11 @@ test.skip("example5-event-recording", async () => {
 
   await circuitWebWorker.renderUntilSettled()
 
-  expect(eventCount).toBeGreaterThan(0)
-  const initialEventCount = eventCount
-
   // Clear event listeners
-  circuitWebWorker.clearEventListeners()
+  await circuitWebWorker.clearEventListeners()
+  expect(eventCount).toBeGreaterThan(0)
+
+  const initialEventCount = eventCount
 
   // Add another component to trigger more events
   await circuitWebWorker.execute(`
