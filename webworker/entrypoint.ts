@@ -81,6 +81,7 @@ const webWorkerApi = {
     circuitRunnerConfiguration.snippetsApiBaseUrl = baseUrl
   },
   setPlatformConfig: async (platform: PlatformConfig) => {
+    console.log("GOT PLATFORM CONFIG IN WORKER", platform)
     circuitRunnerConfiguration.platform = platform
   },
   setProjectConfig: async (project: Partial<PlatformConfig>) => {

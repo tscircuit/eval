@@ -6,6 +6,7 @@ import type {
   CircuitWebWorker,
 } from "./shared/types"
 import type { RootCircuitEventName } from "./shared/types"
+import { comlinkFunctionOnlyProxy } from "./comlinkFunctionOnlyProxy"
 
 export type { CircuitWebWorker, WebWorkerConfiguration }
 
@@ -171,7 +172,13 @@ export const createCircuitWebWorker = async (
     await comlinkWorker.setSnippetsApiBaseUrl(configuration.snippetsApiBaseUrl)
   }
   if (configuration.platform) {
-    await comlinkWorker.setPlatformConfig(configuration.platform)
+    console.log(
+      "configuration.platform",
+      comlinkFunctionOnlyProxy(configuration.platform),
+    )
+    await comlinkWorker.setPlatformConfig(
+      comlinkFunctionOnlyProxy(configuration.platform),
+    )
   }
   if (configuration.projectConfig) {
     await comlinkWorker.setProjectConfig(configuration.projectConfig)
