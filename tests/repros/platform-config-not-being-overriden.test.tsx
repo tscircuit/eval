@@ -9,11 +9,7 @@ test(
       webWorkerUrl: new URL("../../webworker/entrypoint.ts", import.meta.url),
       platform: {
         ...getPlatformConfig(),
-        footprintFileParserMap: {import { CircuitRunner, getPlatformConfig } from "lib/index"
-        import { test } from "bun:test"
-        import { expect } from "bun:test"
-        import { createCircuitWebWorker } from "lib/worker"
-        
+        footprintFileParserMap: {
           kicad_mod: {
             loadFromUrl: async (url: string) => {
               console.log("loadFromUrl", url)
