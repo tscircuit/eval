@@ -13,6 +13,7 @@ import { importEvalPath } from "webworker/import-eval-path"
 import { setupDefaultEntrypointIfNeeded } from "./setupDefaultEntrypointIfNeeded"
 import { enhanceRootCircuitHasNoChildrenError } from "lib/utils/enhance-root-circuit-error"
 import Debug from "debug"
+import { setValueAtPath } from "lib/shared/obj-path"
 
 const debug = Debug("tsci:eval:CircuitRunner")
 
@@ -199,8 +200,26 @@ export class CircuitRunner implements CircuitRunnerApi {
     this._circuitRunnerConfiguration.platform = platform
   }
 
+  async setPlatformConfigProperty(property: string, value: any) {
+    if (!this._circuitRunnerConfiguration.platform) {
+      this._circuitRunnerConfiguration.platform = {}
+    }
+    setValueAtPath(this._circuitRunnerConfiguration.platform, property, value)
+  }
+
   async setProjectConfig(project: Partial<PlatformConfig>) {
     this._circuitRunnerConfiguration.projectConfig = project
+  }
+
+  async setProjectConfigProperty(property: string, value: any) {
+    if (!this._circuitRunnerConfiguration.projectConfig) {
+      this._circuitRunnerConfiguration.projectConfig = {}
+    }
+    setValueAtPath(
+      this._circuitRunnerConfiguration.projectConfig,
+      property,
+      value,
+    )
   }
 
   async enableDebug(namespace: string) {

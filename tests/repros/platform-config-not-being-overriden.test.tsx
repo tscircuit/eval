@@ -12,7 +12,6 @@ test(
         footprintFileParserMap: {
           kicad_mod: {
             loadFromUrl: async (url: string) => {
-              console.log("loadFromUrl", url)
               return {
                 footprintCircuitJson: [],
               }

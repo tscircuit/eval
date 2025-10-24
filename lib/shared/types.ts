@@ -50,6 +50,8 @@ export interface CircuitRunnerApi {
   setSnippetsApiBaseUrl: (baseUrl: string) => Promise<void>
   setPlatformConfig: (platform: PlatformConfig) => Promise<void>
   setProjectConfig: (project: Partial<PlatformConfig>) => Promise<void>
+  setPlatformConfigProperty: (property: string, value: any) => Promise<void>
+  setProjectConfigProperty: (property: string, value: any) => Promise<void>
   enableDebug: (namespace: string) => Promise<void>
   on: (event: RootCircuitEventName, callback: (...args: any[]) => void) => void
   clearEventListeners: () => void
