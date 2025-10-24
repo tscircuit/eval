@@ -1,5 +1,6 @@
 import { CircuitRunner, getPlatformConfig } from "lib/index"
 import { test } from "bun:test"
+import { convertCircuitJsonToPcbSvg } from "circuit-to-svg"
 import { expect } from "bun:test"
 
 test(
