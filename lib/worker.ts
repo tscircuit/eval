@@ -6,7 +6,6 @@ import type {
   CircuitWebWorker,
 } from "./shared/types"
 import type { RootCircuitEventName } from "./shared/types"
-import { comlinkFunctionOnlyProxy } from "./comlinkFunctionOnlyProxy"
 import { getObjectPaths, getValueAtPath } from "./shared/obj-path"
 
 export type { CircuitWebWorker, WebWorkerConfiguration }
