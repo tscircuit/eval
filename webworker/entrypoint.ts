@@ -17,6 +17,7 @@ import type { RootCircuit } from "@tscircuit/core"
 import { setupDefaultEntrypointIfNeeded } from "lib/runner/setupDefaultEntrypointIfNeeded"
 import { enhanceRootCircuitHasNoChildrenError } from "lib/utils/enhance-root-circuit-error"
 import { setupFetchProxy } from "./fetchProxy"
+import { setValueAtPath } from "lib/shared/obj-path"
 
 globalThis.React = React
 setupFetchProxy()
@@ -76,15 +77,37 @@ function bindEventListeners(circuit: RootCircuit) {
   }
 }
 
+type Promisified<T> = {
+  [K in keyof T]: T[K] extends (...args: any[]) => any
+    ? (...args: any[]) => Promise<ReturnType<T[K]>>
+    : T[K]
+}
+
 const webWorkerApi = {
   setSnippetsApiBaseUrl: async (baseUrl: string) => {
     circuitRunnerConfiguration.snippetsApiBaseUrl = baseUrl
   },
-  setPlatformConfig: async (platform: PlatformConfig) => {
-    circuitRunnerConfiguration.platform = platform
+  setPlatformConfig: async ($platform: Promisified<PlatformConfig>) => {
+    throw new Error(
+      "setPlatformConfig can't be used against the webworker directly due to comlink limitations, use setPlatformConfigProperty instead (or a wrapper)",
+    )
+  },
+  setPlatformConfigProperty: async (property: string, value: any) => {
+    if (!circuitRunnerConfiguration.platform) {
+      circuitRunnerConfiguration.platform = {}
+    }
+    setValueAtPath(circuitRunnerConfiguration.platform, property, value)
   },
   setProjectConfig: async (project: Partial<PlatformConfig>) => {
-    circuitRunnerConfiguration.projectConfig = project
+    throw new Error(
+      "setProjectConfig can't be used against the webworker directly due to comlink limitations, use setProjectConfigProperty instead (or a wrapper)",
+    )
+  },
+  setProjectConfigProperty: async (property: string, value: any) => {
+    if (!circuitRunnerConfiguration.projectConfig) {
+      circuitRunnerConfiguration.projectConfig = {}
+    }
+    setValueAtPath(circuitRunnerConfiguration.projectConfig, property, value)
   },
 
   enableDebug: async (namespace: string) => {

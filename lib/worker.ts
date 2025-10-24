@@ -6,6 +6,7 @@ import type {
   CircuitWebWorker,
 } from "./shared/types"
 import type { RootCircuitEventName } from "./shared/types"
+import { getObjectPaths, getValueAtPath } from "./shared/obj-path"
 
 export type { CircuitWebWorker, WebWorkerConfiguration }
 
@@ -170,11 +171,40 @@ export const createCircuitWebWorker = async (
   if (configuration.snippetsApiBaseUrl) {
     await comlinkWorker.setSnippetsApiBaseUrl(configuration.snippetsApiBaseUrl)
   }
+
+  const maybeProxy = (value: any) => {
+    if (typeof value === "function") {
+      return Comlink.proxy(value)
+    }
+    return value
+  }
   if (configuration.platform) {
-    await comlinkWorker.setPlatformConfig(configuration.platform)
+    for (const path of getObjectPaths(configuration.platform)) {
+      await comlinkWorker
+        .setPlatformConfigProperty(
+          path,
+          maybeProxy(getValueAtPath(configuration.platform, path)),
+        )
+        .catch((e) => {
+          throw new Error(
+            `Error setting platform config property ${path}: ${e instanceof Error ? e.message : String(e)}`,
+          )
+        })
+    }
   }
   if (configuration.projectConfig) {
-    await comlinkWorker.setProjectConfig(configuration.projectConfig)
+    for (const path of getObjectPaths(configuration.projectConfig)) {
+      await comlinkWorker
+        .setProjectConfigProperty(
+          path,
+          maybeProxy(getValueAtPath(configuration.projectConfig, path)),
+        )
+        .catch((e) => {
+          throw new Error(
+            `Error setting project config property ${path}: ${e instanceof Error ? e.message : String(e)}`,
+          )
+        })
+    }
   }
 
   let isTerminated = false
