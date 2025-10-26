@@ -108,9 +108,9 @@ async function runNgspiceTest() {
 // Run the test when the page loads
 window.addEventListener("DOMContentLoaded", () => {
   const urlParams = new URLSearchParams(window.location.search)
-  const testToRun = urlParams.get("test")
+  const test_to_run = urlParams.get("test_to_run")
 
-  if (testToRun === "ngspice") {
+  if (test_to_run === "ngspice") {
     runNgspiceTest()
   } else {
     runDefaultTest()
