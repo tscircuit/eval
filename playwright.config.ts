@@ -12,12 +12,13 @@ export default defineConfig({
   workers: process.env.CI ? 1 : undefined,
   reporter: "html",
   use: {
+    baseURL: "http://localhost:3070",
     actionTimeout: 0,
     trace: "on-first-retry",
   },
   webServer: {
     command: "bun run start:browser-test-server",
-    port: 3070,
+    url: "http://localhost:3070",
     reuseExistingServer: !process.env.CI,
   },
 })

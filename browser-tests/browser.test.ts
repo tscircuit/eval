@@ -6,7 +6,7 @@ test("browser test server shows Success", async ({ page }) => {
   await new Promise((resolve) => setTimeout(resolve, 1000))
 
   // Navigate to the page
-  await page.goto("http://localhost:3070")
+  await page.goto("/")
 
   // Wait for the success message or timeout
   await expect(page.locator("#output")).toContainText("Success", {
