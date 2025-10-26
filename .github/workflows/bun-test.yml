@@ -81,8 +81,11 @@ jobs:
             echo "Running tests in $test_file"
             attempt=1
             while [ $attempt -le 4 ]; do
-              bun test "$test_file" --timeout 30000
-              code=$?
+              if bun test "$test_file" --timeout 30000; then
+                code=0
+              else
+                code=$?
+              fi
 
               if [ $code -eq 0 ]; then
                 break

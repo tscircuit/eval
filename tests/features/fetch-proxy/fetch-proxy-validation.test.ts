@@ -72,8 +72,15 @@ fetch("https://example.com/test")
 
     const rawWorker: Worker = (worker as any).__rawWorker
     const messages: any[] = []
-    rawWorker.addEventListener("message", (event) => {
-      if (event.data?.type === "fetch_error") messages.push(event.data)
+    const messagePromise = new Promise<void>((resolve) => {
+      const listener = (event: MessageEvent) => {
+        if (event.data?.type === "fetch_error") {
+          messages.push(event.data)
+          rawWorker.removeEventListener("message", listener)
+          resolve()
+        }
+      }
+      rawWorker.addEventListener("message", listener)
     })
 
     await worker.execute(`
@@ -83,7 +90,7 @@ fetch("https://example.com/test")
   });
 `)
 
-    await new Promise((r) => setTimeout(r, 100))
+    await messagePromise
 
     expect(messages).toEqual([
       { type: "fetch_error", name: "Error", message: "Network error" },
