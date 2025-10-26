@@ -2,7 +2,7 @@ import { createCircuitWebWorker } from "lib/worker"
 // @ts-ignore
 import blobUrl from "../dist/blob-url"
 
-async function runTest() {
+async function runDefaultTest() {
   try {
     // Create a circuit web worker
     console.log("creating worker...")
@@ -49,5 +49,70 @@ async function runTest() {
   }
 }
 
+async function runNgspiceTest() {
+  const outputDiv = document.getElementById("output")!
+  try {
+    console.log("creating worker for ngspice test...")
+    const circuitWebWorker = await createCircuitWebWorker({
+      webWorkerBlobUrl: blobUrl,
+      verbose: true,
+    })
+
+    console.log("worker created, executing spice simulation...")
+
+    await circuitWebWorker.execute(`
+    circuit.add(
+      <board schMaxTraceDistance={10} routingDisabled>
+        <voltagesource name="V1" voltage="5V" />
+        <switch name="SW1" spst simSwitchFrequency="1kHz" />
+        <trace from=".V1 > .terminal1" to=".SW1 > .pin1" />
+        <resistor
+          name="R1"
+          resistance="1k"
+          footprint="0402"
+          connections={{ pin1: ".SW1 > .pin2", pin2: ".V1 > .terminal2" }}
+        />
+        <voltageprobe connectsTo={".R1 > .pin1"} />
+        <analogsimulation
+          duration="4ms"
+          timePerStep="10us"
+          spiceEngine="ngspice"
+        />
+      </board>
+    )
+  `)
+
+    await circuitWebWorker.renderUntilSettled()
+
+    const circuitJson = await circuitWebWorker.getCircuitJson()
+
+    const simGraph = circuitJson.some(
+      (el) => el.type === "simulation_transient_voltage_graph",
+    )
+
+    if (simGraph) {
+      outputDiv.textContent =
+        "Success: ngspice simulation ran and produced a graph."
+      console.log("Test succeeded: ngspice simulation ran.")
+    } else {
+      outputDiv.textContent =
+        "Fail: ngspice simulation did not produce a graph."
+      console.error("Test failed: ngspice simulation did not produce a graph.")
+    }
+  } catch (error: any) {
+    outputDiv.textContent = `Fail: Test error occurred: ${error.toString()}`
+    console.error("Test failed with error:", error)
+  }
+}
+
 // Run the test when the page loads
-window.addEventListener("DOMContentLoaded", runTest)
+window.addEventListener("DOMContentLoaded", () => {
+  const urlParams = new URLSearchParams(window.location.search)
+  const testToRun = urlParams.get("test")
+
+  if (testToRun === "ngspice") {
+    runNgspiceTest()
+  } else {
+    runDefaultTest()
+  }
+})

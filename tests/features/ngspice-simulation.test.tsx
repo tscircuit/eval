@@ -1,16 +1,10 @@
 import { test, expect } from "bun:test"
 import { createCircuitWebWorker } from "lib"
-import createNgspiceSpiceEngine from "@tscircuit/ngspice-spice-engine"
 
 test(
   "spice-analysis with the ngspice engine for a switch circuit",
   async () => {
     const circuitWebWorker = await createCircuitWebWorker({
-      platform: {
-        spiceEngineMap: {
-          ngspice: await createNgspiceSpiceEngine(),
-        },
-      },
       webWorkerUrl: new URL("../../webworker/entrypoint.ts", import.meta.url),
     })
 
@@ -54,7 +48,7 @@ test(
 )
 
 test(
-  "Choosing ngspice when it's not in the platform config",
+  "Choosing an unknown spice engine throws an error",
   async () => {
     const circuitWebWorker = await createCircuitWebWorker({
       webWorkerUrl: new URL("../../webworker/entrypoint.ts", import.meta.url),
@@ -77,14 +71,14 @@ test(
             <analogsimulation
               duration="4ms"
               timePerStep="10us"
-              spiceEngine="ngspice"
+              spiceEngine="not-a-real-engine"
             />
           </board>
         )
       `)
 
-      expect(circuitWebWorker.renderUntilSettled()).rejects.toThrow(
-        'SPICE engine "ngspice" not found in platform config. Available engines: []',
+      await expect(circuitWebWorker.renderUntilSettled()).rejects.toThrow(
+        'SPICE engine "not-a-real-engine" not found in platform config. Available engines: ["ngspice"]',
       )
     } finally {
       await circuitWebWorker.kill()

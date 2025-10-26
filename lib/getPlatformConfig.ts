@@ -1,10 +1,59 @@
-import type { PlatformConfig } from "@tscircuit/props"
+import type { PlatformConfig, SpiceEngine } from "@tscircuit/props"
 import { jlcPartsEngine } from "@tscircuit/parts-engine"
 import { parseKicadModToCircuitJson } from "kicad-component-converter"
 const KICAD_FOOTPRINT_CACHE_URL = "https://kicad-mod-cache.tscircuit.com"
 
+let ngspiceEngineCache: SpiceEngine | null = null
+
 export const getPlatformConfig = (): PlatformConfig => ({
   partsEngine: jlcPartsEngine,
+  spiceEngineMap: {
+    ngspice: {
+      simulate: async (spice: string) => {
+        if (!ngspiceEngineCache) {
+          try {
+            const createNgspiceSpiceEngine = (
+              await import("@tscircuit/ngspice-spice-engine")
+            ).default
+            ngspiceEngineCache = await createNgspiceSpiceEngine()
+          } catch (e) {
+            console.log(
+              "Failed to load ngspice-spice-engine locally, trying CDN fallback...",
+            )
+            try {
+              const res = await fetch(
+                "https://cdn.jsdelivr.net/npm/@tscircuit/ngspice-spice-engine/+esm",
+              )
+              if (!res.ok) {
+                throw new Error(
+                  `Failed to fetch ngspice-spice-engine from CDN: ${res.statusText}`,
+                )
+              }
+              const code = await res.text()
+              const blob = new Blob([code], { type: "application/javascript" })
+              const url = URL.createObjectURL(blob)
+              const { default: createNgspiceSpiceEngine } = await import(url)
+              URL.revokeObjectURL(url)
+              ngspiceEngineCache = await createNgspiceSpiceEngine()
+            } catch (cdnError) {
+              console.error(
+                "CDN fallback for ngspice-spice-engine also failed:",
+                cdnError,
+              )
+            }
+          }
+        }
+
+        if (!ngspiceEngineCache) {
+          throw new Error(
+            "Could not load ngspice engine from local node_modules or CDN fallback.",
+          )
+        }
+
+        return ngspiceEngineCache.simulate(spice)
+      },
+    },
+  },
   footprintLibraryMap: {
     kicad: async (footprintName: string) => {
       const baseUrl = `${KICAD_FOOTPRINT_CACHE_URL}/${footprintName}`
