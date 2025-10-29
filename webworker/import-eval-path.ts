@@ -42,9 +42,10 @@ export async function importEvalPath(
     return
   }
 
-  if (depth > 5) {
-    console.log("Max depth for imports reached")
-    return
+  if (depth > 30) {
+    throw new Error(
+      `Max depth for imports reached (30) Import Path: ${ctx.importStack.join(" -> ")}`,
+    )
   }
 
   if (importName.startsWith("/npm/")) {
