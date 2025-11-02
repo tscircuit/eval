@@ -30,7 +30,9 @@ test("example21-kicad-footprint-rotation", async () => {
 
   const circuitJson = await circuitWebWorker.getCircuitJson()
 
-  const pcb_component = circuitJson.filter((el: any) => el.type === "pcb_component")
+  const pcb_component = circuitJson.filter(
+    (el: any) => el.type === "pcb_component",
+  )
   expect(pcb_component).toMatchInlineSnapshot(`
     [
       {
@@ -51,7 +53,7 @@ test("example21-kicad-footprint-rotation", async () => {
       },
     ]
   `)
-  
+
   expect(convertCircuitJsonToPcbSvg(circuitJson)).toMatchSvgSnapshot(
     import.meta.path,
   )
