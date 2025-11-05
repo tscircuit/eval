@@ -59,7 +59,7 @@
     "@tscircuit/checks": "^0.0.85",
     "@tscircuit/circuit-json-flex": "^0.0.3",
     "@tscircuit/circuit-json-util": "^0.0.72",
-    "@tscircuit/core": "^0.0.845",
+    "@tscircuit/core": "^0.0.846",
     "@tscircuit/footprinter": "^0.0.236",
     "@tscircuit/import-snippet": "^0.0.4",
     "@tscircuit/infgrid-ijump-astar": "^0.0.33",
@@ -113,8 +113,9 @@
     "@tscircuit/common": "^0.0.20",
     "@resvg/resvg-js": "^2.6.2",
     "@tscircuit/ngspice-spice-engine": "^0.0.2",
-    "eecircuit-engine": "^1.5.6"
-  },
+    "eecircuit-engine": "^1.5.6",
+    "@tscircuit/copper-pour-solver": "^0.0.2",
+    "@tscircuit/solver-utils": "^0.0.3"},
   "peerDependencies": {
     "typescript": "^5.0.0",
     "@tscircuit/core": "*",
