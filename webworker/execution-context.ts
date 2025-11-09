@@ -43,6 +43,10 @@ export function createExecutionContext(
     ? { ...basePlatform, ...opts.projectConfig }
     : basePlatform
 
+  if (platform.partsEngineDisabled) {
+    platform.partsEngine = undefined
+  }
+
   const circuit = new RootCircuit({
     platform,
   })
