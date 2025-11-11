@@ -22,6 +22,10 @@ import { setValueAtPath } from "lib/shared/obj-path"
 globalThis.React = React
 setupFetchProxy()
 
+// Polyfill for Node.js global object in browser workers
+// Needed because @tscircuit/core and dependencies reference global.debugGraphics/debugOutputArray
+globalThis.global = globalThis.global || globalThis
+
 let executionContext: ExecutionContext | null = null
 let debugNamespace: string | undefined
 
@@ -196,7 +200,7 @@ const webWorkerApi = {
     let element: any
     if (typeof component === "function") {
       element = component()
-    } else if (component && component.__isSerializedReactElement) {
+    } else if (component?.__isSerializedReactElement) {
       element = deserializeReactElement(component)
     } else {
       element = component
