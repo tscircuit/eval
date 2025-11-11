@@ -7,6 +7,7 @@ import { importEvalPath } from "./import-eval-path"
 import Debug from "debug"
 import { isStaticAssetPath } from "lib/shared/static-asset-extensions"
 import { transformWithSucrase } from "./transform-with-sucrase"
+import { KicadToCircuitJsonConverter } from "kicad-to-circuit-json"
 
 const debug = Debug("tsci:eval:import-local-file")
 
@@ -52,6 +53,15 @@ export const importLocalFile = async (
       preSuppliedImports[fsPath] = {
         __esModule: true,
         default: jsonData,
+      }
+    } else if (fsPath.endsWith(".kicad_pcb")) {
+      const converter = new KicadToCircuitJsonConverter()
+      converter.addFile(fsPath, fileContent)
+      converter.runUntilFinished()
+      const circuitJson = converter.getOutput()
+      preSuppliedImports[fsPath] = {
+        __esModule: true,
+        default: circuitJson,
       }
     } else if (isStaticAssetPath(fsPath)) {
       const platformConfig = ctx.circuit.platform
