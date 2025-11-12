@@ -1,0 +1,57 @@
+(kicad_pcb
+  (version 20241229)
+  (generator circuit-json-to-kicad)
+  (generator_version 0.0.1)
+  (general
+    (thickness 1.6)
+  )
+  (paper
+    A4
+  )
+  (layers
+    (0 "F.Cu" signal)
+    (2 "B.Cu" signal)
+    (9 "F.Adhes" user)
+    (11 "B.Adhes" user)
+    (13 "F.Paste" user)
+    (15 "B.Paste" user)
+    (5 "F.SilkS" user)
+    (7 "B.SilkS" user)
+    (1 "F.Mask" user)
+    (3 "B.Mask" user)
+    (20 "Dwgs.User" user)
+    (21 "Cmts.User" user)
+    (22 "Eco1.User" user)
+    (23 "Eco2.User" user)
+    (24 "Edge.Cuts" user)
+    (25 "Margin" user)
+    (17 "B.CrtYd" user)
+    (16 "F.CrtYd" user)
+    (19 "B.Fab" user)
+    (18 "F.Fab" user)
+  )
+  (setup
+    (pad_to_mask_clearance 0)
+  )
+  (net 0 "GND")
+  (footprint
+    "tscircuit:Unknown"
+    (layer F.Cu)
+    (uuid 84effe0e-14c9-48ea-ab07-c263084eb3e6)
+    (at 100 100 0)
+    (fp_text
+      reference
+      "Component_0"
+      (at 0 -1.5 0)
+      (layer F.SilkS)
+      (uuid fbc01aa6-24de-4129-b29a-ff32e7cf1cb9)
+    )
+    (fp_text
+      value
+      "Unknown"
+      (at 0 1.5 0)
+      (layer F.Fab)
+      (uuid a47c888c-e122-44b2-b62e-af04a12c257a)
+    )
+  )
+)
