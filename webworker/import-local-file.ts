@@ -61,7 +61,7 @@ export const importLocalFile = async (
       const circuitJson = converter.getOutput()
       preSuppliedImports[fsPath] = {
         __esModule: true,
-        default: circuitJson,
+        circuitJson: circuitJson,
       }
     } else if (isStaticAssetPath(fsPath)) {
       const platformConfig = ctx.circuit.platform

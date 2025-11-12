@@ -22,7 +22,7 @@ test(
       entrypoint: "index.tsx",
       fsMap: {
         "index.tsx": `
-        import kicadPcbJson from "./test.kicad_pcb"
+        import { circuitJson as kicadPcbJson } from "./test.kicad_pcb"
 			circuit.add(
 			  <board width="10mm" height="10mm">
      <subcircuit circuitJson={kicadPcbJson} />
