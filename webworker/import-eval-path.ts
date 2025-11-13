@@ -100,6 +100,29 @@ export async function importEvalPath(
     return importNodeModule(importName, ctx, depth)
   }
 
+  // If not found in fsMap but might be a node module, try importNodeModule
+  // which will attempt to use nodeModulesResolver if configured
+  if (
+    !importName.startsWith(".") &&
+    !importName.startsWith("/") &&
+    !importName.startsWith("@tsci/")
+  ) {
+    const platform = ctx.circuit?.platform
+    if (platform?.nodeModulesResolver) {
+      ctx.logger.info(
+        `importNodeModule("${importName}") via nodeModulesResolver`,
+      )
+      try {
+        await importNodeModule(importName, ctx, depth)
+        return
+      } catch (error) {
+        ctx.logger.info(
+          `nodeModulesResolver failed for "${importName}", falling back to npm CDN`,
+        )
+      }
+    }
+  }
+
   if (importName.startsWith("@tsci/")) {
     ctx.logger.info(`importSnippet("${importName}")`)
     return importSnippet(importName, ctx, depth)

@@ -1,6 +1,9 @@
 import { resolveNodeModule } from "lib/utils/resolve-node-module"
 import type { ExecutionContext } from "./execution-context"
 import { importLocalFile } from "./import-local-file"
+import Debug from "debug"
+
+const debug = Debug("tsci:eval:import-node-module")
 
 export const importNodeModule = async (
   importName: string,
@@ -16,6 +19,42 @@ export const importNodeModule = async (
   const resolvedNodeModulePath = resolveNodeModule(importName, ctx.fsMap, "")
 
   if (!resolvedNodeModulePath) {
+    // Try nodeModulesResolver if available
+    const platform = ctx.circuit?.platform
+    if (platform?.nodeModulesResolver) {
+      debug(`Attempting to resolve "${importName}" using nodeModulesResolver`)
+
+      try {
+        const fileContent = await platform.nodeModulesResolver(importName)
+
+        if (fileContent) {
+          debug(`Successfully resolved "${importName}" via nodeModulesResolver`)
+
+          // Add the resolved content to fsMap with a synthetic path
+          // Add .ts extension to ensure it's treated as a module file
+          const syntheticPath = `node_modules/${importName}.ts`
+          ctx.fsMap[syntheticPath] = fileContent
+
+          // Import the file using the normal flow
+          await importLocalFile(syntheticPath, ctx, depth)
+
+          // Map the import name to the resolved module
+          preSuppliedImports[importName] = preSuppliedImports[syntheticPath]
+
+          // Also map without node_modules prefix
+          const unprefixedPath = syntheticPath.replace(/^node_modules\//, "")
+          preSuppliedImports[unprefixedPath] = preSuppliedImports[syntheticPath]
+
+          return
+        }
+
+        debug(`nodeModulesResolver returned null for "${importName}"`)
+      } catch (error) {
+        debug(`nodeModulesResolver failed for "${importName}":`, error)
+        // Continue to throw the original error below
+      }
+    }
+
     throw new Error(`Node module "${importName}" not found`)
   }
 
