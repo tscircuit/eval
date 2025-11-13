@@ -5,7 +5,7 @@ test("nodeModulesResolver: should resolve modules not in fsMap", async () => {
   const runner = new CircuitRunner()
 
   // Create a custom resolver that returns a mock module
-  const mockResolver = async (modulePath: string) => {
+  const fakeResolver = async (modulePath: string) => {
     if (modulePath === "test-package") {
       return `
         export const testValue = "resolved from custom resolver"
@@ -16,7 +16,7 @@ test("nodeModulesResolver: should resolve modules not in fsMap", async () => {
   }
 
   runner._circuitRunnerConfiguration.platform = {
-    nodeModulesResolver: mockResolver,
+    nodeModulesResolver: fakeResolver,
   }
 
   await runner.execute(`
@@ -36,7 +36,7 @@ test("nodeModulesResolver: should resolve modules not in fsMap", async () => {
 test("nodeModulesResolver: should handle scoped packages", async () => {
   const runner = new CircuitRunner()
 
-  const mockResolver = async (modulePath: string) => {
+  const fakeResolver = async (modulePath: string) => {
     if (modulePath === "@test/scoped-package") {
       return `export const scopedValue = "from scoped package"`
     }
@@ -44,7 +44,7 @@ test("nodeModulesResolver: should handle scoped packages", async () => {
   }
 
   runner._circuitRunnerConfiguration.platform = {
-    nodeModulesResolver: mockResolver,
+    nodeModulesResolver: fakeResolver,
   }
 
   await runner.execute(`
@@ -63,7 +63,7 @@ test("nodeModulesResolver: should handle scoped packages", async () => {
 test("nodeModulesResolver: should handle subpath imports", async () => {
   const runner = new CircuitRunner()
 
-  const mockResolver = async (modulePath: string) => {
+  const fakeResolver = async (modulePath: string) => {
     if (modulePath === "@test/package/submodule") {
       return `export const subValue = "from submodule"`
     }
@@ -71,7 +71,7 @@ test("nodeModulesResolver: should handle subpath imports", async () => {
   }
 
   runner._circuitRunnerConfiguration.platform = {
-    nodeModulesResolver: mockResolver,
+    nodeModulesResolver: fakeResolver,
   }
 
   await runner.execute(`
@@ -90,7 +90,7 @@ test("nodeModulesResolver: should handle subpath imports", async () => {
 test("nodeModulesResolver: should handle nested subpaths", async () => {
   const runner = new CircuitRunner()
 
-  const mockResolver = async (modulePath: string) => {
+  const fakeResolver = async (modulePath: string) => {
     if (modulePath === "regular-package/dist/index") {
       return `export const nestedValue = "from nested path"`
     }
@@ -98,7 +98,7 @@ test("nodeModulesResolver: should handle nested subpaths", async () => {
   }
 
   runner._circuitRunnerConfiguration.platform = {
-    nodeModulesResolver: mockResolver,
+    nodeModulesResolver: fakeResolver,
   }
 
   await runner.execute(`
@@ -117,12 +117,12 @@ test("nodeModulesResolver: should handle nested subpaths", async () => {
 test("nodeModulesResolver: should fallback to npm CDN when resolver throws", async () => {
   const runner = new CircuitRunner()
 
-  const mockResolver = async () => {
+  const fakeResolver = async () => {
     throw new Error("Package not found") // Always throw
   }
 
   runner._circuitRunnerConfiguration.platform = {
-    nodeModulesResolver: mockResolver,
+    nodeModulesResolver: fakeResolver,
   }
 
   // Since the resolver throws, it should fall back to npm CDN
@@ -140,13 +140,13 @@ test("nodeModulesResolver: should prefer fsMap over resolver", async () => {
   const runner = new CircuitRunner()
 
   let resolverCalled = false
-  const mockResolver = async () => {
+  const fakeResolver = async () => {
     resolverCalled = true
     return `export const value = "from resolver"`
   }
 
   runner._circuitRunnerConfiguration.platform = {
-    nodeModulesResolver: mockResolver,
+    nodeModulesResolver: fakeResolver,
   }
 
   await runner.executeWithFsMap({
@@ -200,5 +200,5 @@ test("nodeModulesResolver: should work with CDN-style resolver", async () => {
 
   await runner.renderUntilSettled()
 
-  expect(runner._executionContext?.preSuppliedImports["lodash"]).toBeDefined()
+  expect(runner._executionContext?.preSuppliedImports.lodash).toBeDefined()
 })

@@ -19,7 +19,6 @@ export const importNodeModule = async (
   const resolvedNodeModulePath = resolveNodeModule(importName, ctx.fsMap, "")
 
   if (!resolvedNodeModulePath) {
-    // Try nodeModulesResolver if available
     const platform = ctx.circuit?.platform
     if (platform?.nodeModulesResolver) {
       debug(`Attempting to resolve "${importName}" using nodeModulesResolver`)
@@ -51,7 +50,6 @@ export const importNodeModule = async (
         debug(`nodeModulesResolver returned null for "${importName}"`)
       } catch (error) {
         debug(`nodeModulesResolver failed for "${importName}":`, error)
-        // Continue to throw the original error below
       }
     }
 
