@@ -2,6 +2,11 @@ import { transform, type Transform as SucraseTransform } from "sucrase"
 
 const TS_EXTENSIONS = new Set([".ts", ".tsx", ".mts", ".cts"])
 const JSX_EXTENSIONS = new Set([".tsx", ".jsx", ".ts"])
+const TYPE_STAR_EXPORT_REGEX =
+  /^\s*export\s+type\s+\*\s+(?:as\s+[\w$]+\s+)?from\s+['"][^'"]+['"]\s*;?\s*$/gim
+
+const stripTypeStarExports = (code: string) =>
+  code.replace(TYPE_STAR_EXPORT_REGEX, "")
 
 const stripQueryAndHash = (filePath: string) => {
   const queryIndex = filePath.indexOf("?")
@@ -58,7 +63,8 @@ const getTransformsForFilePath = (filePath: string) => {
 
 export const transformWithSucrase = (code: string, filePath: string) => {
   const transforms = getTransformsForFilePath(filePath)
-  const { code: transformedCode } = transform(code, {
+  const sanitizedCode = stripTypeStarExports(code)
+  const { code: transformedCode } = transform(sanitizedCode, {
     filePath,
     production: true,
     transforms,
