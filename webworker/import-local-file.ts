@@ -64,11 +64,24 @@ export const importLocalFile = async (
         circuitJson: circuitJson,
       }
     } else if (isStaticAssetPath(fsPath)) {
-      const platformConfig = ctx.circuit.platform
-      // Use projectBaseUrl for static file imports
-      const staticUrl = `${platformConfig?.projectBaseUrl ?? ""}/${
-        fsPath.startsWith("./") ? fsPath.slice(2) : fsPath
-      }`
+      let staticUrl: string
+
+      if (fileContent === "__STATIC_ASSET__") {
+        // Placeholder: use projectBaseUrl for static file imports
+        const platformConfig = ctx.circuit.platform
+        staticUrl = `${platformConfig?.projectBaseUrl ?? ""}/${
+          fsPath.startsWith("./") ? fsPath.slice(2) : fsPath
+        }`
+      } else {
+        // Actual file content: create a blob URL
+        const blob = new Blob([fileContent], {
+          type: fsPath.endsWith(".kicad_mod")
+            ? "text/plain"
+            : "application/octet-stream",
+        })
+        staticUrl = URL.createObjectURL(blob)
+      }
+
       preSuppliedImports[fsPath] = {
         __esModule: true,
         default: staticUrl,
