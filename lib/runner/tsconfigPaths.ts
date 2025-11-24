@@ -38,8 +38,15 @@ export function resolveWithTsconfigPaths(opts: {
   normalizedFilePathMap: Map<string, string>
   extensions: string[]
   tsConfig: TsConfig | null
+  tsconfigDir?: string
 }): string | null {
-  const { importPath, normalizedFilePathMap, extensions, tsConfig } = opts
+  const {
+    importPath,
+    normalizedFilePathMap,
+    extensions,
+    tsConfig,
+    tsconfigDir,
+  } = opts
   const paths = tsConfig?.compilerOptions?.paths
   if (!paths) return null
   const baseUrl = tsConfig?.compilerOptions?.baseUrl || "."
@@ -100,6 +107,7 @@ export function resolveWithTsconfigPaths(opts: {
     normalizedFilePathMap,
     extensions,
     tsConfig,
+    tsconfigDir,
   })
 
   if (resolvedPathFromBaseUrl) return resolvedPathFromBaseUrl
@@ -112,12 +120,24 @@ export function resolveWithBaseUrl(opts: {
   normalizedFilePathMap: Map<string, string>
   extensions: string[]
   tsConfig: TsConfig | null
+  tsconfigDir?: string
 }): string | null {
-  const { importPath, normalizedFilePathMap, extensions, tsConfig } = opts
+  const {
+    importPath,
+    normalizedFilePathMap,
+    extensions,
+    tsConfig,
+    tsconfigDir,
+  } = opts
   const baseUrl = tsConfig?.compilerOptions?.baseUrl
   if (!baseUrl) return null
 
-  const filePathToResolve = `${baseUrl}/${importPath}`
+  // Resolve baseUrl relative to tsconfig location
+  const baseDir = tsconfigDir || "."
+  const filePathToResolve = `${baseDir}/${baseUrl}/${importPath}`.replace(
+    /\/\//g,
+    "/",
+  )
   const normalizedFilePath = normalizeFilePath(filePathToResolve)
 
   if (normalizedFilePathMap.has(normalizedFilePath)) {

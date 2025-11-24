@@ -59,11 +59,22 @@ export async function importEvalPath(
     return
   }
 
+  // Determine where tsconfig.json is located
+  let tsconfigDir = "."
+  if (ctx.tsConfig && opts.cwd) {
+    // If cwd is in node_modules, find the package root
+    // e.g., "node_modules/adom-library/lib/generated" -> "node_modules/adom-library"
+    const nodeModulesMatch = opts.cwd.match(/^(node_modules\/[^\/]+)/)
+    if (nodeModulesMatch) {
+      tsconfigDir = nodeModulesMatch[1]
+    }
+  }
+
   const resolvedLocalImportPath = resolveFilePath(
     importName,
     ctx.fsMap,
     opts.cwd,
-    { tsConfig: ctx.tsConfig },
+    { tsConfig: ctx.tsConfig, tsconfigDir },
   )
   if (resolvedLocalImportPath) {
     ctx.logger.info(`importLocalFile("${resolvedLocalImportPath}")`)
