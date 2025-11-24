@@ -10,7 +10,7 @@ export const resolveFilePath = (
   unknownFilePath: string,
   fsMapOrAllFilePaths: Record<string, string> | string[],
   cwd?: string,
-  opts: { tsConfig?: TsConfig | null } = {},
+  opts: { tsConfig?: TsConfig | null; tsconfigDir?: string } = {},
 ) => {
   // Handle parent directory navigation properly
   const resolvedPath = cwd
@@ -56,6 +56,7 @@ export const resolveFilePath = (
       normalizedFilePathMap,
       extensions: extension,
       tsConfig,
+      tsconfigDir: opts.tsconfigDir,
     })
     if (resolvedPathFromPaths) return resolvedPathFromPaths
 
@@ -64,6 +65,7 @@ export const resolveFilePath = (
       normalizedFilePathMap,
       extensions: extension,
       tsConfig,
+      tsconfigDir: opts.tsconfigDir,
     })
     if (resolvedPathFromBaseUrl) return resolvedPathFromBaseUrl
   }
@@ -89,7 +91,7 @@ export const resolveFilePathOrThrow = (
   unknownFilePath: string,
   fsMapOrAllFilePaths: Record<string, string> | string[],
   cwd?: string,
-  opts: { tsConfig?: TsConfig | null } = {},
+  opts: { tsConfig?: TsConfig | null; tsconfigDir?: string } = {},
 ) => {
   const resolvedFilePath = resolveFilePath(
     unknownFilePath,
