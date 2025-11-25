@@ -1,9 +1,11 @@
 import { dirname } from "./dirname"
 
+type ExportValue = string | Record<string, string | Record<string, string>>
+
 interface PackageJson {
   main?: string
   module?: string
-  exports?: Record<string, string | Record<string, string>>
+  exports?: Record<string, ExportValue>
 }
 
 interface NodeResolutionContext {
@@ -58,6 +60,28 @@ function resolveExportPath(
   return tryResolveWithExtensions(fullExportPath, ctx)
 }
 
+function resolveConditionalExport(exportValue: ExportValue): string | null {
+  if (typeof exportValue === "string") {
+    return exportValue
+  }
+
+  // Handle conditional exports - try common conditions in order of preference
+  const conditions = ["import", "default", "require", "node", "browser"]
+  for (const condition of conditions) {
+    if (exportValue[condition]) {
+      const conditionValue = exportValue[condition]
+      if (typeof conditionValue === "string") {
+        return conditionValue
+      }
+      // Recursively handle nested conditions
+      const resolved = resolveConditionalExport(conditionValue)
+      if (resolved) return resolved
+    }
+  }
+
+  return null
+}
+
 function resolvePackageExports(
   nodeModulesPath: string,
   packageJson: PackageJson,
@@ -66,11 +90,12 @@ function resolvePackageExports(
 ): string | null {
   if (!packageJson.exports) return null
 
-  // Handle default export condition
+  // Handle default export condition (when no subpath)
   const defaultExport = packageJson.exports["."]
   if (remainingPath === "" && defaultExport) {
-    if (typeof defaultExport === "string") {
-      const resolved = resolveExportPath(nodeModulesPath, defaultExport, ctx)
+    const exportPath = resolveConditionalExport(defaultExport)
+    if (exportPath) {
+      const resolved = resolveExportPath(nodeModulesPath, exportPath, ctx)
       if (resolved) return resolved
     }
   }
@@ -79,20 +104,22 @@ function resolvePackageExports(
   const subpathExport = remainingPath
     ? packageJson.exports[`./${remainingPath}`]
     : null
-  if (subpathExport && typeof subpathExport === "string") {
-    const resolved = resolveExportPath(nodeModulesPath, subpathExport, ctx)
-    if (resolved) return resolved
+  if (subpathExport) {
+    const exportPath = resolveConditionalExport(subpathExport)
+    if (exportPath) {
+      const resolved = resolveExportPath(nodeModulesPath, exportPath, ctx)
+      if (resolved) return resolved
+    }
   }
 
-  // Handle conditional exports
-  const importExport = packageJson.exports["import"]
-  if (
-    remainingPath === "" &&
-    importExport &&
-    typeof importExport === "string"
-  ) {
-    const resolved = resolveExportPath(nodeModulesPath, importExport, ctx)
-    if (resolved) return resolved
+  // Handle top-level conditional exports (legacy format)
+  const importExport = packageJson.exports.import
+  if (remainingPath === "" && importExport !== undefined) {
+    const exportPath = resolveConditionalExport(importExport)
+    if (exportPath) {
+      const resolved = resolveExportPath(nodeModulesPath, exportPath, ctx)
+      if (resolved) return resolved
+    }
   }
 
   return null
@@ -143,7 +170,7 @@ function resolveNodeModuleInPath(
     ? moduleParts.slice(0, 2).join("/")
     : moduleParts[0]
   const remainingPath = moduleParts.slice(scope.includes("/") ? 2 : 1).join("/")
-  const nodeModulesPath = `${searchPath == "." ? "" : `${searchPath}/`}node_modules/${scope}`
+  const nodeModulesPath = `${searchPath === "." ? "" : `${searchPath}/`}node_modules/${scope}`
 
   // Try to find package.json
   const packageJson = findPackageJson(nodeModulesPath, ctx)
