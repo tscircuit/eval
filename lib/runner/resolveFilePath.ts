@@ -6,16 +6,24 @@ import {
   resolveWithBaseUrl,
 } from "./tsconfigPaths"
 
+const FILE_EXTENSIONS = ["tsx", "ts", "json", "js", "jsx", "obj", "gltf", "glb"]
+
 export const resolveFilePath = (
   unknownFilePath: string,
   fsMapOrAllFilePaths: Record<string, string> | string[],
   cwd?: string,
   opts: { tsConfig?: TsConfig | null; tsconfigDir?: string } = {},
 ) => {
+  const tsConfig = opts.tsConfig ?? null
+  const isRelativeImport =
+    unknownFilePath.startsWith("./") || unknownFilePath.startsWith("../")
+  const hasBaseUrl = !!tsConfig?.compilerOptions?.baseUrl
+
   // Handle parent directory navigation properly
-  const resolvedPath = cwd
-    ? resolveRelativePath(unknownFilePath, cwd)
-    : unknownFilePath
+  const resolvedPath =
+    cwd && (isRelativeImport || !hasBaseUrl)
+      ? resolveRelativePath(unknownFilePath, cwd)
+      : unknownFilePath
 
   const filePaths = new Set(
     Array.isArray(fsMapOrAllFilePaths)
@@ -34,27 +42,27 @@ export const resolveFilePath = (
 
   const normalizedResolvedPath = normalizeFilePath(resolvedPath)
 
-  if (normalizedFilePathMap.has(normalizedResolvedPath)) {
-    return normalizedFilePathMap.get(normalizedResolvedPath)!
-  }
+  // When baseUrl is set, non-relative imports should go through baseUrl resolution
+  if (isRelativeImport || !hasBaseUrl) {
+    if (normalizedFilePathMap.has(normalizedResolvedPath)) {
+      return normalizedFilePathMap.get(normalizedResolvedPath)!
+    }
 
-  // Search for file with a set of different extensions
-  const extension = ["tsx", "ts", "json", "js", "jsx", "obj", "gltf", "glb"]
-  for (const ext of extension) {
-    const possibleFilePath = `${normalizedResolvedPath}.${ext}`
-    if (normalizedFilePathMap.has(possibleFilePath)) {
-      return normalizedFilePathMap.get(possibleFilePath)!
+    // Search for file with a set of different extensions
+    for (const ext of FILE_EXTENSIONS) {
+      const possibleFilePath = `${normalizedResolvedPath}.${ext}`
+      if (normalizedFilePathMap.has(possibleFilePath)) {
+        return normalizedFilePathMap.get(possibleFilePath)!
+      }
     }
   }
 
   // Try resolving using tsconfig "paths" mapping when the import is non-relative
-  const tsConfig = opts.tsConfig ?? null
-
-  if (!unknownFilePath.startsWith("./") && !unknownFilePath.startsWith("../")) {
+  if (!isRelativeImport) {
     const resolvedPathFromPaths = resolveWithTsconfigPaths({
       importPath: unknownFilePath,
       normalizedFilePathMap,
-      extensions: extension,
+      extensions: FILE_EXTENSIONS,
       tsConfig,
       tsconfigDir: opts.tsconfigDir,
     })
@@ -63,20 +71,21 @@ export const resolveFilePath = (
     const resolvedPathFromBaseUrl = resolveWithBaseUrl({
       importPath: unknownFilePath,
       normalizedFilePathMap,
-      extensions: extension,
+      extensions: FILE_EXTENSIONS,
       tsConfig,
       tsconfigDir: opts.tsconfigDir,
     })
     if (resolvedPathFromBaseUrl) return resolvedPathFromBaseUrl
   }
 
-  // Check if it's an absolute import
-  if (!unknownFilePath.startsWith("./") && !unknownFilePath.startsWith("../")) {
+  // Check if it's an absolute import (only if no baseUrl is configured in tsconfig)
+  // When baseUrl is set, imports should resolve via baseUrl or fail, not fall back to absolute paths
+  if (!isRelativeImport && !hasBaseUrl) {
     const normalizedUnknownFilePath = normalizeFilePath(unknownFilePath)
     if (normalizedFilePathMap.has(normalizedUnknownFilePath)) {
       return normalizedFilePathMap.get(normalizedUnknownFilePath)!
     }
-    for (const ext of extension) {
+    for (const ext of FILE_EXTENSIONS) {
       const possibleFilePath = `${normalizedUnknownFilePath}.${ext}`
       if (normalizedFilePathMap.has(possibleFilePath)) {
         return normalizedFilePathMap.get(possibleFilePath)!
