@@ -134,10 +134,10 @@ export function resolveWithBaseUrl(opts: {
 
   // Resolve baseUrl relative to tsconfig location
   const baseDir = tsconfigDir || "."
-  const filePathToResolve = `${baseDir}/${baseUrl}/${importPath}`.replace(
-    /\/\//g,
-    "/",
-  )
+  let filePathToResolve = `${baseDir}/${baseUrl}/${importPath}`
+  // Clean up multiple slashes and leading dots
+  filePathToResolve = filePathToResolve.replace(/\/+/g, "/") // Replace multiple slashes with single slash
+  filePathToResolve = filePathToResolve.replace(/\/\.\//g, "/") // Replace /./ with /
   const normalizedFilePath = normalizeFilePath(filePathToResolve)
 
   if (normalizedFilePathMap.has(normalizedFilePath)) {
