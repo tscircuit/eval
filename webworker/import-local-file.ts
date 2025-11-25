@@ -119,7 +119,18 @@ export const importLocalFile = async (
         )
       }
     } else if (fsPath.endsWith(".js")) {
-      // For .js files, especially from node_modules, we need to transform them
+      // For .js files, especially from node_modules, we need to extract and resolve imports first
+      const importNames = getImportsFromCode(fileContent)
+
+      for (const importName of importNames) {
+        if (!preSuppliedImports[importName]) {
+          await importEvalPath(importName, ctx, depth + 1, {
+            cwd: dirname(fsPath),
+          })
+        }
+      }
+
+      // Then transform and evaluate
       preSuppliedImports[fsPath] = evalCompiledJs(
         transformWithSucrase(fileContent, fsPath),
         preSuppliedImports,

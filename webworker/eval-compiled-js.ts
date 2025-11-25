@@ -1,4 +1,5 @@
 import { resolveFilePath } from "lib/runner/resolveFilePath"
+import { resolveNodeModule } from "lib/utils/resolve-node-module"
 
 export function evalCompiledJs(
   compiledCode: string,
@@ -6,7 +7,11 @@ export function evalCompiledJs(
   cwd?: string,
 ) {
   ;(globalThis as any).__tscircuit_require = (name: string) => {
-    const resolvedFilePath = resolveFilePath(name, preSuppliedImports, cwd)
+    let resolvedFilePath = resolveFilePath(name, preSuppliedImports, cwd)
+
+    if (!resolvedFilePath && !name.startsWith(".") && !name.startsWith("/")) {
+      resolvedFilePath = resolveNodeModule(name, preSuppliedImports, cwd || "")
+    }
 
     const hasResolvedFilePath =
       resolvedFilePath && preSuppliedImports[resolvedFilePath]
