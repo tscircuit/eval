@@ -1,8 +1,9 @@
 export const getImportsFromCode = (code: string): string[] => {
-  // Match basic import patterns including combined default and namespace imports
+  const importsSet = new Set<string>()
+
+  // Match ES6 import statements
   const importRegex =
     /^\s*import\s+(?:(?:[\w\s]+,\s*)?(?:\*\s+as\s+[\w\s]+|\{[\s\w,]+\}|\w+)\s+from\s*)?['"](.+?)['"]/gm
-  const imports: string[] = []
   let match: RegExpExecArray | null
 
   // biome-ignore lint/suspicious/noAssignInExpressions: <explanation>
@@ -11,7 +12,7 @@ export const getImportsFromCode = (code: string): string[] => {
     if (/^\s*import\s+type\b/.test(fullMatch)) {
       continue
     }
-    imports.push(match[1])
+    importsSet.add(match[1])
   }
 
   // Match re-exports
@@ -24,8 +25,16 @@ export const getImportsFromCode = (code: string): string[] => {
     if (/^\s*export\s+type\b/.test(fullMatch)) {
       continue
     }
-    imports.push(reExportMatch[1])
+    importsSet.add(reExportMatch[1])
   }
 
-  return imports
+  // Handles: const x = require("..."), var x = require("..."), require("...")
+  const requireRegex = /\brequire\s*\(\s*['"](.+?)['"]\s*\)/g
+  let requireMatch: RegExpExecArray | null = requireRegex.exec(code)
+  while (requireMatch !== null) {
+    importsSet.add(requireMatch[1])
+    requireMatch = requireRegex.exec(code)
+  }
+
+  return Array.from(importsSet)
 }

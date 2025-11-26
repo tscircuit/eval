@@ -1,6 +1,8 @@
 import { resolveFilePathOrThrow } from "lib/runner/resolveFilePath"
 import { dirname } from "lib/utils/dirname"
 import { getImportsFromCode } from "lib/utils/get-imports-from-code"
+import { getStaticAssetPathsFromCode } from "lib/utils/get-static-asset-paths-from-code"
+import { transformStaticAssetPaths } from "lib/utils/transform-static-asset-paths"
 import { evalCompiledJs } from "./eval-compiled-js"
 import type { ExecutionContext } from "./execution-context"
 import { importEvalPath } from "./import-eval-path"
@@ -130,9 +132,30 @@ export const importLocalFile = async (
         }
       }
 
-      // Then transform and evaluate
+      // extract static asset paths from code
+      // (e.g., var glbUrl = "./assets/file.glb")
+      const staticAssetPaths = getStaticAssetPathsFromCode(fileContent)
+      debug("staticAssetPaths found:", staticAssetPaths)
+
+      for (const assetPath of staticAssetPaths) {
+        if (!preSuppliedImports[assetPath]) {
+          debug("Loading static asset:", assetPath)
+          await importEvalPath(assetPath, ctx, depth + 1, {
+            cwd: dirname(fsPath),
+          })
+        }
+      }
+
+      // Transform static asset paths to use require() calls
+      const transformedContent = transformStaticAssetPaths(
+        fileContent,
+        fsMap,
+        dirname(fsPath),
+      )
+
+      // Then apply Sucrase transformation and evaluate
       preSuppliedImports[fsPath] = evalCompiledJs(
-        transformWithSucrase(fileContent, fsPath),
+        transformWithSucrase(transformedContent, fsPath),
         preSuppliedImports,
         dirname(fsPath),
       ).exports
