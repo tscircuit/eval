@@ -9,6 +9,10 @@ import {
   getTsConfig,
   matchesTsconfigPathPattern,
 } from "lib/runner/tsconfigPaths"
+import {
+  getNodeModuleResolvedError,
+  getNodeModuleUnresolvedError,
+} from "lib/utils/node-module-diagnostics"
 import Debug from "debug"
 
 const debug = Debug("tsci:eval:import-eval-path")
@@ -102,12 +106,26 @@ export async function importEvalPath(
   }
 
   // Try to resolve from node_modules
+  const isPotentialNodeModule =
+    !importName.startsWith(".") &&
+    !importName.startsWith("/") &&
+    !importName.startsWith("@tsci/")
   const resolvedNodeModulePath = resolveNodeModule(
     importName,
     ctx.fsMap,
     opts.cwd || "",
   )
   if (resolvedNodeModulePath) {
+    const resolvedNodeModuleError = getNodeModuleResolvedError(
+      importName,
+      ctx.fsMap,
+      resolvedNodeModulePath,
+    )
+    if (resolvedNodeModuleError) {
+      throw new Error(
+        `${resolvedNodeModuleError}\n\n${ctx.logger.stringifyLogs()}`,
+      )
+    }
     ctx.logger.info(`resolvedNodeModulePath="${resolvedNodeModulePath}"`)
     ctx.logger.info(`importNodeModule("${importName}")`)
     return importNodeModule(importName, ctx, depth)
@@ -115,11 +133,7 @@ export async function importEvalPath(
 
   // If not found in fsMap but might be a node module, try importNodeModule
   // which will attempt to use nodeModulesResolver if configured
-  if (
-    !importName.startsWith(".") &&
-    !importName.startsWith("/") &&
-    !importName.startsWith("@tsci/")
-  ) {
+  if (isPotentialNodeModule) {
     const platform = ctx.circuit?.platform
     if (platform?.nodeModulesResolver) {
       ctx.logger.info(
@@ -133,6 +147,17 @@ export async function importEvalPath(
           `nodeModulesResolver failed for "${importName}", falling back to npm CDN`,
         )
       }
+    }
+
+    const unresolvedNodeModuleError = getNodeModuleUnresolvedError(
+      importName,
+      ctx.fsMap,
+    )
+
+    if (unresolvedNodeModuleError) {
+      throw new Error(
+        `${unresolvedNodeModuleError}\n\n${ctx.logger.stringifyLogs()}`,
+      )
     }
   }
 

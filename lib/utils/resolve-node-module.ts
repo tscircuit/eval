@@ -2,7 +2,7 @@ import { dirname } from "./dirname"
 
 type ExportValue = string | Record<string, string | Record<string, string>>
 
-interface PackageJson {
+export interface PackageJson {
   main?: string
   module?: string
   exports?: Record<string, ExportValue>
