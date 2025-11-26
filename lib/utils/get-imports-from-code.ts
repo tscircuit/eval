@@ -1,28 +1,28 @@
 export const getImportsFromCode = (code: string): string[] => {
   const importsSet = new Set<string>()
 
-  // Match ES6 import statements
+  // Match ES6 import statements (allow semicolon before import to handle minified code)
   const importRegex =
-    /^\s*import\s+(?:(?:[\w\s]+,\s*)?(?:\*\s+as\s+[\w\s]+|\{[\s\w,]+\}|\w+)\s+from\s*)?['"](.+?)['"]/gm
+    /(?:^|;)\s*import\s+(?:(?:[\w\s]+,\s*)?(?:\*\s+as\s+[\w\s]+|\{[\s\w,]+\}|\w+)\s+from\s*)?['"](.+?)['"]/gm
   let match: RegExpExecArray | null
 
   // biome-ignore lint/suspicious/noAssignInExpressions: <explanation>
   while ((match = importRegex.exec(code)) !== null) {
     const fullMatch = match[0]
-    if (/^\s*import\s+type\b/.test(fullMatch)) {
+    if (/import\s+type\b/.test(fullMatch)) {
       continue
     }
     importsSet.add(match[1])
   }
 
-  // Match re-exports
+  // Match re-exports (allow semicolon before export to handle minified code)
   const reExportRegex =
-    /^\s*export\s+(?:type\s+)?(?:\*\s+as\s+[\w$]+|\*|\{[^}]+\})\s+from\s*['"](.+?)['"]/gm
+    /(?:^|;)\s*export\s+(?:type\s+)?(?:\*\s+as\s+[\w$]+|\*|\{[^}]+\})\s+from\s*['"](.+?)['"]/gm
   let reExportMatch: RegExpExecArray | null
   // biome-ignore lint/suspicious/noAssignInExpressions: <explanation>
   while ((reExportMatch = reExportRegex.exec(code)) !== null) {
     const fullMatch = reExportMatch[0]
-    if (/^\s*export\s+type\b/.test(fullMatch)) {
+    if (/export\s+type\b/.test(fullMatch)) {
       continue
     }
     importsSet.add(reExportMatch[1])
