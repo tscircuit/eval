@@ -44,6 +44,40 @@ export async function importEvalPath(
     return
   }
 
+  // Handle subpath imports from preSuppliedImports (e.g., "react/jsx-runtime")
+  // If the base package is in preSuppliedImports, try to import from the actual package
+  if (
+    importName.includes("/") &&
+    !importName.startsWith(".") &&
+    !importName.startsWith("/")
+  ) {
+    const basePkg = importName.split("/")[0]
+    const isScoped = basePkg.startsWith("@")
+    const pkgName = isScoped
+      ? importName.split("/").slice(0, 2).join("/")
+      : basePkg
+    const subpath = isScoped
+      ? importName.split("/").slice(2).join("/")
+      : importName.split("/").slice(1).join("/")
+
+    if (preSuppliedImports[pkgName]) {
+      try {
+        // Try to import the subpath from the actual package
+        const resolved = await import(`${pkgName}/${subpath}`)
+        preSuppliedImports[importName] = resolved
+        ctx.logger.info(
+          `Import "${importName}" resolved from preSuppliedImports base package "${pkgName}"`,
+        )
+        return
+      } catch (error) {
+        // If the dynamic import fails, continue with normal resolution
+        ctx.logger.info(
+          `Failed to resolve "${importName}" from preSuppliedImports package "${pkgName}", falling back to normal resolution`,
+        )
+      }
+    }
+  }
+
   if (depth > 30) {
     throw new Error(
       `Max depth for imports reached (30) Import Path: ${ctx.importStack.join(" -> ")}`,
