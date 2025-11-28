@@ -54,7 +54,7 @@ export async function importEvalPath(
     const pkgName = importName.replace(/^\/npm\//, "").replace(/\/\+esm$/, "")
     if (disableNpmResolution) {
       throw new Error(
-        `Cannot find module "${pkgName}". The package is not available in the local environment and automatic npm resolution is disabled.\n\n${ctx.logger.stringifyLogs()}`,
+        `Cannot find module "${pkgName}". The package is not available in the local environment.\n\n${ctx.logger.stringifyLogs()}`,
       )
     }
     ctx.logger.info(`importNpmPackage("${pkgName}")`)
@@ -131,7 +131,7 @@ export async function importEvalPath(
     if (platform?.nodeModulesResolver) {
       if (disableNpmResolution) {
         throw new Error(
-          `Cannot find module "${importName}". The package is not available in the local environment and automatic npm resolution is disabled.\n\n${ctx.logger.stringifyLogs()}`,
+          `Cannot find module "${importName}". The package is not available in the local environment.\n\n${ctx.logger.stringifyLogs()}`,
         )
       }
       ctx.logger.info(
@@ -156,7 +156,7 @@ export async function importEvalPath(
   if (!importName.startsWith(".") && !importName.startsWith("/")) {
     if (disableNpmResolution) {
       throw new Error(
-        `Cannot find module "${importName}". The package is not available in the local environment and automatic npm resolution is disabled.\n\n${ctx.logger.stringifyLogs()}`,
+        `Cannot find module "${importName}". The package is not available in the local environment.\n\n${ctx.logger.stringifyLogs()}`,
       )
     }
     ctx.logger.info(`importNpmPackage("${importName}")`)
