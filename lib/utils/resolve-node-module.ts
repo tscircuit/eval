@@ -2,10 +2,14 @@ import { dirname } from "./dirname"
 
 type ExportValue = string | Record<string, string | Record<string, string>>
 
-interface PackageJson {
+export interface PackageJson {
   main?: string
   module?: string
   exports?: Record<string, ExportValue>
+  dependencies?: Record<string, string>
+  devDependencies?: Record<string, string>
+  peerDependencies?: Record<string, string>
+  optionalDependencies?: Record<string, string>
 }
 
 interface NodeResolutionContext {
