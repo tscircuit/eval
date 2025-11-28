@@ -19,6 +19,7 @@ export async function importEvalPath(
   depth = 0,
   opts: {
     cwd?: string
+    fromJsDelivr?: boolean
   } = {},
 ) {
   debug("importEvalPath called with:", {
@@ -58,7 +59,8 @@ export async function importEvalPath(
       )
     }
     ctx.logger.info(`importNpmPackage("${pkgName}")`)
-    await importNpmPackage(pkgName, ctx, depth)
+    // /npm/ paths are always transitive dependencies from jsDelivr
+    await importNpmPackage(pkgName, ctx, depth, true)
     const pkg = preSuppliedImports[pkgName]
     if (pkg) {
       preSuppliedImports[importName] = pkg
@@ -160,7 +162,7 @@ export async function importEvalPath(
       )
     }
     ctx.logger.info(`importNpmPackage("${importName}")`)
-    return importNpmPackage(importName, ctx, depth)
+    return importNpmPackage(importName, ctx, depth, opts.fromJsDelivr)
   }
 
   throw new Error(
