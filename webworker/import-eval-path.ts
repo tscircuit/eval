@@ -10,8 +10,8 @@ import {
   matchesTsconfigPathPattern,
 } from "lib/runner/tsconfigPaths"
 import {
-  getNodeModuleResolvedError,
-  getNodeModuleUnresolvedError,
+  getNodeModuleResolvedErrorMessage,
+  getNodeModuleUnresolvedErrorMessage,
 } from "lib/utils/node-module-diagnostics"
 import Debug from "debug"
 
@@ -116,14 +116,14 @@ export async function importEvalPath(
     opts.cwd || "",
   )
   if (resolvedNodeModulePath) {
-    const resolvedNodeModuleError = getNodeModuleResolvedError(
+    const resolvedNodeModuleErrorMessage = getNodeModuleResolvedErrorMessage(
       importName,
       ctx.fsMap,
       resolvedNodeModulePath,
     )
-    if (resolvedNodeModuleError) {
+    if (resolvedNodeModuleErrorMessage) {
       throw new Error(
-        `${resolvedNodeModuleError}\n\n${ctx.logger.stringifyLogs()}`,
+        `${resolvedNodeModuleErrorMessage}\n\n${ctx.logger.stringifyLogs()}`,
       )
     }
     ctx.logger.info(`resolvedNodeModulePath="${resolvedNodeModulePath}"`)
@@ -149,15 +149,20 @@ export async function importEvalPath(
       }
     }
 
-    const unresolvedNodeModuleError = getNodeModuleUnresolvedError(
-      importName,
-      ctx.fsMap,
-    )
+    // Only check diagnostics for imports from project root or project files
+    // Skip diagnostics if importing FROM within node_modules, since those packages
+    // may legitimately use dependencies not declared in the root package.json
+    // (e.g., react/jsx-runtime imported from test-package)
+    const isImportingFromNodeModules = opts.cwd?.includes("node_modules")
+    if (!isImportingFromNodeModules) {
+      const unresolvedNodeModuleErrorMessage =
+        getNodeModuleUnresolvedErrorMessage(importName, ctx.fsMap)
 
-    if (unresolvedNodeModuleError) {
-      throw new Error(
-        `${unresolvedNodeModuleError}\n\n${ctx.logger.stringifyLogs()}`,
-      )
+      if (unresolvedNodeModuleErrorMessage) {
+        throw new Error(
+          `${unresolvedNodeModuleErrorMessage}\n\n${ctx.logger.stringifyLogs()}`,
+        )
+      }
     }
   }
 

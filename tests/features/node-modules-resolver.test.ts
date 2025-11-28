@@ -156,9 +156,9 @@ test("nodeModulesResolver: should prefer fsMap over resolver", async () => {
         import { value } from "my-package"
         circuit.add(<board width="10mm" height="10mm" />)
       `,
-      "node_modules/my-package/index.ts": `export const value = "from fsMap"`,
+      "node_modules/my-package/index.js": `export const value = "from fsMap"`,
       "node_modules/my-package/package.json": JSON.stringify({
-        main: "index.ts",
+        main: "index.js",
       }),
     },
   })
