@@ -129,11 +129,6 @@ export async function importEvalPath(
   ) {
     const platform = ctx.circuit?.platform
     if (platform?.nodeModulesResolver) {
-      if (disableNpmResolution) {
-        throw new Error(
-          `Cannot find module "${importName}". The package is not available in the local environment.\n\n${ctx.logger.stringifyLogs()}`,
-        )
-      }
       ctx.logger.info(
         `importNodeModule("${importName}") via nodeModulesResolver`,
       )
@@ -144,6 +139,11 @@ export async function importEvalPath(
         ctx.logger.info(
           `nodeModulesResolver failed for "${importName}", falling back to npm CDN`,
         )
+        if (disableNpmResolution) {
+          throw new Error(
+            `Cannot find module "${importName}". The package is not available in the local environment and automatic npm resolution is disabled.\n\n${ctx.logger.stringifyLogs()}`,
+          )
+        }
       }
     }
   }

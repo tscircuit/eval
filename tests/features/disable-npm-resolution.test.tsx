@@ -156,3 +156,51 @@ test(
   },
   { timeout: 10000 },
 )
+
+test(
+  "should allow nodeModulesResolver to work even when disableNpmResolution is true",
+  async () => {
+    const { CircuitRunner } = await import("lib/runner/CircuitRunner")
+    const runner = new CircuitRunner()
+
+    // Mock a simple nodeModulesResolver that provides a fake module
+    runner._circuitRunnerConfiguration.platform = {
+      nodeModulesResolver: async (packageName: string) => {
+        if (packageName === "my-local-package") {
+          return "export default () => ({ success: true })"
+        }
+        throw new Error(`Package ${packageName} not found in local resolver`)
+      },
+    }
+
+    await runner.setDisableNpmResolution(true)
+
+    await runner.executeWithFsMap({
+      fsMap: {
+        "user-code.tsx": `
+          import myPkg from "my-local-package"
+
+          export default () => {
+            const result = myPkg()
+            if (!result.success) {
+              throw new Error("Package didn't work")
+            }
+            return <resistor name="R1" resistance="1k" />
+          }
+        `,
+      },
+      mainComponentPath: "user-code.tsx",
+    })
+
+    await runner.renderUntilSettled()
+    const circuitJson = await runner.getCircuitJson()
+
+    const resistor = circuitJson.find(
+      (element: any) =>
+        element.type === "source_component" && element.name === "R1",
+    )
+
+    expect(resistor).toBeDefined()
+  },
+  { timeout: 10000 },
+)
