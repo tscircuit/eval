@@ -58,8 +58,8 @@ export const setupFetchProxy = () => {
       return
     }
 
-    if (data.type === "disable_npm_resolution") {
-      ;(globalThis as any).__DISABLE_NPM_RESOLUTION__ = data.value
+    if (data.type === "disable_cdn_loading") {
+      ;(globalThis as any).__DISABLE_CDN_LOADING__ = data.value
       return
     }
 

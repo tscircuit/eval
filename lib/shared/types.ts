@@ -32,7 +32,7 @@ export interface WebWorkerConfiguration extends CircuitRunnerConfiguration {
    * of being resolved from the CDN.
    * Default: false
    */
-  disableNpmResolution?: boolean
+  disableCdnLoading?: boolean
 }
 
 /**
@@ -55,7 +55,7 @@ export interface CircuitRunnerApi {
   renderUntilSettled: () => Promise<void>
   getCircuitJson: () => Promise<AnyCircuitElement[]>
   setSnippetsApiBaseUrl: (baseUrl: string) => Promise<void>
-  setDisableNpmResolution: (disable: boolean) => Promise<void>
+  setDisableCdnLoading: (disable: boolean) => Promise<void>
   setPlatformConfig: (platform: PlatformConfig) => Promise<void>
   setProjectConfig: (project: Partial<PlatformConfig>) => Promise<void>
   setPlatformConfigProperty: (property: string, value: any) => Promise<void>

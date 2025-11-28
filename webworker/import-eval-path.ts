@@ -32,8 +32,8 @@ export async function importEvalPath(
 
   debug(`${"  ".repeat(depth)}➡️`, importName)
   const { preSuppliedImports } = ctx
-  const disableNpmResolution =
-    ctx.disableNpmResolution || (globalThis as any).__DISABLE_NPM_RESOLUTION__
+  const disableCdnLoading =
+    ctx.disableCdnLoading || (globalThis as any).__DISABLE_CDN_LOADING__
 
   if (preSuppliedImports[importName]) {
     ctx.logger.info(`Import "${importName}" in preSuppliedImports[1]`)
@@ -52,7 +52,7 @@ export async function importEvalPath(
 
   if (importName.startsWith("/npm/")) {
     const pkgName = importName.replace(/^\/npm\//, "").replace(/\/\+esm$/, "")
-    if (disableNpmResolution) {
+    if (disableCdnLoading) {
       throw new Error(
         `Cannot find module "${pkgName}". The package is not available in the local environment.\n\n${ctx.logger.stringifyLogs()}`,
       )
@@ -139,7 +139,7 @@ export async function importEvalPath(
         ctx.logger.info(
           `nodeModulesResolver failed for "${importName}", falling back to npm CDN`,
         )
-        if (disableNpmResolution) {
+        if (disableCdnLoading) {
           throw new Error(
             `Cannot find module "${importName}". The package is not available in the local environment and automatic npm resolution is disabled.\n\n${ctx.logger.stringifyLogs()}`,
           )
@@ -154,7 +154,7 @@ export async function importEvalPath(
   }
 
   if (!importName.startsWith(".") && !importName.startsWith("/")) {
-    if (disableNpmResolution) {
+    if (disableCdnLoading) {
       throw new Error(
         `Cannot find module "${importName}". The package is not available in the local environment.\n\n${ctx.logger.stringifyLogs()}`,
       )

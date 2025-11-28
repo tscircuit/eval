@@ -91,8 +91,8 @@ const webWorkerApi = {
   setSnippetsApiBaseUrl: async (baseUrl: string) => {
     circuitRunnerConfiguration.snippetsApiBaseUrl = baseUrl
   },
-  setDisableNpmResolution: async (disable: boolean) => {
-    circuitRunnerConfiguration.disableNpmResolution = disable
+  setDisableCdnLoading: async (disable: boolean) => {
+    circuitRunnerConfiguration.disableCdnLoading = disable
   },
   setPlatformConfig: async ($platform: Promisified<PlatformConfig>) => {
     throw new Error(

@@ -168,8 +168,8 @@ export const createCircuitWebWorker = async (
     rawWorker.postMessage({ type: "override_global_fetch" })
   }
 
-  if (configuration.disableNpmResolution) {
-    await comlinkWorker.setDisableNpmResolution(true)
+  if (configuration.disableCdnLoading) {
+    await comlinkWorker.setDisableCdnLoading(true)
   }
 
   if (configuration.snippetsApiBaseUrl) {
