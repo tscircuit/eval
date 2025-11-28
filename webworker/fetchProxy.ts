@@ -58,6 +58,11 @@ export const setupFetchProxy = () => {
       return
     }
 
+    if (data.type === "disable_npm_resolution") {
+      ;(globalThis as any).__DISABLE_NPM_RESOLUTION__ = data.value
+      return
+    }
+
     if (data.type === "worker_fetch_result") {
       const handlers = pendingRequests.get(data.requestId)
       if (!handlers) return

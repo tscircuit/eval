@@ -196,6 +196,10 @@ export class CircuitRunner implements CircuitRunnerApi {
     this._circuitRunnerConfiguration.snippetsApiBaseUrl = baseUrl
   }
 
+  async setDisableNpmResolution(disable: boolean) {
+    ;(this._circuitRunnerConfiguration as any).disableNpmResolution = disable
+  }
+
   async setPlatformConfig(platform: PlatformConfig) {
     this._circuitRunnerConfiguration.platform = platform
   }

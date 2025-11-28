@@ -91,6 +91,9 @@ const webWorkerApi = {
   setSnippetsApiBaseUrl: async (baseUrl: string) => {
     circuitRunnerConfiguration.snippetsApiBaseUrl = baseUrl
   },
+  setDisableNpmResolution: async (disable: boolean) => {
+    circuitRunnerConfiguration.disableNpmResolution = disable
+  },
   setPlatformConfig: async ($platform: Promisified<PlatformConfig>) => {
     throw new Error(
       "setPlatformConfig can't be used against the webworker directly due to comlink limitations, use setPlatformConfigProperty instead (or a wrapper)",
