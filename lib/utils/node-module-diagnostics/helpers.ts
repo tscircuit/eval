@@ -51,11 +51,10 @@ export function getEntrypointPath(pkg: PackageJson | null): string | null {
 }
 
 export function doesEntrypointExist(
-  packageName: string,
-  entrypoint: string,
+  params: { packageName: string; entrypoint: string },
   fsMap: Record<string, string>,
 ): boolean {
-  const fullPath = `node_modules/${packageName}/${entrypoint}`
+  const fullPath = `node_modules/${params.packageName}/${params.entrypoint}`
   return fullPath in fsMap
 }
 

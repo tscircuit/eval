@@ -117,9 +117,8 @@ export async function importEvalPath(
   )
   if (resolvedNodeModulePath) {
     const resolvedNodeModuleErrorMessage = getNodeModuleResolvedErrorMessage(
-      importName,
+      { importName, resolvedPath: resolvedNodeModulePath },
       ctx.fsMap,
-      resolvedNodeModulePath,
     )
     if (resolvedNodeModuleErrorMessage) {
       throw new Error(

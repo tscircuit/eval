@@ -21,7 +21,7 @@ export function checkMissingEntrypoint(
 
   if (
     declaredEntry &&
-    !doesEntrypointExist(packageName, declaredEntry, fsMap)
+    !doesEntrypointExist({ packageName, entrypoint: declaredEntry }, fsMap)
   ) {
     // Special case: if it mentions dist but dist is empty
     if (declaredEntry.includes("dist/")) {

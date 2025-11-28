@@ -12,18 +12,17 @@ import { checkMissingEntrypoint } from "./checkMissingEntrypoint"
 import { checkMissingEntrypointField } from "./checkMissingEntrypointField"
 
 export function getNodeModuleResolvedErrorMessage(
-  importName: string,
+  params: { importName: string; resolvedPath: string },
   fsMap: Record<string, string>,
-  resolvedPath: string,
 ): string | null {
-  const packageName = extractPackageName(importName)
+  const packageName = extractPackageName(params.importName)
   const modulePackageJson = getModulePackageJson(packageName, fsMap)
 
   // Only flag TypeScript entrypoint if it's explicitly declared in package.json
   // If there's no package.json, the .ts file is acceptable (e.g., index.ts without package.json)
   if (
     modulePackageJson &&
-    hasTypeScriptEntrypoint(modulePackageJson, resolvedPath)
+    hasTypeScriptEntrypoint(modulePackageJson, params.resolvedPath)
   ) {
     return `Node module '${packageName}' has a typescript entrypoint that is unsupported`
   }
