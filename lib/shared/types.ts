@@ -26,6 +26,13 @@ export interface WebWorkerConfiguration extends CircuitRunnerConfiguration {
    * Default: false
    */
   enableFetchProxy?: boolean
+  /**
+   * Disable npm package resolution from jsDelivr CDN.
+   * When true, import statements for npm packages will throw an error instead
+   * of being resolved from the CDN.
+   * Default: false
+   */
+  disableCdnLoading?: boolean
 }
 
 /**
@@ -48,6 +55,7 @@ export interface CircuitRunnerApi {
   renderUntilSettled: () => Promise<void>
   getCircuitJson: () => Promise<AnyCircuitElement[]>
   setSnippetsApiBaseUrl: (baseUrl: string) => Promise<void>
+  setDisableCdnLoading: (disable: boolean) => Promise<void>
   setPlatformConfig: (platform: PlatformConfig) => Promise<void>
   setProjectConfig: (project: Partial<PlatformConfig>) => Promise<void>
   setPlatformConfigProperty: (property: string, value: any) => Promise<void>

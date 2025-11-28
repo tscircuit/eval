@@ -58,6 +58,11 @@ export const setupFetchProxy = () => {
       return
     }
 
+    if (data.type === "disable_cdn_loading") {
+      ;(globalThis as any).__DISABLE_CDN_LOADING__ = data.value
+      return
+    }
+
     if (data.type === "worker_fetch_result") {
       const handlers = pendingRequests.get(data.requestId)
       if (!handlers) return
