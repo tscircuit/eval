@@ -148,7 +148,7 @@ export async function importEvalPath(
       }
     }
 
-    // Only check diagnostics for imports from the project root or project files
+    // Only check diagnostics for imports from project root or project files
     // Skip diagnostics if importing FROM within node_modules, since those packages
     // may legitimately use dependencies not declared in the root package.json
     // (e.g., react/jsx-runtime imported from test-package)
