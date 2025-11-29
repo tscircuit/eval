@@ -75,7 +75,7 @@ export function getNodeModuleDirectory(
 }
 
 /**
- * Step 3: Get the entrypoint from package.json (the "main" or "module" field)
+ * Step 3a: Get the entrypoint from package.json (the "main" or "module" field)
  */
 export function getPackageJsonEntrypoint(
   packageName: string,
@@ -97,7 +97,7 @@ export function getPackageJsonEntrypoint(
 }
 
 /**
- * Step 3: Check if the entrypoint is a TypeScript file
+ * Step 3b: Check if the entrypoint is a TypeScript file
  */
 export function isTypeScriptEntrypoint(entrypoint: string | null): boolean {
   if (!entrypoint) return false
