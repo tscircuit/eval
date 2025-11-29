@@ -8,6 +8,13 @@ test("virtual filesystem with components", async () => {
 
   await circuitWebWorker.executeWithFsMap({
     fsMap: {
+      "package.json": JSON.stringify({
+        name: "test-project",
+        version: "1.0.0",
+        dependencies: {
+          "@tsci/seveibar.red-led": "^1.0.0",
+        },
+      }),
       "entrypoint.tsx": `
         import { MyLed } from "./myled.tsx"
         import someJson from "./some.json"
