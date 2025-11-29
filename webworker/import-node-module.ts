@@ -2,6 +2,13 @@ import { resolveNodeModule } from "lib/utils/resolve-node-module"
 import type { ExecutionContext } from "./execution-context"
 import { importLocalFile } from "./import-local-file"
 import Debug from "debug"
+import {
+  isPackageDeclaredInPackageJson,
+  getNodeModuleDirectory,
+  getPackageJsonEntrypoint,
+  isTypeScriptEntrypoint,
+  isDistDirEmpty,
+} from "./package-validation"
 
 const debug = Debug("tsci:eval:import-node-module")
 
@@ -10,10 +17,42 @@ export const importNodeModule = async (
   ctx: ExecutionContext,
   depth = 0,
 ) => {
-  const { preSuppliedImports } = ctx
+  const { preSuppliedImports, fsMap } = ctx
 
   if (preSuppliedImports[importName]) {
     return
+  }
+
+  // Step 1: Check if the package is declared in package.json
+  if (!isPackageDeclaredInPackageJson(importName, fsMap)) {
+    throw new Error(
+      `Node module imported but not in package.json "${importName}"\n\n${ctx.logger.stringifyLogs()}`,
+    )
+  }
+
+  // Step 2: Check if node_modules directory exists for the package
+  const nodeModuleDir = getNodeModuleDirectory(importName, fsMap)
+  if (!nodeModuleDir) {
+    throw new Error(
+      `Node module "${importName}" has no files in the node_modules directory\n\n${ctx.logger.stringifyLogs()}`,
+    )
+  }
+
+  // Step 3: Check if main entrypoint is a TypeScript file
+  const entrypoint = getPackageJsonEntrypoint(importName, fsMap)
+  if (isTypeScriptEntrypoint(entrypoint)) {
+    throw new Error(
+      `Node module "${importName}" has a typescript entrypoint that is unsupported\n\n${ctx.logger.stringifyLogs()}`,
+    )
+  }
+
+  // Step 4: Check if dist directory is empty when main points to dist
+  if (entrypoint && entrypoint.startsWith("dist/")) {
+    if (isDistDirEmpty(importName, fsMap)) {
+      throw new Error(
+        `Node module "${importName}" has no files in dist, did you forget to transpile?\n\n${ctx.logger.stringifyLogs()}`,
+      )
+    }
   }
 
   const resolvedNodeModulePath = resolveNodeModule(importName, ctx.fsMap, "")

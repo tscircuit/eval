@@ -30,5 +30,7 @@ test("should throw error when nested import uses undeclared dependency", async (
         `,
       },
     }),
-  ).rejects.toThrow(/Package "adom-library" is not declared in package\.json/)
+  ).rejects.toThrow(
+    /Node module imported but not in package\.json "adom-library"/,
+  )
 })

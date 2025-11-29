@@ -5,49 +5,9 @@ import Debug from "debug"
 import { getImportsFromCode } from "lib/utils/get-imports-from-code"
 import { importEvalPath } from "./import-eval-path"
 import { transformWithSucrase } from "./transform-with-sucrase"
+import { isPackageDeclaredInPackageJson } from "./package-validation"
 
 const debug = Debug("tsci:eval:import-npm-package")
-
-function isPackageDeclaredInPackageJson(
-  packageName: string,
-  fsMap: Record<string, string>,
-): boolean {
-  const packageJsonContent = fsMap["package.json"]
-  if (!packageJsonContent) {
-    // No package.json means we can't validate - allow the import
-    return true
-  }
-
-  try {
-    const packageJson = JSON.parse(packageJsonContent)
-    const dependencies = packageJson.dependencies || {}
-    const devDependencies = packageJson.devDependencies || {}
-    const peerDependencies = packageJson.peerDependencies || {}
-
-    // Extract the base package name (handle scoped packages and subpaths)
-    // e.g., "@scope/package/subpath" -> "@scope/package"
-    // e.g., "lodash/get" -> "lodash"
-    let basePackageName = packageName
-    if (packageName.startsWith("@")) {
-      // Scoped package: @scope/package or @scope/package/subpath
-      const parts = packageName.split("/")
-      basePackageName =
-        parts.length >= 2 ? `${parts[0]}/${parts[1]}` : packageName
-    } else {
-      // Regular package: package or package/subpath
-      basePackageName = packageName.split("/")[0]
-    }
-
-    return (
-      basePackageName in dependencies ||
-      basePackageName in devDependencies ||
-      basePackageName in peerDependencies
-    )
-  } catch {
-    // If we can't parse package.json, allow the import
-    return true
-  }
-}
 
 function extractPackagePathFromJSDelivr(url: string) {
   const prefix = "https://cdn.jsdelivr.net/npm/"
