@@ -58,10 +58,12 @@ function extractPackagePathFromJSDelivr(url: string) {
 }
 
 export async function importNpmPackage(
-  importName: string,
+  {
+    importName,
+    depth = 0,
+    fromJsDelivr = false,
+  }: { importName: string; depth?: number; fromJsDelivr?: boolean },
   ctx: ExecutionContext,
-  depth = 0,
-  fromJsDelivr = false,
 ) {
   debug(`importing npm package: ${importName}`)
   const { preSuppliedImports, fsMap } = ctx
