@@ -33,7 +33,12 @@ export const importNodeModule = async (
         `Node module imported but not in package.json "${importName}"\n\n${ctx.logger.stringifyLogs()}`,
       )
     }
+  }
 
+  const resolvedNodeModulePath = resolveNodeModule(importName, ctx.fsMap, "")
+
+  // Only run Steps 2-4 if package exists in node_modules (after resolver attempts)
+  if (hasPackageJson && resolvedNodeModulePath) {
     // Step 2: Check if node_modules directory exists for the package
     const nodeModuleDir = getNodeModuleDirectory(importName, fsMap)
     if (!nodeModuleDir) {
@@ -59,8 +64,6 @@ export const importNodeModule = async (
       }
     }
   }
-
-  const resolvedNodeModulePath = resolveNodeModule(importName, ctx.fsMap, "")
 
   if (!resolvedNodeModulePath) {
     const platform = ctx.circuit?.platform
