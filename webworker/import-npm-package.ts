@@ -5,7 +5,7 @@ import Debug from "debug"
 import { getImportsFromCode } from "lib/utils/get-imports-from-code"
 import { importEvalPath } from "./import-eval-path"
 import { transformWithSucrase } from "./transform-with-sucrase"
-import { isPackageDeclaredInPackageJson } from "./package-validation"
+import { isPackageDeclaredInPackageJson } from "./index"
 
 const debug = Debug("tsci:eval:import-npm-package")
 

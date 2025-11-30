@@ -8,7 +8,7 @@ import {
   getPackageJsonEntrypoint,
   isTypeScriptEntrypoint,
   isDistDirEmpty,
-} from "./package-validation"
+} from "./index"
 
 const debug = Debug("tsci:eval:import-node-module")
 
