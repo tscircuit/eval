@@ -10,6 +10,13 @@ import {
   matchesTsconfigPathPattern,
 } from "lib/runner/tsconfigPaths"
 import Debug from "debug"
+import {
+  isPackageDeclaredInPackageJson,
+  getNodeModuleDirectory,
+  getPackageJsonEntrypoint,
+  isTypeScriptEntrypoint,
+  isDistDirEmpty,
+} from "./index"
 
 const debug = Debug("tsci:eval:import-eval-path")
 
@@ -193,6 +200,44 @@ export async function importEvalPath(
   }
 
   if (!importName.startsWith(".") && !importName.startsWith("/")) {
+    // Validation steps for node modules (before jsDelivr fallback)
+    if (!opts.fromJsDelivr) {
+      // Step 1: Check if package is declared in package.json
+      if (!isPackageDeclaredInPackageJson(importName, ctx.fsMap)) {
+        throw new Error(
+          `Node module imported but not in package.json "${importName}"\n\n${ctx.logger.stringifyLogs()}`,
+        )
+      }
+
+      // Step 2: Check if node_modules directory exists (only if not found locally yet)
+      // Only validate if CDN loading is disabled (i.e., no fallback to jsDelivr available)
+      const nodeModuleDir = getNodeModuleDirectory(importName, ctx.fsMap)
+      if (!nodeModuleDir && disableCdnLoading) {
+        throw new Error(
+          `Node module "${importName}" has no files in the node_modules directory\n\n${ctx.logger.stringifyLogs()}`,
+        )
+      }
+
+      // Step 3: Check if main entrypoint is a TypeScript file (only if dir exists)
+      if (nodeModuleDir) {
+        const entrypoint = getPackageJsonEntrypoint(importName, ctx.fsMap)
+        if (isTypeScriptEntrypoint(entrypoint)) {
+          throw new Error(
+            `Node module "${importName}" has a typescript entrypoint that is unsupported\n\n${ctx.logger.stringifyLogs()}`,
+          )
+        }
+
+        // Step 4: Check if dist directory is empty when main points to dist
+        if (entrypoint && entrypoint.startsWith("dist/")) {
+          if (isDistDirEmpty(importName, ctx.fsMap)) {
+            throw new Error(
+              `Node module "${importName}" has no files in dist, did you forget to transpile?\n\n${ctx.logger.stringifyLogs()}`,
+            )
+          }
+        }
+      }
+    }
+
     if (disableCdnLoading) {
       throw new Error(
         `Cannot find module "${importName}". The package is not available in the local environment.\n\n${ctx.logger.stringifyLogs()}`,
