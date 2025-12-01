@@ -1,0 +1,34 @@
+name: Check Webworker Imports
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  check-imports:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check for webworker imports in lib
+        run: |
+          # Check for any imports from webworker in lib/runner, lib/shared, or lib/utils
+          # These directories are bundled separately and cannot import from webworker
+
+          VIOLATIONS=$(grep -rn --include="*.ts" --include="*.tsx" \
+            -E "(from ['\"]\.{0,2}/?webworker|from ['\"]webworker|import.*webworker)" \
+            lib/runner lib/shared lib/utils 2>/dev/null || true)
+
+          if [ -n "$VIOLATIONS" ]; then
+            echo "ERROR: Found webworker imports in lib directories that are bundled separately:"
+            echo ""
+            echo "$VIOLATIONS"
+            echo ""
+            echo "These directories (lib/runner, lib/shared, lib/utils) cannot import from webworker/"
+            echo "because they are bundled separately. Move shared code to lib/eval/ instead."
+            exit 1
+          fi
+
+          echo "No webworker imports found in lib/runner, lib/shared, or lib/utils"

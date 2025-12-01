@@ -4,12 +4,11 @@ import type {
   CircuitRunnerConfiguration,
 } from "lib/shared/types"
 import type { PlatformConfig } from "@tscircuit/props"
-import { createExecutionContext } from "../../webworker/execution-context"
+import { createExecutionContext, importEvalPath } from "lib/eval"
 import { normalizeFsMap } from "./normalizeFsMap"
 import { getTsConfig } from "./tsconfigPaths"
 import type { RootCircuit } from "@tscircuit/core"
 import * as React from "react"
-import { importEvalPath } from "webworker/import-eval-path"
 import { setupDefaultEntrypointIfNeeded } from "./setupDefaultEntrypointIfNeeded"
 import { enhanceRootCircuitHasNoChildrenError } from "lib/utils/enhance-root-circuit-error"
 import Debug from "debug"
