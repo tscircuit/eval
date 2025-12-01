@@ -2,7 +2,10 @@
  * Evaluation utilities for running tscircuit code
  * Used by both lib/runner/CircuitRunner and webworker/entrypoint
  */
-export { createExecutionContext, type ExecutionContext } from "./execution-context"
+export {
+  createExecutionContext,
+  type ExecutionContext,
+} from "./execution-context"
 export { importEvalPath } from "./import-eval-path"
 export { importLocalFile } from "./import-local-file"
 export { importSnippet } from "./import-snippet"
