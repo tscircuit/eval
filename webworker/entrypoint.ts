@@ -6,11 +6,8 @@ import type {
 } from "lib/shared/types"
 import * as React from "react"
 import type { PlatformConfig } from "@tscircuit/props"
-import {
-  createExecutionContext,
-  type ExecutionContext,
-} from "./execution-context"
-import { importEvalPath } from "./import-eval-path"
+import { createExecutionContext, type ExecutionContext } from "lib/eval"
+import { importEvalPath } from "lib/eval"
 import { normalizeFsMap } from "lib/runner/normalizeFsMap"
 import { getTsConfig } from "lib/runner/tsconfigPaths"
 import type { RootCircuit } from "@tscircuit/core"
