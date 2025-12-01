@@ -2,13 +2,11 @@ import { resolveNodeModule } from "lib/utils/resolve-node-module"
 import type { ExecutionContext } from "./execution-context"
 import { importLocalFile } from "./import-local-file"
 import Debug from "debug"
-import {
-  isPackageDeclaredInPackageJson,
-  getNodeModuleDirectory,
-  getPackageJsonEntrypoint,
-  isTypeScriptEntrypoint,
-  isDistDirEmpty,
-} from "./index"
+import { isPackageDeclaredInPackageJson } from "./isPackageDeclaredInPackageJson"
+import { getNodeModuleDirectory } from "./getNodeModuleDirectory"
+import { getPackageJsonEntrypoint } from "./getPackageJsonEntrypoint"
+import { isTypeScriptEntrypoint } from "./isTypeScriptEntrypoint"
+import { isDistDirEmpty } from "./isDistDirEmpty"
 
 const debug = Debug("tsci:eval:import-node-module")
 

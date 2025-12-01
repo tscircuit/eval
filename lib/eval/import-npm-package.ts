@@ -4,8 +4,8 @@ import { dirname } from "lib/utils/dirname"
 import Debug from "debug"
 import { getImportsFromCode } from "lib/utils/get-imports-from-code"
 import { importEvalPath } from "./import-eval-path"
-import { transformWithSucrase } from "./transform-with-sucrase"
-import { isPackageDeclaredInPackageJson } from "./index"
+import { transformWithSucrase } from "lib/transpile/transform-with-sucrase"
+import { isPackageDeclaredInPackageJson } from "./isPackageDeclaredInPackageJson"
 
 const debug = Debug("tsci:eval:import-npm-package")
 

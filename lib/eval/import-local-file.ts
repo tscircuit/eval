@@ -6,7 +6,7 @@ import type { ExecutionContext } from "./execution-context"
 import { importEvalPath } from "./import-eval-path"
 import Debug from "debug"
 import { isStaticAssetPath } from "lib/shared/static-asset-extensions"
-import { transformWithSucrase } from "./transform-with-sucrase"
+import { transformWithSucrase } from "lib/transpile/transform-with-sucrase"
 import { KicadToCircuitJsonConverter } from "kicad-to-circuit-json"
 
 const debug = Debug("tsci:eval:import-local-file")
