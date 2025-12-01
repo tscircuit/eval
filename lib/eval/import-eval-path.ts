@@ -4,7 +4,7 @@ import { importSnippet } from "./import-snippet"
 import { resolveFilePath } from "lib/runner/resolveFilePath"
 import { resolveNodeModule } from "lib/utils/resolve-node-module"
 import { importNodeModule } from "./import-node-module"
-import { importNpmPackageFromCdn as importNpmPackageFromCdn } from "./import-npm-package-from-cdn"
+import { importNpmPackageFromCdn } from "./import-npm-package-from-cdn"
 import {
   getTsConfig,
   matchesTsconfigPathPattern,
