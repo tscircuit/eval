@@ -28,7 +28,5 @@ test("should throw error when importing undeclared dependency (instead of fallin
         `,
       },
     }),
-  ).rejects.toThrow(
-    /Node module imported but not in package\.json "adom-library"/,
-  )
+  ).rejects.toThrow(/Package "adom-library" is not declared in package\.json/)
 })
