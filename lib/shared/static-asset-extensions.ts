@@ -4,6 +4,8 @@ export const STATIC_ASSET_EXTENSIONS = [
   ".gltf",
   ".obj",
   ".stl",
+  ".step",
+  ".stp",
 ]
 
 export const isStaticAssetPath = (path: string) =>
