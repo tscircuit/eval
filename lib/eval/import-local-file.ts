@@ -118,8 +118,8 @@ export const importLocalFile = async (
           `Eval compiled js error for "${importName}": ${error.message}`,
         )
       }
-    } else if (fsPath.endsWith(".js")) {
-      // For .js files, especially from node_modules, we need to extract and resolve imports first
+    } else if (fsPath.endsWith(".js") || fsPath.endsWith(".mjs")) {
+      // For .js/.mjs files, especially from node_modules, we need to extract and resolve imports first
       const importNames = getImportsFromCode(fileContent)
 
       for (const importName of importNames) {
