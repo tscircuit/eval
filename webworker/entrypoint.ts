@@ -16,7 +16,6 @@ import { enhanceRootCircuitHasNoChildrenError } from "lib/utils/enhance-root-cir
 import { setupFetchProxy } from "./fetchProxy"
 import { setValueAtPath } from "lib/shared/obj-path"
 import { prepareFilesystem } from "lib/filesystem/prepareFilesystem"
-import type { FilesystemHandler } from "lib/filesystem/types"
 
 globalThis.React = React
 setupFetchProxy()
@@ -80,10 +79,6 @@ function bindEventListeners(circuit: RootCircuit) {
   }
 }
 
-const isMessagePort = (value: unknown): value is MessagePort => {
-  return typeof (value as MessagePort | undefined)?.postMessage === "function"
-}
-
 type Promisified<T> = {
   [K in keyof T]: T[K] extends (...args: any[]) => any
     ? (...args: any[]) => Promise<ReturnType<T[K]>>
@@ -134,7 +129,6 @@ const webWorkerApi = {
 
   async executeWithFsMap(opts: {
     entrypoint?: string
-    fs?: FilesystemHandler | MessagePort
     fsMap?: Record<string, string>
     name?: string
     mainComponentPath?: string
@@ -148,17 +142,7 @@ const webWorkerApi = {
       })
     }
 
-    let fsToUse: FilesystemHandler | undefined
-    if (isMessagePort(opts.fs)) {
-      fsToUse = Comlink.wrap<FilesystemHandler>(opts.fs)
-    } else {
-      fsToUse = opts.fs
-    }
-
-    const { fs, fsMap } = await prepareFilesystem({
-      fs: fsToUse,
-      fsMap: opts.fsMap,
-    })
+    const { fs, fsMap } = prepareFilesystem({ fsMap: opts.fsMap })
 
     const filesystemOpts = { ...opts, fsMap }
 

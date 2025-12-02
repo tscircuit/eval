@@ -213,17 +213,6 @@ export const createCircuitWebWorker = async (
 
   let isTerminated = false
 
-  const proxyFilesystemHandler = (fs: any) => {
-    if (!fs) return fs
-    return {
-      [Comlink.proxyMarker]: true,
-      listFiles: (dir: string) => fs.listFiles(dir),
-      readFile: (path: string) => fs.readFile(path),
-      writeFile: (path: string, content: any) => fs.writeFile(path, content),
-      listAllFiles: () => fs.listAllFiles(),
-    }
-  }
-
   // Create a wrapper that handles events directly through circuit instance
   const wrapper: CircuitWebWorker = {
     clearEventListeners: comlinkWorker.clearEventListeners.bind(comlinkWorker),
@@ -268,20 +257,7 @@ export const createCircuitWebWorker = async (
           "CircuitWebWorker was terminated, can't executeWithFsMap",
         )
       }
-      const [opts] = args
-      const proxiedOpts = { ...opts } as any
-      let needsPortTransfer = false
-      if (opts && typeof opts === "object" && "fs" in opts && opts.fs) {
-        const channel = new MessageChannel()
-        Comlink.expose(proxyFilesystemHandler((opts as any).fs), channel.port1)
-        channel.port1.start?.()
-        proxiedOpts.fs = channel.port2
-        needsPortTransfer = true
-      }
-      const arg = needsPortTransfer
-        ? Comlink.transfer(proxiedOpts, [proxiedOpts.fs])
-        : proxiedOpts
-      return comlinkWorker.executeWithFsMap.bind(comlinkWorker)(arg as any)
+      return comlinkWorker.executeWithFsMap.bind(comlinkWorker)(...args)
     },
     renderUntilSettled: comlinkWorker.renderUntilSettled.bind(comlinkWorker),
     getCircuitJson: comlinkWorker.getCircuitJson.bind(comlinkWorker),

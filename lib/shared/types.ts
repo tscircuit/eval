@@ -1,7 +1,6 @@
 import type { AnyCircuitElement } from "circuit-json"
 import type { RootCircuitEventName as CoreRootCircuitEventName } from "@tscircuit/core"
 import type { PlatformConfig } from "@tscircuit/props"
-import type { FilesystemHandler } from "lib/filesystem/types"
 
 export type RootCircuitEventName = CoreRootCircuitEventName | "debug:logOutput"
 
@@ -53,7 +52,6 @@ export interface CircuitRunnerApi {
     mainComponentPath?: string
     mainComponentName?: string
     mainComponentProps?: Record<string, any>
-    fs?: FilesystemHandler | MessagePort
     fsMap?: Record<string, string>
     name?: string
   }): Promise<void>
@@ -82,7 +80,6 @@ export type CircuitWebWorker = {
   executeWithFsMap: (opts: {
     entrypoint?: string
     mainComponentPath?: string
-    fs?: FilesystemHandler | MessagePort
     fsMap?: Record<string, string>
     mainComponentName?: string
     mainComponentProps?: Record<string, any>

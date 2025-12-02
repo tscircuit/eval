@@ -1,19 +1,17 @@
 import { expect, test } from "bun:test"
-import { createCircuitWebWorker, InMemoryFilesystemMap } from "lib"
+import { createCircuitWebWorker } from "lib"
 
 test("executeWithFsMap accepts filesystem handler", async () => {
   const worker = await createCircuitWebWorker({
     webWorkerUrl: new URL("../../webworker/entrypoint.ts", import.meta.url),
   })
 
-  const fs = new InMemoryFilesystemMap({
-    "entrypoint.tsx": `
-      circuit.add(<board name="TestBoard" width="1mm" height="1mm" />)
-    `,
-  })
-
   await worker.executeWithFsMap({
-    fs,
+    fsMap: {
+      "entrypoint.tsx": `
+        circuit.add(<board name="TestBoard" width="1mm" height="1mm" />)
+      `,
+    },
     entrypoint: "entrypoint.tsx",
   })
 

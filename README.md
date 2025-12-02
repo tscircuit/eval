@@ -78,34 +78,32 @@ const led = circuitJson.find((el) => el.name === "LED1")
 
 ### 4. Using Virtual Filesystem
 
-You can also execute code using a virtual filesystem via a `FilesystemHandler`, which is useful when you have multiple files or components. The simplest handler is `InMemoryFilesystemMap`, but you can also implement your own async handler that works across a `Comlink` boundary.
+You can execute code using a virtual filesystem by passing an `fsMap` object. The runner converts the map into an in-memory filesystem internally, so you don't need to manage filesystem handlers yourself.
 
 ```tsx
-import { createCircuitWebWorker, InMemoryFilesystemMap } from "@tscircuit/eval"
+import { createCircuitWebWorker } from "@tscircuit/eval"
 
 const circuitWebWorker = createCircuitWebWorker()
 
-const fs = new InMemoryFilesystemMap({
-  "entrypoint.tsx": `
-    import { MyLed } from "./myled.tsx"
-
-    circuit.add(
-      <board width="10mm" height="10mm">
-        <MyLed name="LED1" />
-      </board>
-    )
-  `,
-  "myled.tsx": `
-    import { RedLed } from "@tsci/seveibar.red-led"
-
-    export const MyLed = ({ name }) => {
-      return <RedLed name={name} />
-    }
-  `,
-})
-
 await circuitWebWorker.executeWithFsMap({
-  fs,
+  fsMap: {
+    "entrypoint.tsx": `
+      import { MyLed } from "./myled.tsx"
+
+      circuit.add(
+        <board width="10mm" height="10mm">
+          <MyLed name="LED1" />
+        </board>
+      )
+    `,
+    "myled.tsx": `
+      import { RedLed } from "@tsci/seveibar.red-led"
+
+      export const MyLed = ({ name }) => {
+        return <RedLed name={name} />
+      }
+    `,
+  },
   entrypoint: "entrypoint.tsx",
 })
 

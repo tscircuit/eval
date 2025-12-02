@@ -2,13 +2,8 @@ import { CircuitRunner } from "./CircuitRunner"
 
 export async function runTscircuitCode(
   filesystemOrCodeString: Record<string, string> | string,
-  opts?: Omit<
-    Parameters<CircuitRunner["executeWithFsMap"]>[0],
-    "fsMap" | "fs"
-  > &
-    Partial<
-      Pick<Parameters<CircuitRunner["executeWithFsMap"]>[0], "fsMap" | "fs">
-    >,
+  opts?: Omit<Parameters<CircuitRunner["executeWithFsMap"]>[0], "fsMap"> &
+    Partial<Pick<Parameters<CircuitRunner["executeWithFsMap"]>[0], "fsMap">>,
 ) {
   if (
     typeof filesystemOrCodeString === "string" &&
@@ -29,7 +24,7 @@ export async function runTscircuitCode(
     ...opts,
   }
 
-  if (!executeOptions.fs && !executeOptions.fsMap) {
+  if (!executeOptions.fsMap) {
     executeOptions.fsMap = filesystem
   }
 

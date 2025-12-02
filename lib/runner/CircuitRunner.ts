@@ -14,7 +14,6 @@ import { enhanceRootCircuitHasNoChildrenError } from "lib/utils/enhance-root-cir
 import Debug from "debug"
 import { setValueAtPath } from "lib/shared/obj-path"
 import { prepareFilesystem } from "lib/filesystem/prepareFilesystem"
-import type { FilesystemHandler } from "lib/filesystem/types"
 
 const debug = Debug("tsci:eval:CircuitRunner")
 
@@ -40,7 +39,6 @@ export class CircuitRunner implements CircuitRunnerApi {
     entrypoint?: string
     mainComponentPath?: string
     mainComponentName?: string
-    fs?: FilesystemHandler
     fsMap?: Record<string, string>
     name?: string
     mainComponentProps?: Record<string, any>
@@ -51,10 +49,7 @@ export class CircuitRunner implements CircuitRunnerApi {
       Debug.enable("tsci:eval:*")
     }
 
-    const { fs, fsMap } = await prepareFilesystem({
-      fs: opts.fs,
-      fsMap: opts.fsMap,
-    })
+    const { fs, fsMap } = prepareFilesystem({ fsMap: opts.fsMap })
 
     debug("executeWithFsMap called with:", {
       entrypoint: opts.entrypoint,
