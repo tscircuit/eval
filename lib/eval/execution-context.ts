@@ -7,6 +7,7 @@ import * as tscircuitMathUtils from "@tscircuit/math-utils"
 import type { PlatformConfig } from "@tscircuit/props"
 import { getPlatformConfig } from "lib/getPlatformConfig"
 import type { TsConfig } from "lib/runner/tsconfigPaths"
+import * as tslib from "tslib"
 import Debug from "debug"
 
 const debug = Debug("tsci:eval:execution-context")
@@ -79,6 +80,7 @@ export function createExecutionContext(
       react: React,
       "react/jsx-runtime": ReactJsxRuntime,
       debug: Debug,
+      tslib,
 
       // This is usually used as a type import, we can remove the shim when we
       // ignore type imports in getImportsFromCode
