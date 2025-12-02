@@ -13,6 +13,8 @@ import { setupDefaultEntrypointIfNeeded } from "./setupDefaultEntrypointIfNeeded
 import { enhanceRootCircuitHasNoChildrenError } from "lib/utils/enhance-root-circuit-error"
 import Debug from "debug"
 import { setValueAtPath } from "lib/shared/obj-path"
+import { prepareFilesystem } from "lib/filesystem/prepareFilesystem"
+import type { FilesystemHandler } from "lib/filesystem/types"
 
 const debug = Debug("tsci:eval:CircuitRunner")
 
@@ -38,7 +40,8 @@ export class CircuitRunner implements CircuitRunnerApi {
     entrypoint?: string
     mainComponentPath?: string
     mainComponentName?: string
-    fsMap: Record<string, string>
+    fs?: FilesystemHandler
+    fsMap?: Record<string, string>
     name?: string
     mainComponentProps?: Record<string, any>
   }): Promise<void> {
@@ -48,13 +51,23 @@ export class CircuitRunner implements CircuitRunnerApi {
       Debug.enable("tsci:eval:*")
     }
 
+    const { fs, fsMap } = await prepareFilesystem({
+      fs: opts.fs,
+      fsMap: opts.fsMap,
+    })
+
     debug("executeWithFsMap called with:", {
       entrypoint: opts.entrypoint,
-      fsMapKeys: Object.keys(opts.fsMap),
+      fsMapKeys: Object.keys(fsMap),
       name: opts.name,
     })
 
-    setupDefaultEntrypointIfNeeded(opts)
+    const filesystemOpts = { ...opts, fsMap }
+    setupDefaultEntrypointIfNeeded(filesystemOpts)
+    opts.entrypoint = filesystemOpts.entrypoint
+    opts.mainComponentPath = filesystemOpts.mainComponentPath
+    opts.mainComponentName = filesystemOpts.mainComponentName
+    opts.mainComponentProps = filesystemOpts.mainComponentProps
 
     debug("entrypoint after setupDefaultEntrypointIfNeeded:", {
       entrypoint: opts.entrypoint,
@@ -72,7 +85,8 @@ export class CircuitRunner implements CircuitRunnerApi {
     this._bindEventListeners(this._executionContext.circuit)
 
     this._executionContext.entrypoint = opts.entrypoint!
-    this._executionContext.fsMap = normalizeFsMap(opts.fsMap)
+    this._executionContext.fs = fs
+    this._executionContext.fsMap = normalizeFsMap(fsMap)
     this._executionContext.tsConfig = getTsConfig(this._executionContext.fsMap)
     if (!this._executionContext.fsMap[opts.entrypoint!]) {
       throw new Error(`Entrypoint "${opts.entrypoint}" not found`)
@@ -105,7 +119,11 @@ export class CircuitRunner implements CircuitRunnerApi {
       },
     )
     this._bindEventListeners(this._executionContext.circuit)
-    this._executionContext.fsMap["entrypoint.tsx"] = code
+    await this._executionContext.fs.writeFile("entrypoint.tsx", code)
+    this._executionContext.fsMap = normalizeFsMap({
+      ...this._executionContext.fsMap,
+      "entrypoint.tsx": code,
+    })
     this._executionContext.tsConfig = getTsConfig(this._executionContext.fsMap)
     ;(globalThis as any).__tscircuit_circuit = this._executionContext.circuit
 

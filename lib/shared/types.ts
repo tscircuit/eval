@@ -1,6 +1,7 @@
 import type { AnyCircuitElement } from "circuit-json"
 import type { RootCircuitEventName as CoreRootCircuitEventName } from "@tscircuit/core"
 import type { PlatformConfig } from "@tscircuit/props"
+import type { FilesystemHandler } from "lib/filesystem/types"
 
 export type RootCircuitEventName = CoreRootCircuitEventName | "debug:logOutput"
 
@@ -49,7 +50,11 @@ export interface CircuitRunnerApi {
   executeComponent: (component: any) => Promise<void>
   executeWithFsMap(opts: {
     entrypoint?: string
-    fsMap: Record<string, string>
+    mainComponentPath?: string
+    mainComponentName?: string
+    mainComponentProps?: Record<string, any>
+    fs?: FilesystemHandler | MessagePort
+    fsMap?: Record<string, string>
     name?: string
   }): Promise<void>
   renderUntilSettled: () => Promise<void>
@@ -77,7 +82,10 @@ export type CircuitWebWorker = {
   executeWithFsMap: (opts: {
     entrypoint?: string
     mainComponentPath?: string
-    fsMap: Record<string, string>
+    fs?: FilesystemHandler | MessagePort
+    fsMap?: Record<string, string>
+    mainComponentName?: string
+    mainComponentProps?: Record<string, any>
   }) => Promise<void>
   renderUntilSettled: () => Promise<void>
   getCircuitJson: () => Promise<AnyCircuitElement[]>
