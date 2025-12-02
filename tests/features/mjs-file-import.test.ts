@@ -1,6 +1,5 @@
 import { test, expect } from "bun:test"
 import { CircuitRunner } from "lib/runner/CircuitRunner"
-import { PcbComponent } from "circuit-json"
 
 test("should import .mjs files from fsMap", async () => {
   const runner = new CircuitRunner()
