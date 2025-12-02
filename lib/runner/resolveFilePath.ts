@@ -6,7 +6,19 @@ import {
   resolveWithBaseUrl,
 } from "./tsconfigPaths"
 
-const FILE_EXTENSIONS = ["tsx", "ts", "json", "js", "jsx", "obj", "gltf", "glb"]
+const FILE_EXTENSIONS = [
+  "tsx",
+  "ts",
+  "json",
+  "js",
+  "jsx",
+  "obj",
+  "gltf",
+  "glb",
+  "stl",
+  "step",
+  "stp",
+]
 
 export const resolveFilePath = (
   unknownFilePath: string,

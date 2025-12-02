@@ -17,6 +17,11 @@ test("should import .glb file as string URL when projectBaseUrl is configured", 
       "index.tsx": `
 import glbUrl from "./model.glb";
 import kicadMod from "./footprint.kicad_mod";
+import stepUrl from "./model.step";
+
+if (stepUrl !== "https://example.com/assets/model.step") {
+  throw new Error("Unexpected STEP URL: " + stepUrl);
+}
 
 export default () => {
   return (
@@ -30,6 +35,7 @@ export default () => {
         `,
       "model.glb": "__STATIC_ASSET__",
       "footprint.kicad_mod": "__STATIC_ASSET__",
+      "model.step": "__STATIC_ASSET__",
     },
     mainComponentPath: "index.tsx",
   })
