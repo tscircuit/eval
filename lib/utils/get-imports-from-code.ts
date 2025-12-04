@@ -1,4 +1,7 @@
+import { stripComments } from "./strip-comments"
+
 export const getImportsFromCode = (code: string): string[] => {
+  const strippedCode = stripComments(code)
   // Match basic import patterns including combined default and namespace imports
   const importRegex =
     /^\s*import\s+(?:(?:[\w\s]+,\s*)?(?:\*\s+as\s+[\w\s]+|\{[\s\w,]+\}|\w+)\s+from\s*)?['"](.+?)['"]/gm
@@ -6,7 +9,7 @@ export const getImportsFromCode = (code: string): string[] => {
   let match: RegExpExecArray | null
 
   // biome-ignore lint/suspicious/noAssignInExpressions: <explanation>
-  while ((match = importRegex.exec(code)) !== null) {
+  while ((match = importRegex.exec(strippedCode)) !== null) {
     const fullMatch = match[0]
     if (/^\s*import\s+type\b/.test(fullMatch)) {
       continue
@@ -19,7 +22,7 @@ export const getImportsFromCode = (code: string): string[] => {
     /^\s*export\s+(?:type\s+)?(?:\*\s+as\s+[\w$]+|\*|\{[^}]+\})\s+from\s*['"](.+?)['"]/gm
   let reExportMatch: RegExpExecArray | null
   // biome-ignore lint/suspicious/noAssignInExpressions: <explanation>
-  while ((reExportMatch = reExportRegex.exec(code)) !== null) {
+  while ((reExportMatch = reExportRegex.exec(strippedCode)) !== null) {
     const fullMatch = reExportMatch[0]
     if (/^\s*export\s+type\b/.test(fullMatch)) {
       continue
