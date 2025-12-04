@@ -5,7 +5,6 @@ import Debug from "debug"
 import { getImportsFromCode } from "lib/utils/get-imports-from-code"
 import { importEvalPath } from "./import-eval-path"
 import { transformWithSucrase } from "lib/transpile/transform-with-sucrase"
-import { isPackageDeclaredInPackageJson } from "./isPackageDeclaredInPackageJson"
 
 const debug = Debug("tsci:eval:import-npm-package")
 
@@ -17,27 +16,14 @@ function extractPackagePathFromJSDelivr(url: string) {
   return url
 }
 
-export async function importNpmPackage(
-  {
-    importName,
-    depth = 0,
-    fromJsDelivr = false,
-  }: { importName: string; depth?: number; fromJsDelivr?: boolean },
+export async function importNpmPackageFromCdn(
+  { importName, depth = 0 }: { importName: string; depth?: number },
   ctx: ExecutionContext,
 ) {
-  debug(`importing npm package: ${importName}`)
-  const { preSuppliedImports, fsMap } = ctx
+  debug(`importing npm package from CDN: ${importName}`)
+  const { preSuppliedImports } = ctx
 
   if (preSuppliedImports[importName]) return
-
-  // Check if the package is declared in package.json before fetching from jsDelivr
-  // Skip this check for transitive dependencies (sub-imports from jsDelivr packages)
-  if (!fromJsDelivr && !isPackageDeclaredInPackageJson(importName, fsMap)) {
-    throw new Error(
-      `Package "${importName}" is not declared in package.json. ` +
-        `Add it to dependencies or devDependencies before importing.\n\n${ctx.logger.stringifyLogs()}`,
-    )
-  }
 
   const npmCdnUrl = `https://cdn.jsdelivr.net/npm/${importName}/+esm`
 
@@ -67,7 +53,6 @@ export async function importNpmPackage(
     if (!preSuppliedImports[subImportName]) {
       await importEvalPath(subImportName, ctx, depth + 1, {
         cwd,
-        fromJsDelivr: true,
       })
     }
   }

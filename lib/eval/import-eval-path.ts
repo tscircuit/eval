@@ -4,7 +4,7 @@ import { importSnippet } from "./import-snippet"
 import { resolveFilePath } from "lib/runner/resolveFilePath"
 import { resolveNodeModule } from "lib/utils/resolve-node-module"
 import { importNodeModule } from "./import-node-module"
-import { importNpmPackage } from "./import-npm-package"
+import { importNpmPackageFromCdn } from "./import-npm-package-from-cdn"
 import {
   getTsConfig,
   matchesTsconfigPathPattern,
@@ -24,7 +24,6 @@ export async function importEvalPath(
   depth = 0,
   opts: {
     cwd?: string
-    fromJsDelivr?: boolean
   } = {},
 ) {
   debug("importEvalPath called with:", {
@@ -97,12 +96,8 @@ export async function importEvalPath(
         `Cannot find module "${pkgName}". The package is not available in the local environment.\n\n${ctx.logger.stringifyLogs()}`,
       )
     }
-    ctx.logger.info(`importNpmPackage("${pkgName}")`)
-    // /npm/ paths are always transitive dependencies from jsDelivr
-    await importNpmPackage(
-      { importName: pkgName, depth, fromJsDelivr: true },
-      ctx,
-    )
+    ctx.logger.info(`importNpmPackageFromCdn("${pkgName}")`)
+    await importNpmPackageFromCdn({ importName: pkgName, depth }, ctx)
     const pkg = preSuppliedImports[pkgName]
     if (pkg) {
       preSuppliedImports[importName] = pkg
@@ -198,40 +193,37 @@ export async function importEvalPath(
   }
 
   if (!importName.startsWith(".") && !importName.startsWith("/")) {
-    // Validation steps for node modules (before jsDelivr fallback)
-    if (!opts.fromJsDelivr) {
-      // Step 1: Check if package is declared in package.json
-      if (!isPackageDeclaredInPackageJson(importName, ctx.fsMap)) {
+    // Step 1: Check if package is declared in package.json
+    if (!isPackageDeclaredInPackageJson(importName, ctx.fsMap)) {
+      throw new Error(
+        `Node module imported but not in package.json "${importName}"\n\n${ctx.logger.stringifyLogs()}`,
+      )
+    }
+
+    // Step 2: Check if node_modules directory exists (only if not found locally yet)
+    // Only validate if CDN loading is disabled (i.e., no fallback to jsDelivr available)
+    const nodeModuleDir = getNodeModuleDirectory(importName, ctx.fsMap)
+    if (!nodeModuleDir && disableCdnLoading) {
+      throw new Error(
+        `Node module "${importName}" has no files in the node_modules directory\n\n${ctx.logger.stringifyLogs()}`,
+      )
+    }
+
+    // Step 3: Check if main entrypoint is a TypeScript file (only if dir exists)
+    if (nodeModuleDir) {
+      const entrypoint = getPackageJsonEntrypoint(importName, ctx.fsMap)
+      if (isTypeScriptEntrypoint(entrypoint)) {
         throw new Error(
-          `Node module imported but not in package.json "${importName}"\n\n${ctx.logger.stringifyLogs()}`,
+          `Node module "${importName}" has a typescript entrypoint that is unsupported\n\n${ctx.logger.stringifyLogs()}`,
         )
       }
 
-      // Step 2: Check if node_modules directory exists (only if not found locally yet)
-      // Only validate if CDN loading is disabled (i.e., no fallback to jsDelivr available)
-      const nodeModuleDir = getNodeModuleDirectory(importName, ctx.fsMap)
-      if (!nodeModuleDir && disableCdnLoading) {
-        throw new Error(
-          `Node module "${importName}" has no files in the node_modules directory\n\n${ctx.logger.stringifyLogs()}`,
-        )
-      }
-
-      // Step 3: Check if main entrypoint is a TypeScript file (only if dir exists)
-      if (nodeModuleDir) {
-        const entrypoint = getPackageJsonEntrypoint(importName, ctx.fsMap)
-        if (isTypeScriptEntrypoint(entrypoint)) {
+      // Step 4: Check if dist directory is empty when main points to dist
+      if (entrypoint?.startsWith("dist/")) {
+        if (isDistDirEmpty(importName, ctx.fsMap)) {
           throw new Error(
-            `Node module "${importName}" has a typescript entrypoint that is unsupported\n\n${ctx.logger.stringifyLogs()}`,
+            `Node module "${importName}" has no files in dist, did you forget to transpile?\n\n${ctx.logger.stringifyLogs()}`,
           )
-        }
-
-        // Step 4: Check if dist directory is empty when main points to dist
-        if (entrypoint && entrypoint.startsWith("dist/")) {
-          if (isDistDirEmpty(importName, ctx.fsMap)) {
-            throw new Error(
-              `Node module "${importName}" has no files in dist, did you forget to transpile?\n\n${ctx.logger.stringifyLogs()}`,
-            )
-          }
         }
       }
     }
@@ -241,11 +233,8 @@ export async function importEvalPath(
         `Cannot find module "${importName}". The package is not available in the local environment.\n\n${ctx.logger.stringifyLogs()}`,
       )
     }
-    ctx.logger.info(`importNpmPackage("${importName}")`)
-    return importNpmPackage(
-      { importName, depth, fromJsDelivr: opts.fromJsDelivr },
-      ctx,
-    )
+    ctx.logger.info(`importNpmPackageFromCdn("${importName}")`)
+    return importNpmPackageFromCdn({ importName, depth }, ctx)
   }
 
   throw new Error(
