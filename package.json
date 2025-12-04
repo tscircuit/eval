@@ -7,6 +7,7 @@
     "dist"
   ],
   "scripts": {
+    "postinstall": "bun run scripts/postinstall.ts || true",
     "build": "bun run build:lib && bun run build:webworker && bun run build:blob-url && bun run build:runner && bun run build:worker-wrapper && bun run build:platform-config",
     "build:lib": "tsup-node --config tsup-lib.config.ts",
     "build:platform-config": "tsup-node --config tsup-platform-config.config.ts",
