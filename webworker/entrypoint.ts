@@ -15,6 +15,7 @@ import { setupDefaultEntrypointIfNeeded } from "lib/runner/setupDefaultEntrypoin
 import { enhanceRootCircuitHasNoChildrenError } from "lib/utils/enhance-root-circuit-error"
 import { setupFetchProxy } from "./fetchProxy"
 import { setValueAtPath } from "lib/shared/obj-path"
+import { prepareFilesystem } from "lib/filesystem/prepareFilesystem"
 
 globalThis.React = React
 setupFetchProxy()
@@ -128,18 +129,28 @@ const webWorkerApi = {
 
   async executeWithFsMap(opts: {
     entrypoint?: string
-    fsMap: Record<string, string>
+    fsMap?: Record<string, string>
     name?: string
+    mainComponentPath?: string
+    mainComponentName?: string
+    mainComponentProps?: Record<string, any>
   }): Promise<void> {
     if (circuitRunnerConfiguration.verbose) {
       console.log("[Worker] executeWithFsMap called with:", {
         entrypoint: opts.entrypoint,
-        fsMapKeys: Object.keys(opts.fsMap),
         name: opts.name,
       })
     }
 
-    setupDefaultEntrypointIfNeeded(opts)
+    const { fs, fsMap } = prepareFilesystem({ fsMap: opts.fsMap })
+
+    const filesystemOpts = { ...opts, fsMap }
+
+    setupDefaultEntrypointIfNeeded(filesystemOpts)
+    opts.entrypoint = filesystemOpts.entrypoint
+    opts.mainComponentPath = filesystemOpts.mainComponentPath
+    opts.mainComponentName = filesystemOpts.mainComponentName
+    opts.mainComponentProps = filesystemOpts.mainComponentProps
 
     let entrypoint = opts.entrypoint!
 
@@ -151,7 +162,8 @@ const webWorkerApi = {
     })
     bindEventListeners(executionContext.circuit)
     executionContext.entrypoint = entrypoint
-    executionContext.fsMap = normalizeFsMap(opts.fsMap)
+    executionContext.fs = fs
+    executionContext.fsMap = normalizeFsMap(fsMap)
     executionContext.tsConfig = getTsConfig(executionContext.fsMap)
     if (!executionContext.fsMap[entrypoint]) {
       throw new Error(`Entrypoint "${opts.entrypoint}" not found`)
@@ -176,7 +188,11 @@ const webWorkerApi = {
       debugNamespace,
     })
     bindEventListeners(executionContext.circuit)
-    executionContext.fsMap["entrypoint.tsx"] = code
+    await executionContext.fs.writeFile("entrypoint.tsx", code)
+    executionContext.fsMap = normalizeFsMap({
+      ...executionContext.fsMap,
+      "entrypoint.tsx": code,
+    })
     executionContext.tsConfig = getTsConfig(executionContext.fsMap)
     ;(globalThis as any).__tscircuit_circuit = executionContext.circuit
 

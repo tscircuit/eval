@@ -78,7 +78,7 @@ const led = circuitJson.find((el) => el.name === "LED1")
 
 ### 4. Using Virtual Filesystem
 
-You can also execute code using a virtual filesystem, which is useful when you have multiple files or components:
+You can execute code using a virtual filesystem by passing an `fsMap` object. The runner converts the map into an in-memory filesystem internally, so you don't need to manage filesystem handlers yourself.
 
 ```tsx
 import { createCircuitWebWorker } from "@tscircuit/eval"
@@ -89,7 +89,7 @@ await circuitWebWorker.executeWithFsMap({
   fsMap: {
     "entrypoint.tsx": `
       import { MyLed } from "./myled.tsx"
-      
+
       circuit.add(
         <board width="10mm" height="10mm">
           <MyLed name="LED1" />
@@ -98,7 +98,7 @@ await circuitWebWorker.executeWithFsMap({
     `,
     "myled.tsx": `
       import { RedLed } from "@tsci/seveibar.red-led"
-      
+
       export const MyLed = ({ name }) => {
         return <RedLed name={name} />
       }

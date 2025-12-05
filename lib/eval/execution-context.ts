@@ -9,6 +9,8 @@ import { getPlatformConfig } from "lib/getPlatformConfig"
 import type { TsConfig } from "lib/runner/tsconfigPaths"
 import * as tslib from "tslib"
 import Debug from "debug"
+import type { FilesystemHandler } from "lib/filesystem/types"
+import { InMemoryFilesystemMap } from "lib/filesystem/InMemoryFilesystemMap"
 
 const debug = Debug("tsci:eval:execution-context")
 
@@ -19,6 +21,7 @@ interface StoredLogger {
 }
 
 export interface ExecutionContext extends WebWorkerConfiguration {
+  fs: FilesystemHandler
   fsMap: Record<string, string>
   entrypoint: string
   preSuppliedImports: Record<string, any>
@@ -64,6 +67,7 @@ export function createExecutionContext(
   const logs: Array<{ msg: string }> = []
 
   return {
+    fs: new InMemoryFilesystemMap(),
     fsMap: {},
     entrypoint: "",
     logger: {

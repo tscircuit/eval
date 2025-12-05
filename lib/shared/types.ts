@@ -49,7 +49,10 @@ export interface CircuitRunnerApi {
   executeComponent: (component: any) => Promise<void>
   executeWithFsMap(opts: {
     entrypoint?: string
-    fsMap: Record<string, string>
+    mainComponentPath?: string
+    mainComponentName?: string
+    mainComponentProps?: Record<string, any>
+    fsMap?: Record<string, string>
     name?: string
   }): Promise<void>
   renderUntilSettled: () => Promise<void>
@@ -77,7 +80,9 @@ export type CircuitWebWorker = {
   executeWithFsMap: (opts: {
     entrypoint?: string
     mainComponentPath?: string
-    fsMap: Record<string, string>
+    fsMap?: Record<string, string>
+    mainComponentName?: string
+    mainComponentProps?: Record<string, any>
   }) => Promise<void>
   renderUntilSettled: () => Promise<void>
   getCircuitJson: () => Promise<AnyCircuitElement[]>
