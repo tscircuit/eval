@@ -72,6 +72,9 @@ export const importLocalFile = async (
         staticUrl = `${platformConfig?.projectBaseUrl ?? ""}/${
           fsPath.startsWith("./") ? fsPath.slice(2) : fsPath
         }`
+      } else if (fileContent.startsWith("blob:")) {
+        // Browser provided a blob URL directly, use it as-is
+        staticUrl = fileContent
       } else {
         // Actual file content: create a blob URL
         const blob = new Blob([fileContent], {
