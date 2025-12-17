@@ -7,7 +7,7 @@ export default defineConfig({
   // sourcemap: "inline",
   outDir: "dist/webworker",
   splitting: false,
-  minify: true,
+  minify: false,
   noExternal: [
     "@tscircuit/core",
     "circuit-json",
@@ -18,4 +18,9 @@ export default defineConfig({
   ],
   clean: true,
   dts: true,
+  esbuildOptions(options) {
+    options.minifySyntax = true
+    options.minifyWhitespace = true
+    options.minifyIdentifiers = false
+  },
 })
