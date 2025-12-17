@@ -176,6 +176,12 @@ export const createCircuitWebWorker = async (
     await comlinkWorker.setSnippetsApiBaseUrl(configuration.snippetsApiBaseUrl)
   }
 
+  if ("sessionToken" in configuration) {
+    await comlinkWorker.setSessionToken(
+      configuration.sessionToken ?? null,
+    )
+  }
+
   const maybeProxy = (value: any) => {
     if (typeof value === "function") {
       return Comlink.proxy(value)
@@ -264,6 +270,14 @@ export const createCircuitWebWorker = async (
     on: (event: string, callback: (...args: any[]) => void) => {
       const proxiedCallback = Comlink.proxy(callback)
       comlinkWorker.on(event as RootCircuitEventName, proxiedCallback)
+    },
+    setSessionToken: async (sessionToken: string | null) => {
+      if (isTerminated) {
+        throw new Error(
+          "CircuitWebWorker was terminated, can't setSessionToken",
+        )
+      }
+      return comlinkWorker.setSessionToken(sessionToken)
     },
     kill: async () => {
       comlinkWorker[Comlink.releaseProxy]()

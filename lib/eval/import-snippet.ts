@@ -11,7 +11,14 @@ export async function importSnippet(
 
   const { cjs, error } = await globalThis
     .fetch(`${ctx.cjsRegistryUrl}/${fullSnippetName}`)
-    .then(async (res) => ({ cjs: await res.text(), error: null }))
+    .then(async (res) => {
+      if (!res.ok) {
+        throw new Error(
+          `Failed to fetch snippet "${importName}": ${res.status} ${res.statusText}`,
+        )
+      }
+      return { cjs: await res.text(), error: null }
+    })
     .catch((e) => ({ error: e, cjs: null }))
 
   if (error) {

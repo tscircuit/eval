@@ -8,12 +8,37 @@ import { transformWithSucrase } from "lib/transpile/transform-with-sucrase"
 
 const debug = Debug("tsci:eval:import-npm-package")
 
-function extractPackagePathFromJSDelivr(url: string) {
-  const prefix = "https://cdn.jsdelivr.net/npm/"
-  if (url.startsWith(prefix)) {
-    return url.substring(prefix.length).replace(/\/\+esm$/, "")
+const JSDELIVR_PREFIX = "https://cdn.jsdelivr.net/npm/"
+const TSCIRCUIT_NPM_REGISTRY = "https://npm.tscircuit.com/"
+
+function extractPackagePathFromNpmUrl(url: string) {
+  const normalizedUrl = url.replace(/\/\+esm$/, "")
+  if (normalizedUrl.startsWith(JSDELIVR_PREFIX)) {
+    return normalizedUrl.substring(JSDELIVR_PREFIX.length)
   }
-  return url
+  if (normalizedUrl.startsWith(TSCIRCUIT_NPM_REGISTRY)) {
+    return normalizedUrl.substring(TSCIRCUIT_NPM_REGISTRY.length)
+  }
+  return normalizedUrl
+}
+
+function getFetchTargets(importName: string, sessionToken?: string) {
+  const targets: Array<{ url: string; init?: RequestInit }> = []
+
+  if (importName.startsWith("@tsci/")) {
+    const headers: Record<string, string> = {}
+    if (sessionToken) {
+      headers.Authorization = `Bearer ${sessionToken}`
+    }
+    targets.push({
+      url: `${TSCIRCUIT_NPM_REGISTRY}${importName}/+esm`,
+      init: Object.keys(headers).length ? { headers } : undefined,
+    })
+  }
+
+  targets.push({ url: `${JSDELIVR_PREFIX}${importName}/+esm` })
+
+  return targets
 }
 
 export async function importNpmPackageFromCdn(
@@ -25,30 +50,44 @@ export async function importNpmPackageFromCdn(
 
   if (preSuppliedImports[importName]) return
 
-  const npmCdnUrl = `https://cdn.jsdelivr.net/npm/${importName}/+esm`
-
   let finalUrl: string | undefined
-  const { content, error } = await globalThis
-    .fetch(npmCdnUrl)
-    .then(async (res) => {
-      finalUrl = res.url
-      if (!res.ok)
-        throw new Error(
-          `Could not fetch "${importName}" from jsdelivr: ${res.statusText}\n\n${ctx.logger.stringifyLogs()}`,
-        )
-      return { content: await res.text(), error: null }
-    })
-    .catch((e) => ({ error: e, content: null }))
+  let content: string | null = null
+  let lastError: any = null
 
-  if (error) {
-    console.error("Error fetching npm import", importName, error)
-    throw error
+  for (const target of getFetchTargets(importName, ctx.sessionToken)) {
+    const result = await globalThis
+      .fetch(target.url, target.init)
+      .then(async (res) => {
+        finalUrl = res.url
+        if (!res.ok) {
+          throw new Error(
+            `Could not fetch "${importName}" from ${target.url}: ${res.status} ${res.statusText}\n\n${ctx.logger.stringifyLogs()}`,
+          )
+        }
+        return { content: await res.text(), error: null }
+      })
+      .catch((e) => ({ error: e, content: null }))
+
+    if (result.error) {
+      lastError = result.error
+      continue
+    }
+
+    content = result.content
+    break
   }
 
-  const finalImportName = extractPackagePathFromJSDelivr(finalUrl!)
+  if (!content) {
+    console.error("Error fetching npm import", importName, lastError)
+    throw lastError
+  }
+
+  const finalImportName = finalUrl
+    ? extractPackagePathFromNpmUrl(finalUrl)
+    : importName
   const cwd = dirname(finalImportName)
 
-  const importNames = getImportsFromCode(content!)
+  const importNames = getImportsFromCode(content)
   for (const subImportName of importNames) {
     if (!preSuppliedImports[subImportName]) {
       await importEvalPath(subImportName, ctx, depth + 1, {
@@ -57,10 +96,7 @@ export async function importNpmPackageFromCdn(
     }
   }
 
-  const transformedCode = transformWithSucrase(
-    content!,
-    finalImportName || importName,
-  )
+  const transformedCode = transformWithSucrase(content, finalImportName || importName)
   try {
     const exports = evalCompiledJs(
       transformedCode,

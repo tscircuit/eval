@@ -10,6 +10,11 @@ export interface CircuitRunnerConfiguration {
   verbose?: boolean
   platform?: PlatformConfig
   projectConfig?: Partial<PlatformConfig>
+  /**
+   * Session token used to authenticate requests to the npm.tscircuit.com
+   * registry for private packages.
+   */
+  sessionToken?: string
 }
 
 export interface WebWorkerConfiguration extends CircuitRunnerConfiguration {
@@ -60,6 +65,7 @@ export interface CircuitRunnerApi {
   setProjectConfig: (project: Partial<PlatformConfig>) => Promise<void>
   setPlatformConfigProperty: (property: string, value: any) => Promise<void>
   setProjectConfigProperty: (property: string, value: any) => Promise<void>
+  setSessionToken: (sessionToken: string | null) => Promise<void>
   enableDebug: (namespace: string) => Promise<void>
   on: (event: RootCircuitEventName, callback: (...args: any[]) => void) => void
   clearEventListeners: () => void
@@ -83,6 +89,7 @@ export type CircuitWebWorker = {
   getCircuitJson: () => Promise<AnyCircuitElement[]>
   on: (event: RootCircuitEventName, callback: (...args: any[]) => void) => void
   clearEventListeners: () => Promise<void>
+  setSessionToken: (sessionToken: string | null) => Promise<void>
   enableDebug: (namespace: string) => Promise<void>
   version: () => Promise<string>
   kill: () => Promise<void>

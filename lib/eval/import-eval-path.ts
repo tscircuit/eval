@@ -189,7 +189,13 @@ export async function importEvalPath(
 
   if (importName.startsWith("@tsci/")) {
     ctx.logger.info(`importSnippet("${importName}")`)
-    return importSnippet(importName, ctx, depth)
+    await importSnippet(importName, ctx, depth)
+    if (preSuppliedImports[importName]) {
+      return
+    }
+    ctx.logger.info(
+      `Snippet import for "${importName}" failed, falling back to npm resolution`,
+    )
   }
 
   if (!importName.startsWith(".") && !importName.startsWith("/")) {

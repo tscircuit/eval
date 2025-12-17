@@ -32,6 +32,7 @@ const circuitRunnerConfiguration: WebWorkerConfiguration = {
   verbose: false,
   platform: undefined,
   projectConfig: undefined,
+  sessionToken: undefined,
 }
 
 const eventListeners: Record<string, ((...args: any[]) => void)[]> = {}
@@ -112,6 +113,9 @@ const webWorkerApi = {
       circuitRunnerConfiguration.projectConfig = {}
     }
     setValueAtPath(circuitRunnerConfiguration.projectConfig, property, value)
+  },
+  setSessionToken: async (sessionToken: string | null) => {
+    circuitRunnerConfiguration.sessionToken = sessionToken ?? undefined
   },
 
   enableDebug: async (namespace: string) => {
