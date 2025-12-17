@@ -177,9 +177,7 @@ export const createCircuitWebWorker = async (
   }
 
   if ("sessionToken" in configuration) {
-    await comlinkWorker.setSessionToken(
-      configuration.sessionToken ?? null,
-    )
+    await comlinkWorker.setSessionToken(configuration.sessionToken ?? null)
   }
 
   const maybeProxy = (value: any) => {

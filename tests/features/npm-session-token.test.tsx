@@ -42,7 +42,8 @@ test("uses sessionToken when fetching private @tsci packages", async () => {
 
     expect(
       circuitJson.find(
-        (element) => element.type === "source_component" && element.name === "R1",
+        (element) =>
+          element.type === "source_component" && element.name === "R1",
       ),
     ).toBeDefined()
 
@@ -52,9 +53,9 @@ test("uses sessionToken when fetching private @tsci packages", async () => {
     expect(privateRegistryRequest).toBeDefined()
     const headers =
       (privateRegistryRequest?.init?.headers as Record<string, string>) || {}
-    expect(
-      headers.Authorization ?? headers.authorization,
-    ).toBe("Bearer my-session-token")
+    expect(headers.Authorization ?? headers.authorization).toBe(
+      "Bearer my-session-token",
+    )
   } finally {
     globalThis.fetch = originalFetch
   }

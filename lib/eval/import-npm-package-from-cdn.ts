@@ -96,7 +96,10 @@ export async function importNpmPackageFromCdn(
     }
   }
 
-  const transformedCode = transformWithSucrase(content, finalImportName || importName)
+  const transformedCode = transformWithSucrase(
+    content,
+    finalImportName || importName,
+  )
   try {
     const exports = evalCompiledJs(
       transformedCode,
