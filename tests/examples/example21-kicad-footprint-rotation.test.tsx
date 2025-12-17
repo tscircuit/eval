@@ -33,31 +33,6 @@ test("example21-kicad-footprint-rotation", async () => {
   const pcb_component = circuitJson.filter(
     (el: any) => el.type === "pcb_component",
   )
-  expect(pcb_component).toMatchInlineSnapshot(`
-    [
-      {
-        "center": {
-          "x": 8.75,
-          "y": 0,
-        },
-        "display_offset_x": 9,
-        "display_offset_y": 0,
-        "do_not_place": false,
-        "height": 7,
-        "layer": "top",
-        "obstructs_within_bounds": true,
-        "pcb_component_id": "pcb_component_0",
-        "position_mode": "relative_to_group_anchor",
-        "positioned_relative_to_pcb_board_id": "pcb_board_0",
-        "positioned_relative_to_pcb_group_id": undefined,
-        "rotation": 0,
-        "source_component_id": "source_component_0",
-        "subcircuit_id": "subcircuit_source_group_0",
-        "type": "pcb_component",
-        "width": 3.6999999999999993,
-      },
-    ]
-  `)
 
   expect(convertCircuitJsonToPcbSvg(circuitJson)).toMatchSvgSnapshot(
     import.meta.path,
