@@ -74,7 +74,7 @@ export const importLocalFile = async (
         }`
       } else if (fileContent.startsWith("blob:")) {
         // Browser provided a blob URL directly, use it as-is
-        staticUrl = fileContent
+        staticUrl = `${fileContent}#ext=${fsPath.split(".").pop()}`
       } else {
         // Actual file content: create a blob URL
         const blob = new Blob([fileContent], {
