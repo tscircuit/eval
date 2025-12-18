@@ -9,8 +9,15 @@ export async function importSnippet(
   const { preSuppliedImports } = ctx
   const fullSnippetName = importName.replace("@tsci/", "").replace(".", "/")
 
+  const fetchOptions: RequestInit = {}
+  if (ctx.sessionToken) {
+    fetchOptions.headers = {
+      Authorization: `Bearer ${ctx.sessionToken}`,
+    }
+  }
+
   const { cjs, error } = await globalThis
-    .fetch(`${ctx.cjsRegistryUrl}/${fullSnippetName}`)
+    .fetch(`${ctx.cjsRegistryUrl}/${fullSnippetName}`, fetchOptions)
     .then(async (res) => ({ cjs: await res.text(), error: null }))
     .catch((e) => ({ error: e, cjs: null }))
 

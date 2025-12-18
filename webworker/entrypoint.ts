@@ -114,6 +114,10 @@ const webWorkerApi = {
     setValueAtPath(circuitRunnerConfiguration.projectConfig, property, value)
   },
 
+  setSessionToken: async (token: string) => {
+    circuitRunnerConfiguration.sessionToken = token
+  },
+
   enableDebug: async (namespace: string) => {
     debugNamespace = namespace
     if (executionContext) {
