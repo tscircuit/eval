@@ -2,7 +2,12 @@ import { runTscircuitCode } from "./runTscircuitCode"
 
 export const runTscircuitModule = async (
   module: string,
-  opts: { props?: Record<string, any>; exportName?: string } = {},
+  opts: {
+    props?: Record<string, any>
+    exportName?: string
+    /** Session token for authenticating with the tscircuit npm registry */
+    sessionToken?: string
+  } = {},
 ) => {
   if (!module.startsWith("@")) {
     module = `@tsci/${module.replace(/\//, ".")}`
@@ -31,6 +36,7 @@ export const runTscircuitModule = async (
     },
     {
       mainComponentProps: opts.props,
+      sessionToken: opts.sessionToken,
     },
   )
   return circuitJson

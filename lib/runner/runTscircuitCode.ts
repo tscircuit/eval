@@ -1,8 +1,12 @@
 import { CircuitRunner } from "./CircuitRunner"
+import type { CircuitRunnerConfiguration } from "lib/shared/types"
 
 export async function runTscircuitCode(
   filesystemOrCodeString: Record<string, string> | string,
-  opts?: Omit<Parameters<CircuitRunner["executeWithFsMap"]>[0], "fsMap">,
+  opts?: Omit<Parameters<CircuitRunner["executeWithFsMap"]>[0], "fsMap"> & {
+    /** Session token for authenticating with the tscircuit npm registry */
+    sessionToken?: string
+  },
 ) {
   if (
     typeof filesystemOrCodeString === "string" &&
@@ -17,7 +21,12 @@ export async function runTscircuitCode(
       ? { "user-code.tsx": filesystemOrCodeString }
       : filesystemOrCodeString
 
-  const circuitRunner = new CircuitRunner()
+  const runnerConfig: Partial<CircuitRunnerConfiguration> = {}
+  if (opts?.sessionToken) {
+    runnerConfig.sessionToken = opts.sessionToken
+  }
+
+  const circuitRunner = new CircuitRunner(runnerConfig)
 
   await circuitRunner.executeWithFsMap({
     fsMap: filesystem,

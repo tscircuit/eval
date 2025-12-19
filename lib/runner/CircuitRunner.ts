@@ -225,6 +225,10 @@ export class CircuitRunner implements CircuitRunnerApi {
     )
   }
 
+  async setSessionToken(token: string) {
+    this._circuitRunnerConfiguration.sessionToken = token
+  }
+
   async enableDebug(namespace: string) {
     this._debugNamespace = namespace
     if (this._executionContext) {
