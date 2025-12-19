@@ -5,7 +5,7 @@ export async function runTscircuitCode(
   filesystemOrCodeString: Record<string, string> | string,
   opts?: Omit<Parameters<CircuitRunner["executeWithFsMap"]>[0], "fsMap"> & {
     /** Session token for authenticating with the tscircuit npm registry */
-    sessionToken?: string
+    tscircuitSessionToken?: string
   },
 ) {
   if (
@@ -22,8 +22,8 @@ export async function runTscircuitCode(
       : filesystemOrCodeString
 
   const runnerConfig: Partial<CircuitRunnerConfiguration> = {}
-  if (opts?.sessionToken) {
-    runnerConfig.sessionToken = opts.sessionToken
+  if (opts?.tscircuitSessionToken) {
+    runnerConfig.tscircuitSessionToken = opts.tscircuitSessionToken
   }
 
   const circuitRunner = new CircuitRunner(runnerConfig)

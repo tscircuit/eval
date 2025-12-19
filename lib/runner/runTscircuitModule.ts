@@ -6,7 +6,7 @@ export const runTscircuitModule = async (
     props?: Record<string, any>
     exportName?: string
     /** Session token for authenticating with the tscircuit npm registry */
-    sessionToken?: string
+    tscircuitSessionToken?: string
   } = {},
 ) => {
   if (!module.startsWith("@")) {
@@ -36,7 +36,7 @@ export const runTscircuitModule = async (
     },
     {
       mainComponentProps: opts.props,
-      sessionToken: opts.sessionToken,
+      tscircuitSessionToken: opts.tscircuitSessionToken,
     },
   )
   return circuitJson

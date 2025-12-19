@@ -10,9 +10,9 @@ export async function importSnippet(
   const fullSnippetName = importName.replace("@tsci/", "").replace(".", "/")
 
   const fetchOptions: RequestInit = {}
-  if (ctx.sessionToken) {
+  if (ctx.tscircuitSessionToken) {
     fetchOptions.headers = {
-      Authorization: `Bearer ${ctx.sessionToken}`,
+      Authorization: `Bearer ${ctx.tscircuitSessionToken}`,
     }
   }
 
