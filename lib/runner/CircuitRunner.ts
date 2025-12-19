@@ -225,7 +225,7 @@ export class CircuitRunner implements CircuitRunnerApi {
     )
   }
 
-  async settscircuitSessionToken(token: string) {
+  async setTscircuitSessionToken(token: string) {
     this._circuitRunnerConfiguration.tscircuitSessionToken = token
   }
 

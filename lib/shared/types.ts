@@ -65,7 +65,7 @@ export interface CircuitRunnerApi {
   setProjectConfig: (project: Partial<PlatformConfig>) => Promise<void>
   setPlatformConfigProperty: (property: string, value: any) => Promise<void>
   setProjectConfigProperty: (property: string, value: any) => Promise<void>
-  settscircuitSessionToken: (token: string) => Promise<void>
+  setTscircuitSessionToken: (token: string) => Promise<void>
   enableDebug: (namespace: string) => Promise<void>
   on: (event: RootCircuitEventName, callback: (...args: any[]) => void) => void
   clearEventListeners: () => void

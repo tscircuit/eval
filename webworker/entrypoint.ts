@@ -114,7 +114,7 @@ const webWorkerApi = {
     setValueAtPath(circuitRunnerConfiguration.projectConfig, property, value)
   },
 
-  settscircuitSessionToken: async (token: string) => {
+  setTscircuitSessionToken: async (token: string) => {
     circuitRunnerConfiguration.tscircuitSessionToken = token
   },
 

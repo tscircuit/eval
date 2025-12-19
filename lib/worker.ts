@@ -177,7 +177,7 @@ export const createCircuitWebWorker = async (
   }
 
   if (configuration.tscircuitSessionToken) {
-    await comlinkWorker.settscircuitSessionToken(
+    await comlinkWorker.setTscircuitSessionToken(
       configuration.tscircuitSessionToken,
     )
   }
