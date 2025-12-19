@@ -176,6 +176,12 @@ export const createCircuitWebWorker = async (
     await comlinkWorker.setSnippetsApiBaseUrl(configuration.snippetsApiBaseUrl)
   }
 
+  if (configuration.tscircuitSessionToken) {
+    await comlinkWorker.setTscircuitSessionToken(
+      configuration.tscircuitSessionToken,
+    )
+  }
+
   const maybeProxy = (value: any) => {
     if (typeof value === "function") {
       return Comlink.proxy(value)

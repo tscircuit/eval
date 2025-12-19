@@ -5,11 +5,11 @@ import { runTscircuitModule } from "lib/runner"
 test.skip(
   "example24 runTscircuitModule private module",
   async () => {
-    const sessionToken = process.env.SESSION_TOKEN
+    const tscircuitSessionToken = process.env.TSCIRCUIT_SESSION_TOKEN
     const privateModule = "@tsci/imrishabh18.test-private"
 
     const circuitJson = await runTscircuitModule(privateModule, {
-      sessionToken,
+      tscircuitSessionToken,
     })
 
     expect(circuitJson).toBeDefined()
