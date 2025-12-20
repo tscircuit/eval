@@ -91,3 +91,16 @@ test("getImportsFromCode should handle comments and commented imports", () => {
     ]
   `)
 })
+
+test("getImportsFromCode should handle require calls", () => {
+  const sourceCode = `
+    const React = require("react")
+    const runtime = require('/npm/react/jsx-runtime/+esm')
+  `
+  expect(getImportsFromCode(sourceCode)).toMatchInlineSnapshot(`
+    [
+      "react",
+      "/npm/react/jsx-runtime/+esm",
+    ]
+  `)
+})
