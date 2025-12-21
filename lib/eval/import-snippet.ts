@@ -1,5 +1,7 @@
 import { evalCompiledJs } from "./eval-compiled-js"
 import type { ExecutionContext } from "./execution-context"
+import { getImportsFromCode } from "lib/utils/get-imports-from-code"
+import { importEvalPath } from "./import-eval-path"
 
 export async function importSnippet(
   importName: string,
@@ -24,6 +26,14 @@ export async function importSnippet(
   if (error) {
     console.error("Error fetching import", importName, error)
     return
+  }
+
+  // Resolve transitive dependencies before evaluating
+  const importNames = getImportsFromCode(cjs!)
+  for (const subImportName of importNames) {
+    if (!preSuppliedImports[subImportName]) {
+      await importEvalPath(subImportName, ctx, depth + 1)
+    }
   }
 
   try {
