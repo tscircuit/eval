@@ -31,5 +31,13 @@ export const getImportsFromCode = (code: string): string[] => {
     imports.push(reExportMatch[1])
   }
 
+  // Match CommonJS require() calls
+  const requireRegex = /\brequire\s*\(\s*['"]([^'"]+)['"]\s*\)/g
+  let requireMatch: RegExpExecArray | null
+  // biome-ignore lint/suspicious/noAssignInExpressions: <explanation>
+  while ((requireMatch = requireRegex.exec(strippedCode)) !== null) {
+    imports.push(requireMatch[1])
+  }
+
   return imports
 }
