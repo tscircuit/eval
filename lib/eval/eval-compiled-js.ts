@@ -23,6 +23,21 @@ export function evalCompiledJs(
     const mod =
       preSuppliedImports[name] || preSuppliedImports[resolvedFilePath!]
 
+    // If the module is a simple ES module with only default export (like static assets),
+    // return the default value directly for CommonJS interop
+    // e.g., require('./assets/file.glb') should return the URL string, not a module object
+    if (mod.__esModule && mod.default !== undefined) {
+      const modKeys = Object.keys(mod)
+      const isSimpleDefaultExport =
+        modKeys.length === 2 &&
+        modKeys.includes("__esModule") &&
+        modKeys.includes("default")
+
+      if (isSimpleDefaultExport) {
+        return mod.default
+      }
+    }
+
     // If the module has a default export that's a function, return a callable
     // proxy that allows both `mod()` and `mod.namedExport` patterns
     // This handles CommonJS interop where `var mm = require('pkg'); mm(val)` is used

@@ -31,19 +31,53 @@ export async function importSnippet(
 
   // Resolve transitive dependencies before evaluating
   const importNames = getImportsFromCode(cjs!)
+
+  const staticAssetImports: { subImportName: string; assetUrl: string }[] = []
+  const otherImports: string[] = []
+
   for (const subImportName of importNames) {
     if (!preSuppliedImports[subImportName]) {
       // required static assets can be fetched from: cjs.tscircuit.com/@tsci/author.package/assets/...
       if (subImportName.startsWith("./") && isStaticAssetPath(subImportName)) {
         const assetPath = subImportName.slice(2)
         const assetUrl = `${ctx.cjsRegistryUrl}/${importName}/${assetPath}`
+        staticAssetImports.push({ subImportName, assetUrl })
+      } else {
+        otherImports.push(subImportName)
+      }
+    }
+  }
+
+  // Fetch all static assets in parallel and create blob URLs
+  await Promise.all(
+    staticAssetImports.map(async ({ subImportName, assetUrl }) => {
+      try {
+        const response = await globalThis.fetch(assetUrl, fetchOptions)
+        if (!response.ok) {
+          throw new Error(`Failed to fetch asset: ${response.statusText}`)
+        }
+        const blob = await response.blob()
+        const extension = subImportName.split(".").pop() || ""
+        const blobUrl = `${URL.createObjectURL(blob)}#ext=${extension}`
+        preSuppliedImports[subImportName] = {
+          __esModule: true,
+          default: blobUrl,
+        }
+      } catch (e) {
+        console.error(`Error fetching static asset ${assetUrl}:`, e)
+        // Fallback to using the URL directly if blob creation fails
         preSuppliedImports[subImportName] = {
           __esModule: true,
           default: assetUrl,
         }
-      } else {
-        await importEvalPath(subImportName, ctx, depth + 1)
       }
+    }),
+  )
+
+  // Process other imports sequentially
+  for (const subImportName of otherImports) {
+    if (!preSuppliedImports[subImportName]) {
+      await importEvalPath(subImportName, ctx, depth + 1)
     }
   }
 
