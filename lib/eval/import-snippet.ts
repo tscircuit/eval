@@ -2,6 +2,7 @@ import { evalCompiledJs } from "./eval-compiled-js"
 import type { ExecutionContext } from "./execution-context"
 import { getImportsFromCode } from "lib/utils/get-imports-from-code"
 import { importEvalPath } from "./import-eval-path"
+import { isStaticAssetPath } from "lib/shared/static-asset-extensions"
 
 export async function importSnippet(
   importName: string,
@@ -32,7 +33,17 @@ export async function importSnippet(
   const importNames = getImportsFromCode(cjs!)
   for (const subImportName of importNames) {
     if (!preSuppliedImports[subImportName]) {
-      await importEvalPath(subImportName, ctx, depth + 1)
+      // required static assets can be fetched from: cjs.tscircuit.com/@tsci/author.package/assets/...
+      if (subImportName.startsWith("./") && isStaticAssetPath(subImportName)) {
+        const assetPath = subImportName.slice(2)
+        const assetUrl = `${ctx.cjsRegistryUrl}/${importName}/${assetPath}`
+        preSuppliedImports[subImportName] = {
+          __esModule: true,
+          default: assetUrl,
+        }
+      } else {
+        await importEvalPath(subImportName, ctx, depth + 1)
+      }
     }
   }
 

@@ -22,6 +22,22 @@ export function evalCompiledJs(
 
     const mod =
       preSuppliedImports[name] || preSuppliedImports[resolvedFilePath!]
+
+    // If the module has a default export that's a function, return a callable
+    // proxy that allows both `mod()` and `mod.namedExport` patterns
+    // This handles CommonJS interop where `var mm = require('pkg'); mm(val)` is used
+    if (mod.default && typeof mod.default === "function") {
+      // Create a function wrapper that calls the default export
+      const callableWrapper = (...args: any[]) => {
+        return mod.default(...args)
+      }
+      // Copy all properties from the module to the wrapper
+      Object.assign(callableWrapper, mod)
+      // Ensure __esModule is set
+      ;(callableWrapper as any).__esModule = true
+      return callableWrapper
+    }
+
     return new Proxy(mod, {
       get(target, prop) {
         if (!(prop in target)) {
