@@ -7,6 +7,7 @@ import { getNodeModuleDirectory } from "./getNodeModuleDirectory"
 import { getPackageJsonEntrypoint } from "./getPackageJsonEntrypoint"
 import { isTypeScriptEntrypoint } from "./isTypeScriptEntrypoint"
 import { isDistDirEmpty } from "./isDistDirEmpty"
+import { resolveEntrypointPath } from "./resolveEntrypointPath"
 
 const debug = Debug("tsci:eval:import-node-module")
 
@@ -33,12 +34,15 @@ export const importNodeModule = async (
     }
   }
 
+  const nodeModuleDir = hasPackageJson
+    ? getNodeModuleDirectory(importName, fsMap)
+    : null
+
   const resolvedNodeModulePath = resolveNodeModule(importName, ctx.fsMap, "")
 
   // Only run Steps 2-4 if package exists in node_modules (after resolver attempts)
   if (hasPackageJson && resolvedNodeModulePath) {
     // Step 2: Check if node_modules directory exists for the package
-    const nodeModuleDir = getNodeModuleDirectory(importName, fsMap)
     if (!nodeModuleDir) {
       throw new Error(
         `Node module "${importName}" has no files in the node_modules directory\n\n${ctx.logger.stringifyLogs()}`,
@@ -64,6 +68,22 @@ export const importNodeModule = async (
   }
 
   if (!resolvedNodeModulePath) {
+    if (hasPackageJson && nodeModuleDir) {
+      const entrypoint = getPackageJsonEntrypoint(importName, fsMap)
+      if (entrypoint?.startsWith("dist/")) {
+        if (isDistDirEmpty(importName, fsMap)) {
+          throw new Error(
+            `Node module "${importName}" has no files in dist, did you forget to transpile?\n\n${ctx.logger.stringifyLogs()}`,
+          )
+        }
+      }
+      if (entrypoint && !resolveEntrypointPath(importName, entrypoint, fsMap)) {
+        throw new Error(
+          `${importName}'s main path (${entrypoint}) was not found, it may not be built\n\n${ctx.logger.stringifyLogs()}`,
+        )
+      }
+    }
+
     const platform = ctx.circuit?.platform
     if (platform?.nodeModulesResolver) {
       debug(`Attempting to resolve "${importName}" using nodeModulesResolver`)
