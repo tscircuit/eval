@@ -30,7 +30,5 @@ test("should throw: has no files in dist, it may not be built", async () => {
         `,
       },
     }),
-  ).rejects.toThrow(
-    /"dist-package" has no files in dist, it may not be built/,
-  )
+  ).rejects.toThrow(/"dist-package" has no files in dist, it may not be built/)
 })
