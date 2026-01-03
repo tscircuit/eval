@@ -1,7 +1,7 @@
 import { test, expect } from "bun:test"
 import { CircuitRunner } from "lib/runner/CircuitRunner"
 
-test("should throw: Node module has no files in dist, did you forget to transpile", async () => {
+test("should throw: has no files in dist, it may not be built", async () => {
   const runner = new CircuitRunner()
 
   await expect(
@@ -31,6 +31,6 @@ test("should throw: Node module has no files in dist, did you forget to transpil
       },
     }),
   ).rejects.toThrow(
-    /Node module "dist-package" has no files in dist, did you forget to transpile\?/,
+    /"dist-package" has no files in dist, it may not be built/,
   )
 })
