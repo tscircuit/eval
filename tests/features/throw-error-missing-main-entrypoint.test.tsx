@@ -1,7 +1,7 @@
 import { test, expect } from "bun:test"
 import { CircuitRunner } from "lib/runner/CircuitRunner"
 
-test("should throw: has no files in dist, it may not be built", async () => {
+test("should throw: main path was not found, it may not be built", async () => {
   const runner = new CircuitRunner()
 
   await expect(
@@ -12,23 +12,25 @@ test("should throw: has no files in dist, it may not be built", async () => {
           name: "test-project",
           version: "1.0.0",
           dependencies: {
-            "dist-package": "1.0.0",
+            "missing-main": "1.0.0",
           },
         }),
         "index.tsx": `
-          import { something } from "dist-package"
+          import { something } from "missing-main"
 
           export default () => <div>Test</div>
         `,
-        "node_modules/dist-package/package.json": JSON.stringify({
-          name: "dist-package",
+        "node_modules/missing-main/package.json": JSON.stringify({
+          name: "missing-main",
           version: "1.0.0",
           main: "dist/index.js",
         }),
-        "node_modules/dist-package/src/index.ts": `
+        "node_modules/missing-main/dist/other.js": `
           export const something = "value"
         `,
       },
     }),
-  ).rejects.toThrow(/"dist-package" has no files in dist, it may not be built/)
+  ).rejects.toThrow(
+    /missing-main's main path \(dist\/index\.js\) was not found, it may not be built/,
+  )
 })

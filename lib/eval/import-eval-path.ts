@@ -15,6 +15,7 @@ import { getNodeModuleDirectory } from "./getNodeModuleDirectory"
 import { getPackageJsonEntrypoint } from "./getPackageJsonEntrypoint"
 import { isTypeScriptEntrypoint } from "./isTypeScriptEntrypoint"
 import { isDistDirEmpty } from "./isDistDirEmpty"
+import { resolveEntrypointPath } from "./resolveEntrypointPath"
 
 const debug = Debug("tsci:eval:import-eval-path")
 
@@ -222,9 +223,18 @@ export async function importEvalPath(
       if (entrypoint?.startsWith("dist/")) {
         if (isDistDirEmpty(importName, ctx.fsMap)) {
           throw new Error(
-            `Node module "${importName}" has no files in dist, did you forget to transpile?\n\n${ctx.logger.stringifyLogs()}`,
+            `"${importName}" has no files in dist, it may not be built\n\n${ctx.logger.stringifyLogs()}`,
           )
         }
+      }
+
+      if (
+        entrypoint &&
+        !resolveEntrypointPath(importName, entrypoint, ctx.fsMap)
+      ) {
+        throw new Error(
+          `${importName}'s main path (${entrypoint}) was not found, it may not be built\n\n${ctx.logger.stringifyLogs()}`,
+        )
       }
     }
 

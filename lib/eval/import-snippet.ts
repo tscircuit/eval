@@ -29,6 +29,22 @@ export async function importSnippet(
     return
   }
 
+  // Check if the response is a JSON error (package not built)
+  if (cjs?.startsWith("{")) {
+    try {
+      const jsonResponse = JSON.parse(cjs)
+      if (jsonResponse.ok === false && jsonResponse.error) {
+        throw new Error(
+          `"${importName}" has no files in dist, it may not be built\n\n${ctx.logger.stringifyLogs()}`,
+        )
+      }
+    } catch (e) {
+      throw new Error(
+        `Error parsing cjs response: ${e}\n\n${ctx.logger.stringifyLogs()}`,
+      )
+    }
+  }
+
   // Resolve transitive dependencies before evaluating
   const importNames = getImportsFromCode(cjs!)
 
