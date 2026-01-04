@@ -35,13 +35,14 @@ export async function importSnippet(
       const jsonResponse = JSON.parse(cjs)
       if (jsonResponse.ok === false && jsonResponse.error) {
         throw new Error(
-          `"${importName}" has no files in dist, it may not be built\n\n${ctx.logger.stringifyLogs()}`,
+          `"${importName}" has no files in dist, it may not be built`,
         )
       }
     } catch (e) {
-      throw new Error(
-        `Error parsing cjs response: ${e}\n\n${ctx.logger.stringifyLogs()}`,
-      )
+      if (e instanceof Error && e.message.includes("has no files in dist")) {
+        throw e
+      }
+      throw new Error(`Error parsing cjs response: ${e}`)
     }
   }
 
