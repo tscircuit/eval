@@ -1,3 +1,23 @@
+/**
+ * Transforms relative /npm/ imports from jsdelivr CDN code to absolute URLs.
+ *
+ * When CDN bundles are loaded via blob URLs, relative imports like
+ * `import("/npm/eecircuit-engine@1.5.6/+esm")` fail because the browser
+ * resolves them relative to the page origin instead of jsdelivr.
+ *
+ * This function converts those relative imports to absolute jsdelivr URLs.
+ */
+export const transformJsDelivrImports = (code: string): string => {
+  // Match both static imports: from "/npm/..." and dynamic imports: import("/npm/...")
+  // Pattern handles both single and double quotes
+  return code
+    .replace(/from\s*["']\/npm\//g, 'from "https://cdn.jsdelivr.net/npm/')
+    .replace(
+      /import\s*\(\s*["']\/npm\//g,
+      'import("https://cdn.jsdelivr.net/npm/',
+    )
+}
+
 export const dynamicallyLoadDependencyWithCdnBackup = async (
   packageName: string,
 ): Promise<any> => {
@@ -17,7 +37,12 @@ export const dynamicallyLoadDependencyWithCdnBackup = async (
           `Failed to fetch ${packageName} from CDN: ${res.statusText}`,
         )
       }
-      const code = await res.text()
+      let code = await res.text()
+
+      // Transform relative /npm/ imports to absolute jsdelivr URLs
+      // This is needed because blob URLs resolve relative imports against the page origin
+      code = transformJsDelivrImports(code)
+
       const blob = new Blob([code], { type: "application/javascript" })
       const url = URL.createObjectURL(blob)
       try {
