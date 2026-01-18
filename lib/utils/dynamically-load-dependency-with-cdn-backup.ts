@@ -1,11 +1,5 @@
 /**
  * Transforms relative /npm/ imports from jsdelivr CDN code to absolute URLs.
- *
- * When CDN bundles are loaded via blob URLs, relative imports like
- * `import("/npm/eecircuit-engine@1.5.6/+esm")` fail because the browser
- * resolves them relative to the page origin instead of jsdelivr.
- *
- * This function converts those relative imports to absolute jsdelivr URLs.
  */
 export const transformJsDelivrImports = (code: string): string => {
   // Match both static imports: from "/npm/..." and dynamic imports: import("/npm/...")
