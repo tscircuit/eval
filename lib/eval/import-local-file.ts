@@ -82,7 +82,9 @@ export const importLocalFile = async (
             ? "text/plain"
             : "application/octet-stream",
         })
-        staticUrl = URL.createObjectURL(blob)
+        // Add #ext= fragment so downstream can detect file type from blob URL
+        const ext = fsPath.split(".").pop()
+        staticUrl = `${URL.createObjectURL(blob)}#ext=${ext}`
       }
 
       preSuppliedImports[fsPath] = {
