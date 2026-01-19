@@ -17,7 +17,7 @@ test("example9-not-defined-component", async () => {
         );
       `)
   }).toThrowError(
-    `Component "NotExportedComponent" is not exported by "@tsci/seveibar.a555timer"`,
+    `Eval compiled js error for \"entrypoint.tsx\": \"NotExportedComponent\" is not exported by \"@tsci/seveibar.a555timer\".\nIf \"NotExportedComponent\" is a type, use \"export type { NotExportedComponent }\" instead of \"export { NotExportedComponent }\"`,
   )
 
   await circuitWebWorker.kill()
