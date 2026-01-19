@@ -77,7 +77,7 @@ export function evalCompiledJs(
           }
 
           throw new Error(
-            `Component "${String(prop)}" is not exported by "${name}"`,
+            `"${String(prop)}" is not exported by "${name}".\nIf "${String(prop)}" is a type, use "export type { ${String(prop)} }" instead of "export { ${String(prop)} }"`,
           )
         }
 
