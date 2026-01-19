@@ -76,8 +76,20 @@ export function evalCompiledJs(
             return true
           }
 
+          if (prop === "__typeOnlyExports__") {
+            return target.__typeOnlyExports__ || []
+          }
+
+          const typeExports: string[] = target.__typeOnlyExports__ || []
+          const propName = String(prop)
+          if (typeExports.includes(propName)) {
+            throw new Error(
+              `"${propName}" is a type exported by "${name}" and cannot be imported as a value.\nUse "export type { ${propName} }" instead of "export { ${propName} }"`,
+            )
+          }
+
           throw new Error(
-            `"${String(prop)}" is not exported by "${name}".\nIf "${String(prop)}" is a type, use "export type { ${String(prop)} }" instead of "export { ${String(prop)} }"`,
+            `"${propName}" is not exported by "${name}".\nIf "${propName}" is a type, use "export type { ${propName} }" instead of "export { ${propName} }"`,
           )
         }
 

@@ -47,8 +47,9 @@ test("type export check", async () => {
     throw new Error("Expected error to be thrown")
   } catch (error: any) {
     expect(error).toBeDefined()
+    expect(error.message).toContain(`"ExampleType" is a type exported by`)
     expect(error.message).toContain(
-      `If \"ExampleType\" is a type, use \"export type { ExampleType }\" instead of \"export { ExampleType }`,
+      `Use "export type { ExampleType }" instead of "export { ExampleType }"`,
     )
   }
 })
