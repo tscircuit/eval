@@ -82,7 +82,11 @@ export const importLocalFile = async (
             ? "text/plain"
             : "application/octet-stream",
         })
-        staticUrl = URL.createObjectURL(blob)
+        // Add #ext= fragment only for STEP files so downstream can detect file type
+        const ext = fsPath.split(".").pop()?.toLowerCase()
+        const isStepFile = ext === "step" || ext === "stp"
+        const blobUrl = URL.createObjectURL(blob)
+        staticUrl = isStepFile ? `${blobUrl}#ext=${ext}` : blobUrl
       }
 
       preSuppliedImports[fsPath] = {
