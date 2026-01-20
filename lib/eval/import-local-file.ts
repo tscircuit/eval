@@ -1,6 +1,7 @@
 import { resolveFilePathOrThrow } from "lib/runner/resolveFilePath"
 import { dirname } from "lib/utils/dirname"
 import { getImportsFromCode } from "lib/utils/get-imports-from-code"
+import { getTypeExportsFromCode } from "lib/utils/get-type-exports-from-code"
 import { evalCompiledJs } from "./eval-compiled-js"
 import type { ExecutionContext } from "./execution-context"
 import { importEvalPath } from "./import-eval-path"
@@ -110,6 +111,7 @@ export const importLocalFile = async (
           code: transformedCode.slice(0, 100),
           dirname: dirname(fsPath),
         })
+        const typeExports = getTypeExportsFromCode(fileContent)
         const importRunResult = evalCompiledJs(
           transformedCode,
           preSuppliedImports,
@@ -119,7 +121,11 @@ export const importLocalFile = async (
           fsPath,
           importRunResult,
         })
-        preSuppliedImports[fsPath] = importRunResult.exports
+        const moduleExports = importRunResult.exports
+        if (typeExports.length > 0) {
+          moduleExports.__typeOnlyExports__ = typeExports
+        }
+        preSuppliedImports[fsPath] = moduleExports
       } catch (error: any) {
         throw new Error(
           `Eval compiled js error for "${importName}": ${error.message}`,
