@@ -82,11 +82,8 @@ export function partsEngineWithFilesystemCache(
         if (cached) {
           return JSON.parse(cached)
         }
-      } catch (error) {
-        console.error(
-          "Cache read failed, proceeding to fetch from parts engine",
-          { cacheKey, error },
-        )
+      } catch {
+        // Cache read or parse failed, proceed to fetch from parts engine
       }
 
       // Call the underlying parts engine
@@ -95,11 +92,8 @@ export function partsEngineWithFilesystemCache(
       // Store in cache
       try {
         await cacheEngine.set(cacheKey, JSON.stringify(result))
-      } catch (error) {
-        console.error("Cache write failed, continuing anyway", {
-          cacheKey,
-          error,
-        })
+      } catch {
+        // Cache write failed, continue anyway
       }
 
       return result
