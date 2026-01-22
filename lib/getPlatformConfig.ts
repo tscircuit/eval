@@ -2,12 +2,31 @@ import type { PlatformConfig, SpiceEngine } from "@tscircuit/props"
 import { jlcPartsEngine } from "@tscircuit/parts-engine"
 import { parseKicadModToCircuitJson } from "kicad-component-converter"
 import { dynamicallyLoadDependencyWithCdnBackup } from "./utils/dynamically-load-dependency-with-cdn-backup"
+import {
+  partsEngineWithFilesystemCache,
+  type FilesystemCacheEngine,
+} from "./utils/partsEngineWithFileSystemCache"
+
 const KICAD_FOOTPRINT_CACHE_URL = "https://kicad-mod-cache.tscircuit.com"
 
 let ngspiceEngineCache: SpiceEngine | null = null
 
-export const getPlatformConfig = (): PlatformConfig => ({
-  partsEngine: jlcPartsEngine,
+export interface GetPlatformConfigOptions {
+  /**
+   * Optional filesystem cache engine for persisting parts engine requests.
+   * When provided, parts engine responses will be cached to the filesystem.
+   * The CLI can provide this to cache to .tscircuit/cache/
+   */
+  filesystemCache?: FilesystemCacheEngine
+}
+
+export const getPlatformConfig = (
+  options: GetPlatformConfigOptions = {},
+): PlatformConfig => ({
+  partsEngine: partsEngineWithFilesystemCache(
+    jlcPartsEngine,
+    options.filesystemCache,
+  ),
   spiceEngineMap: {
     ngspice: {
       simulate: async (spice: string) => {
