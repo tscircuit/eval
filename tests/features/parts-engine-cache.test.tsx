@@ -14,7 +14,7 @@ test("parts engine caches results to filesystemCache when provided", async () =>
   const getCalls: string[] = []
   const setCalls: Array<{ key: string; value: string }> = []
 
-  const mockFilesystemCache: FilesystemCacheEngine = {
+  const fakeFilesystemCache: FilesystemCacheEngine = {
     get: (key: string) => {
       getCalls.push(key)
       return cacheStore.get(key) ?? null
@@ -26,7 +26,7 @@ test("parts engine caches results to filesystemCache when provided", async () =>
   }
 
   const platformConfig = getPlatformConfig({
-    filesystemCache: mockFilesystemCache,
+    filesystemCache: fakeFilesystemCache,
   })
 
   const runner = new CircuitRunner({
@@ -72,13 +72,13 @@ test("parts engine returns cached results on subsequent calls", async () => {
   const cacheStore = new Map<string, string>()
   let fetchCount = 0
 
-  // Pre-populate cache with mock data
-  const mockCacheKey =
+  // Pre-populate cache with fake data
+  const fakeCacheKey =
     'parts-engine:{"type":"source_component","ftype":"simple_resistor","resistance":1000,"footprinterString":"0402"}'
-  const mockCacheValue = JSON.stringify({ jlcpcb: ["C12345", "C67890"] })
-  cacheStore.set(mockCacheKey, mockCacheValue)
+  const fakeCacheValue = JSON.stringify({ jlcpcb: ["C12345", "C67890"] })
+  cacheStore.set(fakeCacheKey, fakeCacheValue)
 
-  const mockFilesystemCache: FilesystemCacheEngine = {
+  const fakeFilesystemCache: FilesystemCacheEngine = {
     get: (key: string) => {
       return cacheStore.get(key) ?? null
     },
@@ -87,7 +87,7 @@ test("parts engine returns cached results on subsequent calls", async () => {
     },
   }
 
-  // Mock fetch to track if API was called
+  // fake fetch to track if API was called
   const originalFetch = globalThis.fetch
   globalThis.fetch = (async (url: RequestInfo | URL, init?: RequestInit) => {
     const urlString = url.toString()
@@ -99,7 +99,7 @@ test("parts engine returns cached results on subsequent calls", async () => {
 
   try {
     const platformConfig = getPlatformConfig({
-      filesystemCache: mockFilesystemCache,
+      filesystemCache: fakeFilesystemCache,
     })
 
     const runner = new CircuitRunner({
@@ -124,7 +124,7 @@ test("parts engine returns cached results on subsequent calls", async () => {
 
     expect(source_component).toBeDefined()
 
-    // If cache was hit, the supplier parts should match our mock data
+    // If cache was hit, the supplier parts should match our fake data
     // Note: The cache key must match exactly for this to work
     // If there's a cache miss, it will fetch from API
 
@@ -168,7 +168,7 @@ test("parts engine cache handles multiple component types", async () => {
   const cacheStore = new Map<string, string>()
   const setCalls: Array<{ key: string; value: string }> = []
 
-  const mockFilesystemCache: FilesystemCacheEngine = {
+  const fakeFilesystemCache: FilesystemCacheEngine = {
     get: (key: string) => {
       return cacheStore.get(key) ?? null
     },
@@ -179,7 +179,7 @@ test("parts engine cache handles multiple component types", async () => {
   }
 
   const platformConfig = getPlatformConfig({
-    filesystemCache: mockFilesystemCache,
+    filesystemCache: fakeFilesystemCache,
   })
 
   const runner = new CircuitRunner({
