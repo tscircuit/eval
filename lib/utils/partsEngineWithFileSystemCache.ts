@@ -1,4 +1,5 @@
 import type { PartsEngine, SupplierPartNumbers } from "@tscircuit/props"
+import Debug from "debug"
 
 /**
  * Interface for a filesystem cache engine that can persist cache to disk.
@@ -9,13 +10,32 @@ export interface FilesystemCacheEngine {
   set: (key: string, value: string) => Promise<void> | void
 }
 
+export interface PartsEngineCacheKey {
+  type: string
+  ftype: string
+  resistance?: number
+  capacitance?: number
+  inductance?: number
+  frequency?: number
+  load_capacitance?: number
+  voltage?: number
+  max_resistance?: number
+  pin_count?: number
+  gender?: string
+  transistor_type?: string
+  mosfet_mode?: string
+  channel_type?: string
+}
+
+const debug = Debug("tscircuit-eval:utils:partsEngineWithFileSystemCache")
+
 /**
  * Creates a cache key from the findPart parameters
  */
-function createCacheKey(params: {
+function createPartsEngineCacheKey(params: {
   sourceComponent: any
   footprinterString?: string
-}): string {
+}): PartsEngineCacheKey {
   const { sourceComponent, footprinterString } = params
   const keyObj = {
     type: sourceComponent.type,
@@ -51,7 +71,7 @@ function createCacheKey(params: {
     }),
     ...(footprinterString && { footprinterString }),
   }
-  return `parts-engine:${JSON.stringify(keyObj)}`
+  return keyObj
 }
 
 /**
@@ -74,11 +94,11 @@ export function partsEngineWithFilesystemCache(
 
   return {
     findPart: async (params): Promise<SupplierPartNumbers> => {
-      const cacheKey = createCacheKey(params)
+      const cacheKey = createPartsEngineCacheKey(params)
 
       // Try to get from cache first
       try {
-        const cached = await cacheEngine.get(cacheKey)
+        const cached = await cacheEngine.get(JSON.stringify(cacheKey))
         if (cached) {
           return JSON.parse(cached)
         }
@@ -88,10 +108,11 @@ export function partsEngineWithFilesystemCache(
 
       // Call the underlying parts engine
       const result = await baseEngine.findPart(params)
+      debug("found part", { cacheKey, result })
 
       // Store in cache
       try {
-        await cacheEngine.set(cacheKey, JSON.stringify(result))
+        await cacheEngine.set(JSON.stringify(cacheKey), JSON.stringify(result))
       } catch {
         // Cache write failed, continue anyway
       }
