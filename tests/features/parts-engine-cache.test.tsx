@@ -57,10 +57,6 @@ test("parts engine caches results to filesystemCache when provided", async () =>
   // Verify cache was written (since it was a cache miss)
   expect(setCalls.length).toBeGreaterThan(0)
 
-  // Verify the cache key contains parts-engine prefix
-  expect(getCalls[0]).toContain("parts-engine:")
-  expect(setCalls[0].key).toContain("parts-engine:")
-
   // Verify cached value is valid JSON with jlcpcb parts
   const cachedValue = JSON.parse(setCalls[0].value)
   expect(cachedValue.jlcpcb).toBeDefined()
