@@ -1,7 +1,7 @@
 {
   "name": "@tscircuit/eval",
   "main": "dist/lib/index.js",
-  "version": "0.0.618",
+  "version": "0.0.619",
   "type": "module",
   "files": [
     "dist"
@@ -126,7 +126,8 @@
     "@tscircuit/copper-pour-solver": "^0.0.20",
     "zod": "^3.25.67",
     "@tscircuit/soup-util": "^0.0.41",
-    "@tscircuit/alphabet": "0.0.18"},
+    "@tscircuit/alphabet": "0.0.18"
+  },
   "peerDependencies": {
     "typescript": "^5.0.0",
     "@tscircuit/core": "*",
