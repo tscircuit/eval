@@ -5,7 +5,8 @@ export const enhanceRootCircuitHasNoChildrenError = (
   if (
     error instanceof Error &&
     entrypoint &&
-    error.message.includes("RootCircuit has no children") &&
+    (error.message.includes("RootCircuit has no children") ||
+      error.message.includes("IsolatedCircuit has no children")) &&
     !error.message.includes('"entrypoint":')
   ) {
     const entrypointMessage = entrypoint.startsWith("./")
