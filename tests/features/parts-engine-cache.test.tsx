@@ -3,30 +3,29 @@ import { expect, test, beforeEach } from "bun:test"
 import type { SourceComponentBase } from "circuit-json"
 import { getPlatformConfig } from "lib/getPlatformConfig"
 import { cache } from "@tscircuit/parts-engine"
-import type { FilesystemCacheEngine } from "lib/utils/partsEngineWithFileSystemCache"
 
 beforeEach(() => {
   cache.clear()
 })
 
-test("parts engine caches results to filesystemCache when provided", async () => {
+test("parts engine caches results to localCacheEngine when provided", async () => {
   const cacheStore = new Map<string, string>()
   const getCalls: string[] = []
   const setCalls: Array<{ key: string; value: string }> = []
 
-  const fakeFilesystemCache: FilesystemCacheEngine = {
-    get: (key: string) => {
+  const fakeLocalCacheEngine = {
+    getItem: (key: string) => {
       getCalls.push(key)
       return cacheStore.get(key) ?? null
     },
-    set: (key: string, value: string) => {
+    setItem: (key: string, value: string) => {
       setCalls.push({ key, value })
       cacheStore.set(key, value)
     },
   }
 
   const platformConfig = getPlatformConfig({
-    filesystemCache: fakeFilesystemCache,
+    localCacheEngine: fakeLocalCacheEngine,
   })
 
   const runner = new CircuitRunner({
@@ -68,17 +67,17 @@ test("parts engine returns cached results on subsequent calls", async () => {
   const cacheStore = new Map<string, string>()
   let fetchCount = 0
 
-  // Pre-populate cache with fake data
+  // Pre-populate cache with fake data (key format matches @tscircuit/core's _getPartsEngineCacheKey)
   const fakeCacheKey =
-    'parts-engine:{"type":"source_component","ftype":"simple_resistor","resistance":1000,"footprinterString":"0402"}'
+    '{"ftype":"simple_resistor","name":"R1","footprinterString":"0402"}'
   const fakeCacheValue = JSON.stringify({ jlcpcb: ["C12345", "C67890"] })
   cacheStore.set(fakeCacheKey, fakeCacheValue)
 
-  const fakeFilesystemCache: FilesystemCacheEngine = {
-    get: (key: string) => {
+  const fakeLocalCacheEngine = {
+    getItem: (key: string) => {
       return cacheStore.get(key) ?? null
     },
-    set: (key: string, value: string) => {
+    setItem: (key: string, value: string) => {
       cacheStore.set(key, value)
     },
   }
@@ -95,7 +94,7 @@ test("parts engine returns cached results on subsequent calls", async () => {
 
   try {
     const platformConfig = getPlatformConfig({
-      filesystemCache: fakeFilesystemCache,
+      localCacheEngine: fakeLocalCacheEngine,
     })
 
     const runner = new CircuitRunner({
@@ -130,8 +129,8 @@ test("parts engine returns cached results on subsequent calls", async () => {
   }
 })
 
-test("parts engine works without filesystemCache (backward compatibility)", async () => {
-  // Don't provide filesystemCache - should work with in-memory cache only
+test("parts engine works without localCacheEngine (backward compatibility)", async () => {
+  // Don't provide localCacheEngine - should work with in-memory cache only
   const platformConfig = getPlatformConfig()
 
   const runner = new CircuitRunner({
@@ -164,18 +163,18 @@ test("parts engine cache handles multiple component types", async () => {
   const cacheStore = new Map<string, string>()
   const setCalls: Array<{ key: string; value: string }> = []
 
-  const fakeFilesystemCache: FilesystemCacheEngine = {
-    get: (key: string) => {
+  const fakeLocalCacheEngine = {
+    getItem: (key: string) => {
       return cacheStore.get(key) ?? null
     },
-    set: (key: string, value: string) => {
+    setItem: (key: string, value: string) => {
       setCalls.push({ key, value })
       cacheStore.set(key, value)
     },
   }
 
   const platformConfig = getPlatformConfig({
-    filesystemCache: fakeFilesystemCache,
+    localCacheEngine: fakeLocalCacheEngine,
   })
 
   const runner = new CircuitRunner({
