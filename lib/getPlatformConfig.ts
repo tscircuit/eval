@@ -46,18 +46,33 @@ export const getPlatformConfig = (
       const baseUrl = `${KICAD_FOOTPRINT_CACHE_URL}/${footprintName}`
       const circuitJsonUrl = `${baseUrl}.circuit.json`
       const res = await fetch(circuitJsonUrl)
-      const raw = await res.json()
+      if (!res.ok) {
+        const bodyPreview = (await res.text()).slice(0, 200)
+        throw new Error(
+          `Failed to load KiCad footprint \"${footprintName}\" from ${circuitJsonUrl} (HTTP ${res.status}). ${bodyPreview}`,
+        )
+      }
+
+      let raw: any[] | Record<string, unknown>
+      try {
+        raw = await res.json()
+      } catch {
+        throw new Error(
+          `Failed to parse KiCad footprint JSON for \"${footprintName}\" from ${circuitJsonUrl}`,
+        )
+      }
       // Filter pcb_silkscreen_text to only keep entries with text === "REF**"
       // Apply filtering only to elements coming from the kicad_mod_server response
-      const filtered = Array.isArray(raw)
+      const filtered: any[] = Array.isArray(raw)
         ? raw.filter((el) =>
             el?.type === "pcb_silkscreen_text" ? el?.text === "REF**" : true,
           )
-        : raw
+        : [raw]
       const wrlUrl = `${baseUrl}.wrl`
+      const stepUrl = `${baseUrl}.step`
       return {
         footprintCircuitJson: filtered,
-        cadModel: { wrlUrl, modelUnitToMmScale: 2.54 },
+        cadModel: { wrlUrl, stepUrl, modelUnitToMmScale: 2.54 },
       }
     },
   },
