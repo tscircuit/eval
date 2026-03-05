@@ -12,6 +12,7 @@ import { normalizeFsMap } from "lib/runner/normalizeFsMap"
 import { getTsConfig } from "lib/runner/tsconfigPaths"
 import type { RootCircuit } from "@tscircuit/core"
 import { setupDefaultEntrypointIfNeeded } from "lib/runner/setupDefaultEntrypointIfNeeded"
+import { applyKicadFootprintDefaultFabVisibility } from "lib/runner/apply-kicad-footprint-default-fab-visibility"
 import { enhanceRootCircuitHasNoChildrenError } from "lib/utils/enhance-root-circuit-error"
 import { setupFetchProxy } from "./fetchProxy"
 import { setValueAtPath } from "lib/shared/obj-path"
@@ -223,6 +224,7 @@ const webWorkerApi = {
       throw new Error("No circuit has been created")
     }
     try {
+      applyKicadFootprintDefaultFabVisibility(executionContext.circuit)
       await executionContext.circuit.renderUntilSettled()
     } catch (error) {
       throw enhanceRootCircuitHasNoChildrenError(

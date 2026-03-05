@@ -13,6 +13,7 @@ import { setupDefaultEntrypointIfNeeded } from "./setupDefaultEntrypointIfNeeded
 import { enhanceRootCircuitHasNoChildrenError } from "lib/utils/enhance-root-circuit-error"
 import Debug from "debug"
 import { setValueAtPath } from "lib/shared/obj-path"
+import { applyKicadFootprintDefaultFabVisibility } from "./apply-kicad-footprint-default-fab-visibility"
 
 const debug = Debug("tsci:eval:CircuitRunner")
 
@@ -145,6 +146,7 @@ export class CircuitRunner implements CircuitRunnerApi {
       throw new Error("No circuit has been created")
     }
     try {
+      applyKicadFootprintDefaultFabVisibility(this._executionContext.circuit)
       await this._executionContext.circuit.renderUntilSettled()
     } catch (error) {
       throw enhanceRootCircuitHasNoChildrenError(
