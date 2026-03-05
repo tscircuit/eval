@@ -1,7 +1,7 @@
 {
   "name": "@tscircuit/eval",
   "main": "dist/lib/index.js",
-  "version": "0.0.684",
+  "version": "0.0.685",
   "type": "module",
   "files": [
     "dist"
@@ -127,7 +127,8 @@
     "zod": "^3.25.67",
     "@tscircuit/soup-util": "^0.0.41",
     "@tscircuit/alphabet": "0.0.18",
-    "@tscircuit/infer-cable-insertion-point": "^0.0.2"},
+    "@tscircuit/infer-cable-insertion-point": "^0.0.2"
+  },
   "peerDependencies": {
     "typescript": "^5.0.0",
     "@tscircuit/core": "*",
