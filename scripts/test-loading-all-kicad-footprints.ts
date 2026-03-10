@@ -6,15 +6,17 @@ const KICAD_AUTOCOMPLETE_PATH =
   "node_modules/@tscircuit/props/lib/generated/kicad-autocomplete.ts"
 
 const extractKicadPaths = (source: string): string[] => {
-  const typeStart = source.indexOf("export type KicadPath =")
-  const typeEnd = source.indexOf("export type KicadAutocompleteStringPath")
+  const arrayStart = source.indexOf("export const kicadFootprintKeys = [")
+  const arrayEnd = source.indexOf("] as const")
 
-  if (typeStart === -1 || typeEnd === -1 || typeEnd <= typeStart) {
-    throw new Error("Could not find KicadPath union in kicad-autocomplete.ts")
+  if (arrayStart === -1 || arrayEnd === -1) {
+    throw new Error(
+      "Could not find kicadFootprintKeys array in kicad-autocomplete.ts",
+    )
   }
 
-  const typeBody = source.slice(typeStart, typeEnd)
-  const matches = typeBody.matchAll(/"([^"]+)"/g)
+  const arrayBody = source.slice(arrayStart, arrayEnd)
+  const matches = arrayBody.matchAll(/"([^"]+)"/g)
   const paths = [...matches].map((match) => match[1])
 
   return [...new Set(paths)]
