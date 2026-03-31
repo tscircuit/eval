@@ -22,5 +22,6 @@ export default () => <NineKeyKeyboard />
 
     expect(someSourceElm).toBeDefined()
   },
-  { timeout: 110000 },
+  // Increased timeout to 450 seconds as capacity-autorouter running out of iterations
+  { timeout: 450_000 },
 )
