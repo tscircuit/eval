@@ -16,6 +16,7 @@ export default defineConfig({
     "@tscircuit/math-utils",
     "zod",
   ],
+  external: ["easyeda"],
   clean: true,
   dts: true,
   esbuildOptions(options) {
