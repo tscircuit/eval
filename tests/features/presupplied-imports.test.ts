@@ -16,3 +16,19 @@ test("tslib is added to pre-supplied imports", async () => {
 
   expect(runner._executionContext?.preSuppliedImports.tslib).toBeDefined()
 })
+
+test("@tscircuit/mm is added to pre-supplied imports", async () => {
+  const runner = new CircuitRunner()
+
+  await runner.execute(`
+    import { mm } from "@tscircuit/mm"
+
+    circuit.add(<board width={mm(10)} height={mm(10)} />)
+  `)
+
+  await runner.renderUntilSettled()
+
+  expect(
+    runner._executionContext?.preSuppliedImports["@tscircuit/mm"],
+  ).toBeDefined()
+})

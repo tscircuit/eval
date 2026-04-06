@@ -4,6 +4,7 @@ import * as tscircuitCore from "@tscircuit/core"
 import * as React from "react"
 import * as ReactJsxRuntime from "react/jsx-runtime"
 import * as tscircuitMathUtils from "@tscircuit/math-utils"
+import * as tscircuitMm from "@tscircuit/mm"
 import type { PlatformConfig } from "@tscircuit/props"
 import { getPlatformConfig } from "lib/getPlatformConfig"
 import type { TsConfig } from "lib/runner/tsconfigPaths"
@@ -77,6 +78,7 @@ export function createExecutionContext(
       "@tscircuit/core": tscircuitCore,
       tscircuit: tscircuitCore,
       "@tscircuit/math-utils": tscircuitMathUtils,
+      "@tscircuit/mm": tscircuitMm,
       react: React,
       "react/jsx-runtime": ReactJsxRuntime,
       debug: Debug,

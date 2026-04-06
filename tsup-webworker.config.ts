@@ -14,6 +14,7 @@ export default defineConfig({
     "@tscircuit/parts-engine",
     "sucrase",
     "@tscircuit/math-utils",
+    "@tscircuit/mm",
     "zod",
   ],
   clean: true,
