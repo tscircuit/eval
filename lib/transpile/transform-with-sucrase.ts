@@ -9,7 +9,10 @@ const stripTypeStarExports = (code: string) =>
   code.replace(TYPE_STAR_EXPORT_REGEX, "")
 
 const stripTrailingJsxLineComments = (code: string) =>
-  code.replace(/^((?:[^"'`\r\n]|"[^"\\]*(?:\\.[^"\\]*)*"|'[^'\\]*(?:\\.[^'\\]*)*'|`[^`\\]*(?:\\.[^`\\]*)*`)*>)\s*\/\/.*$/gm, '$1')
+  code.replace(
+    /^((?:[^"'`\r\n]|"[^"\\]*(?:\\.[^"\\]*)*"|'[^'\\]*(?:\\.[^'\\]*)*'|`[^`\\]*(?:\\.[^`\\]*)*`)*>)\s*\/\/.*$/gm,
+    "$1",
+  )
 
 const stripQueryAndHash = (filePath: string) => {
   const queryIndex = filePath.indexOf("?")
@@ -66,9 +69,7 @@ const getTransformsForFilePath = (filePath: string) => {
 
 export const transformWithSucrase = (code: string, filePath: string) => {
   const transforms = getTransformsForFilePath(filePath)
-  const sanitizedCode = stripTrailingJsxLineComments(
-    stripTypeStarExports(code),
-  )
+  const sanitizedCode = stripTrailingJsxLineComments(stripTypeStarExports(code))
   const { code: transformedCode } = transform(sanitizedCode, {
     filePath,
     production: true,
