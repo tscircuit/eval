@@ -27,7 +27,8 @@ test("inline line comments after opening jsx tags do not create text nodes", asy
   `)
 
   const resistor = circuitJson.find(
-    (element) => element.type === "source_component" && element.name === "R-open",
+    (element) =>
+      element.type === "source_component" && element.name === "R-open",
   )
 
   expect(resistor).toBeDefined()
@@ -117,10 +118,12 @@ test("multiple jsx lines with trailing comments still render", async () => {
   `)
 
   const resistor = circuitJson.find(
-    (element) => element.type === "source_component" && element.name === "R-multi",
+    (element) =>
+      element.type === "source_component" && element.name === "R-multi",
   )
   const capacitor = circuitJson.find(
-    (element) => element.type === "source_component" && element.name === "C-multi",
+    (element) =>
+      element.type === "source_component" && element.name === "C-multi",
   )
 
   expect(resistor).toBeDefined()
