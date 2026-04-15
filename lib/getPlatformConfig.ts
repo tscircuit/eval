@@ -7,11 +7,30 @@ const KICAD_FOOTPRINT_CACHE_URL = "https://kicad-mod-cache.tscircuit.com"
 
 let ngspiceEngineCache: SpiceEngine | null = null
 
+const proxyFetch = ((url: any, options: any) => {
+  const loc = (globalThis as any).location
+  // Blob workers have origin "null"; extract the parent origin from href.
+  const origin =
+    loc?.origin && loc.origin !== "null"
+      ? loc.origin
+      : new URL(loc.href.slice(5)).origin
+  const apiBase =
+    (globalThis as any).TSCIRCUIT_FILESERVER_API_BASE_URL ?? `${origin}/api`
+  return fetch(`${apiBase}/proxy`, {
+    ...options,
+    headers: {
+      ...options?.headers,
+      "X-Target-Url": url.toString(),
+    },
+  })
+}) as typeof globalThis.fetch
+
 export const getPlatformConfig = (
   overrides: Partial<PlatformConfig> = {},
 ): PlatformConfig => ({
   localCacheEngine: overrides.localCacheEngine,
   partsEngine: jlcPartsEngine,
+  platformFetch: overrides.platformFetch ?? proxyFetch,
   spiceEngineMap: {
     ngspice: {
       simulate: async (spice: string) => {
