@@ -5,7 +5,7 @@ export default defineConfig({
   format: ["esm"],
   sourcemap: "inline",
   outDir: "dist/platform-config",
-  noExternal: ["@tscircuit/parts-engine"],
+  noExternal: ["@tscircuit/parts-engine", "easyeda"],
   clean: true,
   dts: true,
 })
