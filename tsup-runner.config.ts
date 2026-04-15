@@ -6,7 +6,7 @@ export default defineConfig({
   platform: "browser",
   sourcemap: "inline", // Added for consistency
   outDir: "dist/eval",
-  noExternal: ["@tscircuit/parts-engine"],
+  noExternal: ["@tscircuit/parts-engine", "easyeda"],
   clean: true, // Added for consistency
   dts: true,
 })
