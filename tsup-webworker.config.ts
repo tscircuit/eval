@@ -12,7 +12,6 @@ export default defineConfig({
     "@tscircuit/core",
     "circuit-json",
     "@tscircuit/parts-engine",
-    "easyeda",
     "sucrase",
     "@tscircuit/math-utils",
     "@tscircuit/mm",
