@@ -1,4 +1,5 @@
 import { createCircuitWebWorker } from "lib/worker"
+import { createEasyEdaAwarePlatformFetch } from "lib/utils/create-easyeda-aware-platform-fetch"
 // @ts-ignore
 import blobUrl from "../dist/blob-url"
 
@@ -105,6 +106,71 @@ async function runNgspiceTest() {
   }
 }
 
+async function runEasyedaPlatformFetchTest() {
+  const outputDiv = document.getElementById("output")!
+  const platformFetch = createEasyEdaAwarePlatformFetch(
+    "https://registry-api.tscircuit.com",
+  )
+  const circuitWebWorker = await createCircuitWebWorker({
+    webWorkerBlobUrl: blobUrl,
+    verbose: true,
+  })
+
+  try {
+    // Directly exercise the EasyEDA-aware proxy fetch wrapper.
+    await platformFetch("https://easyeda.com/api/components/search", {
+      method: "POST",
+      headers: {
+        origin: "https://easyeda.com",
+        referer: "https://easyeda.com/editor",
+      },
+      body: "type=3&wd=C165948",
+    })
+
+    await circuitWebWorker.execute(`
+      circuit.add(
+        <board width="10mm" height="10mm">
+          <connector
+            name="U1"
+            standard="usb_c"
+            manufacturerPartNumber="C165948"
+          />
+        </board>
+      )
+    `)
+
+    await circuitWebWorker.renderUntilSettled()
+    const circuitJson = await circuitWebWorker.getCircuitJson()
+    const smtPadCount = circuitJson.filter(
+      (element: any) => element.type === "pcb_smtpad",
+    ).length
+    const platedHoleCount = circuitJson.filter(
+      (element: any) => element.type === "pcb_plated_hole",
+    ).length
+    const unknownError = circuitJson.find(
+      (element: any) => element.type === "unknown_error_finding_part",
+    ) as { message?: string } | undefined
+    if (unknownError) {
+      outputDiv.textContent = `Fail: ${unknownError.message}`
+      return
+    }
+
+    if (smtPadCount === 0 || platedHoleCount === 0) {
+      outputDiv.textContent = `Fail: missing usb_c footprint data (pads=${smtPadCount}, holes=${platedHoleCount})`
+      return
+    }
+
+    outputDiv.textContent = `Success: USB-C footprint verified (pads=${smtPadCount}, holes=${platedHoleCount})`
+  } catch (error: any) {
+    outputDiv.textContent = `Fail: Test error occurred: ${error.toString()}`
+    console.error("easyeda platformFetch test failed", error)
+  } finally {
+    await circuitWebWorker.kill().catch((error) => {
+      console.error("failed to kill circuit worker", error)
+    })
+  }
+}
+
 // Run the test when the page loads
 window.addEventListener("DOMContentLoaded", () => {
   const urlParams = new URLSearchParams(window.location.search)
@@ -112,6 +178,8 @@ window.addEventListener("DOMContentLoaded", () => {
 
   if (test_to_run === "ngspice") {
     runNgspiceTest()
+  } else if (test_to_run === "easyeda_platformfetch") {
+    runEasyedaPlatformFetchTest()
   } else {
     runDefaultTest()
   }
