@@ -41,7 +41,11 @@ export function createExecutionContext(
 ): ExecutionContext {
   globalThis.React = React
 
-  const basePlatform = opts.platform || getPlatformConfig()
+  const basePlatform =
+    opts.platform ||
+    getPlatformConfig({
+      registryApiUrl: webWorkerConfiguration.snippetsApiBaseUrl,
+    })
   const platform = opts.projectConfig
     ? { ...basePlatform, ...opts.projectConfig }
     : basePlatform
