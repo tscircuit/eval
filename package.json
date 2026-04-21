@@ -1,7 +1,7 @@
 {
   "name": "@tscircuit/eval",
   "main": "dist/lib/index.js",
-  "version": "0.0.768",
+  "version": "0.0.769",
   "type": "module",
   "files": [
     "dist"
@@ -129,7 +129,8 @@
     "tslib": "^2.8.1",
     "tsup": "^8.2.4",
     "zod": "^3.25.67",
-    "@tscircuit/jlcpcb-manufacturing-specs": "git+https://github.com/tscircuit/jlcpcb-manufacturing-specs#fa54ff1f9eabca1b852a0b035db907061e5c4a2f"},
+    "@tscircuit/jlcpcb-manufacturing-specs": "git+https://github.com/tscircuit/jlcpcb-manufacturing-specs#fa54ff1f9eabca1b852a0b035db907061e5c4a2f"
+  },
   "peerDependencies": {
     "typescript": "^5.0.0",
     "@tscircuit/core": "*",
