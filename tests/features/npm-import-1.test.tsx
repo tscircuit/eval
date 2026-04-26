@@ -10,7 +10,7 @@ test("should import npm packages from CDN which have minified imports", async ()
 import { MicroModBoard } from "@tscircuit/common"
 
 export default () => (
-  <MicroModBoard name="U1" />
+  <MicroModBoard chipProps={{ name: "U1" }} />
 )
       `,
       "package.json": `
