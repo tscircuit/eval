@@ -76,6 +76,11 @@ test("getImportsFromCode should handle dynamic imports", () => {
   `)
 })
 
+test("getImportsFromCode should handle minified static imports after declarations", () => {
+  const sourceCode = `class PackageExports{}import objectHash from "object-hash";`
+  expect(getImportsFromCode(sourceCode)).toEqual(["object-hash"])
+})
+
 test("getImportsFromCode should handle comments and commented imports", () => {
   const sourceCode = `
     // import foo from './commented'

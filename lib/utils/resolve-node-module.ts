@@ -6,6 +6,7 @@ type ExportValue = string | Record<string, string | Record<string, string>>
 interface PackageJson {
   main?: string
   module?: string
+  browser?: string | Record<string, string | false>
   exports?: Record<string, ExportValue>
 }
 
@@ -132,7 +133,10 @@ function resolvePackageEntryPoint(
   ctx: NodeResolutionContext,
 ): string | null {
   const entryPoint = normalizePackageEntrypoint(
-    packageJson.module || packageJson.main || "index.js",
+    (typeof packageJson.browser === "string" && packageJson.browser) ||
+      packageJson.module ||
+      packageJson.main ||
+      "index.js",
   )
   const fullPath = `${nodeModulesPath}/${entryPoint}`
   return tryResolveWithExtensions(fullPath, ctx)

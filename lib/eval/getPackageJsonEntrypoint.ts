@@ -15,8 +15,14 @@ export function getPackageJsonEntrypoint(
 
   try {
     const packageJson = JSON.parse(packageJsonContent)
-    // Try main, module, or exports field (in order of preference)
-    return packageJson.main || packageJson.module || null
+    // Prefer the browser build when provided because eval runs in a browser-like
+    // environment and many CommonJS main files require Node built-ins.
+    return (
+      (typeof packageJson.browser === "string" && packageJson.browser) ||
+      packageJson.module ||
+      packageJson.main ||
+      null
+    )
   } catch {
     return null
   }
