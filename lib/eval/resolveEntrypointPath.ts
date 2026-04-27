@@ -1,4 +1,5 @@
 import { extractBasePackageName } from "./extractBasePackageName"
+import { normalizePackageEntrypoint } from "lib/utils/normalize-package-entrypoint"
 
 const moduleExtensions = [".js", ".jsx", ".ts", ".tsx", ".json"]
 
@@ -8,7 +9,8 @@ export const resolveEntrypointPath = (
   fsMap: Record<string, string>,
 ): string | null => {
   const basePackageName = extractBasePackageName(packageName)
-  const entrypointPath = `node_modules/${basePackageName}/${entrypoint}`
+  const normalizedEntrypoint = normalizePackageEntrypoint(entrypoint)
+  const entrypointPath = `node_modules/${basePackageName}/${normalizedEntrypoint}`
 
   if (fsMap[entrypointPath]) {
     return entrypointPath
