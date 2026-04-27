@@ -1,4 +1,5 @@
 import { dirname } from "./dirname"
+import { normalizePackageEntrypoint } from "./normalize-package-entrypoint"
 
 type ExportValue = string | Record<string, string | Record<string, string>>
 
@@ -130,7 +131,9 @@ function resolvePackageEntryPoint(
   packageJson: PackageJson,
   ctx: NodeResolutionContext,
 ): string | null {
-  const entryPoint = packageJson.module || packageJson.main || "index.js"
+  const entryPoint = normalizePackageEntrypoint(
+    packageJson.module || packageJson.main || "index.js",
+  )
   const fullPath = `${nodeModulesPath}/${entryPoint}`
   return tryResolveWithExtensions(fullPath, ctx)
 }

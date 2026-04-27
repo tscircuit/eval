@@ -66,6 +66,7 @@ export const transformWithSucrase = (code: string, filePath: string) => {
   const sanitizedCode = stripTypeStarExports(code)
   const { code: transformedCode } = transform(sanitizedCode, {
     filePath,
+    disableESTransforms: true,
     production: true,
     transforms,
   })
