@@ -2,6 +2,43 @@ import { describe, expect, test } from "bun:test"
 import { runTscircuitCode } from "lib/runner"
 
 describe("node module resolution", () => {
+  test("resolves minified imports that depend on browser package entrypoints", async () => {
+    const circuitJson = await runTscircuitCode(
+      {
+        "node_modules/parent-package/package.json": JSON.stringify({
+          name: "parent-package",
+          main: "dist/index.js",
+        }),
+        "node_modules/parent-package/dist/index.js": `
+          class ParentPackage{}import { resistorName } from "browser-entry-package";
+          export { resistorName }
+        `,
+        "node_modules/browser-entry-package/package.json": JSON.stringify({
+          name: "browser-entry-package",
+          main: "./index.js",
+          browser: "./dist/browser.js",
+        }),
+        "node_modules/browser-entry-package/dist/browser.js": `
+          export const resistorName = "R_BROWSER"
+        `,
+        "user-code.tsx": `
+          import { resistorName } from "parent-package"
+          export default () => (<resistor name={resistorName} resistance="1k" />)
+        `,
+      },
+      {
+        mainComponentPath: "user-code",
+      },
+    )
+
+    const resistor = circuitJson.find(
+      (element) =>
+        element.type === "source_component" && element.name === "R_BROWSER",
+    ) as any
+    expect(resistor).toBeDefined()
+    expect(resistor.resistance).toBe(1000)
+  })
+
   test.skip("resolves nested node_modules packages", async () => {
     const circuitJson = await runTscircuitCode(
       {
