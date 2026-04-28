@@ -1,5 +1,8 @@
 import type { PlatformConfig, SpiceEngine } from "@tscircuit/props"
-import { jlcPartsEngine } from "@tscircuit/parts-engine"
+import {
+  JlcPcbPartsEngine,
+  type EasyEdaProxyConfig,
+} from "@tscircuit/parts-engine"
 import { parseKicadModToCircuitJson } from "kicad-component-converter"
 import { dynamicallyLoadDependencyWithCdnBackup } from "./utils/dynamically-load-dependency-with-cdn-backup"
 
@@ -8,10 +11,17 @@ const KICAD_FOOTPRINT_CACHE_URL = "https://kicad-mod-cache.tscircuit.com"
 let ngspiceEngineCache: SpiceEngine | null = null
 
 export const getPlatformConfig = (
-  overrides: Partial<PlatformConfig> = {},
+  overrides: Partial<PlatformConfig> & {
+    easyEdaProxyConfig?: EasyEdaProxyConfig
+  } = {},
 ): PlatformConfig => ({
   localCacheEngine: overrides.localCacheEngine,
-  partsEngine: jlcPartsEngine,
+  partsEngine:
+    overrides.partsEngine ??
+    new JlcPcbPartsEngine({
+      platformFetch: overrides.platformFetch,
+      easyEdaProxyConfig: overrides.easyEdaProxyConfig,
+    }),
   spiceEngineMap: {
     ngspice: {
       simulate: async (spice: string) => {

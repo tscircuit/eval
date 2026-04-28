@@ -182,6 +182,10 @@ export const createCircuitWebWorker = async (
     )
   }
 
+  if (configuration.easyEdaProxyConfig) {
+    await comlinkWorker.setEasyEdaProxyConfig(configuration.easyEdaProxyConfig)
+  }
+
   const maybeProxy = (value: any) => {
     if (typeof value === "function") {
       return Comlink.proxy(value)

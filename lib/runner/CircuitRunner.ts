@@ -229,6 +229,13 @@ export class CircuitRunner implements CircuitRunnerApi {
     this._circuitRunnerConfiguration.tscircuitSessionToken = token
   }
 
+  async setEasyEdaProxyConfig(config: {
+    proxyEndpointUrl: string
+    headers?: Record<string, string>
+  }) {
+    this._circuitRunnerConfiguration.easyEdaProxyConfig = config
+  }
+
   async enableDebug(namespace: string) {
     this._debugNamespace = namespace
     if (this._executionContext) {

@@ -114,6 +114,13 @@ const webWorkerApi = {
     setValueAtPath(circuitRunnerConfiguration.projectConfig, property, value)
   },
 
+  setEasyEdaProxyConfig: async (config: {
+    proxyEndpointUrl: string
+    headers?: Record<string, string>
+  }) => {
+    circuitRunnerConfiguration.easyEdaProxyConfig = config
+  },
+
   setTscircuitSessionToken: async (token: string) => {
     circuitRunnerConfiguration.tscircuitSessionToken = token
   },
