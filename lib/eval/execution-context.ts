@@ -49,10 +49,9 @@ export function createExecutionContext(
         easyEdaProxyConfig: webWorkerConfiguration.easyEdaProxyConfig,
       },
     )
-  let platform = basePlatform
-  if (opts.projectConfig) {
-    platform = { ...basePlatform, ...opts.projectConfig }
-  }
+  const platform = opts.projectConfig
+    ? { ...basePlatform, ...opts.projectConfig }
+    : basePlatform
 
   if (platform.partsEngineDisabled) {
     platform.partsEngine = undefined
