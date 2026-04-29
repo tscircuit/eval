@@ -41,7 +41,14 @@ export function createExecutionContext(
 ): ExecutionContext {
   globalThis.React = React
 
-  const basePlatform = opts.platform || getPlatformConfig()
+  const basePlatform =
+    opts.platform ||
+    getPlatformConfig(
+      {},
+      {
+        easyEdaProxyConfig: webWorkerConfiguration.easyEdaProxyConfig,
+      },
+    )
   const platform = opts.projectConfig
     ? { ...basePlatform, ...opts.projectConfig }
     : basePlatform

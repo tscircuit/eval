@@ -1,6 +1,7 @@
 import type { AnyCircuitElement } from "circuit-json"
 import type { RootCircuitEventName as CoreRootCircuitEventName } from "@tscircuit/core"
 import type { PlatformConfig } from "@tscircuit/props"
+import type { EasyEdaProxyConfig } from "@tscircuit/parts-engine"
 
 export type RootCircuitEventName = CoreRootCircuitEventName | "debug:logOutput"
 
@@ -15,6 +16,11 @@ export interface CircuitRunnerConfiguration {
    * Used to fetch private @tsci/* packages from npm.tscircuit.com
    */
   tscircuitSessionToken?: string
+  /**
+   * Configuration for proxying EasyEDA API requests, used by the parts engine
+   * when fetching part circuit JSON (e.g. for connector footprints).
+   */
+  easyEdaProxyConfig?: EasyEdaProxyConfig
 }
 
 export interface WebWorkerConfiguration extends CircuitRunnerConfiguration {
@@ -66,6 +72,7 @@ export interface CircuitRunnerApi {
   setPlatformConfigProperty: (property: string, value: any) => Promise<void>
   setProjectConfigProperty: (property: string, value: any) => Promise<void>
   setTscircuitSessionToken: (token: string) => Promise<void>
+  setEasyEdaProxyConfig: (config: EasyEdaProxyConfig) => Promise<void>
   enableDebug: (namespace: string) => Promise<void>
   on: (event: RootCircuitEventName, callback: (...args: any[]) => void) => void
   clearEventListeners: () => void

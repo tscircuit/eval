@@ -1,4 +1,5 @@
 import { createCircuitWebWorker } from "lib/worker"
+import { runUsbCConnectorTest } from "./runUsbCConnectorTest"
 // @ts-ignore
 import blobUrl from "../dist/blob-url"
 
@@ -112,6 +113,8 @@ window.addEventListener("DOMContentLoaded", () => {
 
   if (test_to_run === "ngspice") {
     runNgspiceTest()
+  } else if (test_to_run === "usb_c_connector") {
+    runUsbCConnectorTest(blobUrl)
   } else {
     runDefaultTest()
   }
