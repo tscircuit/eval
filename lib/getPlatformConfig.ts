@@ -10,15 +10,6 @@ import { dynamicallyLoadDependencyWithCdnBackup } from "./utils/dynamically-load
 const KICAD_FOOTPRINT_CACHE_URL = "https://kicad-mod-cache.tscircuit.com"
 
 let ngspiceEngineCache: SpiceEngine | null = null
-const bindPartsEngineFetchMethod = (partsEngine: any) => {
-  if (!partsEngine) {
-    return
-  }
-  if (typeof partsEngine.fetchPartCircuitJson === "function") {
-    partsEngine.fetchPartCircuitJson =
-      partsEngine.fetchPartCircuitJson.bind(partsEngine)
-  }
-}
 
 export const getPlatformConfig = (
   overrides: Partial<PlatformConfig> = {},
@@ -34,7 +25,6 @@ export const getPlatformConfig = (
       easyEdaProxyConfig: options.easyEdaProxyConfig,
     })
   }
-  bindPartsEngineFetchMethod(partsEngine)
 
   return {
     localCacheEngine: overrides.localCacheEngine,
