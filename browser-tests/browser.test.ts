@@ -117,3 +117,14 @@ test("usb_c connector renders without CORS errors", async ({ page }) => {
     proxyServer.close()
   }
 })
+
+test("copper pour fails with Invalid URL in browser", async ({ page }) => {
+  await new Promise((resolve) => setTimeout(resolve, 1000))
+  await page.goto("http://localhost:3070?test_to_run=copperpour")
+
+  // The error bubbles up to the output div
+  await expect(page.locator("#output")).toContainText(
+    "Success: Copper pour initialized.",
+    { timeout: 15000 },
+  )
+})
