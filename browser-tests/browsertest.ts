@@ -134,8 +134,10 @@ async function runCopperPourTest() {
 
     await circuitWebWorker.renderUntilSettled()
     const circuitJson = await circuitWebWorker.getCircuitJson()
-    const errors = circuitJson.filter(el => el.type === "pcb_component_error" || el.type === "pcb_error")
-    
+    const errors = circuitJson.filter(
+      (el: any) => el.type === "pcb_component_error" || el.type === "pcb_error",
+    )
+
     if (capturedError) {
       outputDiv.textContent = "Fail: " + capturedError
     } else if (errors.length > 0) {
