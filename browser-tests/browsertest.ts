@@ -120,7 +120,7 @@ async function runCopperPourTest() {
     let capturedError: string | null = null
     circuitWebWorker.on("asyncEffect:end", (event: any) => {
       if (event.error) {
-        capturedError = event.error
+        capturedError = `[${event.phase}] ${event.error}`
       }
     })
 
@@ -134,13 +134,12 @@ async function runCopperPourTest() {
 
     await circuitWebWorker.renderUntilSettled()
     const circuitJson = await circuitWebWorker.getCircuitJson()
-    console.log("CIRCUIT JSON", circuitJson)
     const errors = circuitJson.filter(el => el.type === "pcb_component_error" || el.type === "pcb_error")
     
     if (capturedError) {
-      outputDiv.textContent = "Fail: Test error occurred: " + capturedError
+      outputDiv.textContent = "Fail: " + capturedError
     } else if (errors.length > 0) {
-      outputDiv.textContent = "Fail: Test error occurred: " + (errors[0] as any).message
+      outputDiv.textContent = "Fail: " + (errors[0] as any).message
     } else {
       outputDiv.textContent = "Success: Copper pour initialized."
     }
