@@ -137,7 +137,7 @@ async function runCopperPourTest() {
     await circuitWebWorker.execute(`
     circuit.add(
       <board width="10mm" height="10mm">
-      <resistor name="R1" footprint="0403" />
+        <resistor name="R1" resistance="1k" footprint="0402" />
         <copperpour connectsTo="net.GND" layer="top" clearance="0.15mm" />
       </board>
     )
