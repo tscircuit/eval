@@ -20,6 +20,10 @@ export default defineConfig({
   clean: true,
   dts: true,
   esbuildOptions(options) {
+    options.loader = {
+      ...options.loader,
+      ".wasm": "dataurl",
+    }
     options.minifySyntax = true
     options.minifyWhitespace = true
     options.minifyIdentifiers = false

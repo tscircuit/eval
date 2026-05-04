@@ -11,13 +11,16 @@ import { importEvalPath } from "lib/eval"
 import { normalizeFsMap } from "lib/runner/normalizeFsMap"
 import { getTsConfig } from "lib/runner/tsconfigPaths"
 import type { RootCircuit } from "@tscircuit/core"
+import { setWasmUrl } from "manifold-3d/lib/wasm.js"
 import { setupDefaultEntrypointIfNeeded } from "lib/runner/setupDefaultEntrypointIfNeeded"
 import { enhanceRootCircuitHasNoChildrenError } from "lib/utils/enhance-root-circuit-error"
 import { setupFetchProxy } from "./fetchProxy"
 import { setValueAtPath } from "lib/shared/obj-path"
+import manifoldWasmUrl from "manifold-3d/manifold.wasm"
 
 globalThis.React = React
 setupFetchProxy()
+setWasmUrl(manifoldWasmUrl)
 
 // Polyfill for Node.js global object in browser workers
 // Needed because @tscircuit/core and dependencies reference global.debugGraphics/debugOutputArray

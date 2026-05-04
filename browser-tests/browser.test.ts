@@ -1,4 +1,3 @@
-import { spawn } from "node:child_process"
 import { createServer, type Server } from "node:http"
 import { expect, test } from "@playwright/test"
 
@@ -116,4 +115,17 @@ test("usb_c connector renders without CORS errors", async ({ page }) => {
   } finally {
     proxyServer.close()
   }
+})
+
+test("copper pour successfully renders in browser (verifies manifold-3d WASM)", async ({
+  page,
+}) => {
+  await new Promise((resolve) => setTimeout(resolve, 1000))
+  await page.goto("http://localhost:3070?test_to_run=copperpour")
+
+  // The output div should show success if WASM initialization and rendering worked
+  await expect(page.locator("#output")).toContainText(
+    "Success: Copper pour initialized.",
+    { timeout: 15000 },
+  )
 })
