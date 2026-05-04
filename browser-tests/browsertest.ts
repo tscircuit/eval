@@ -1,15 +1,8 @@
 import { createCircuitWebWorker } from "lib/worker"
-import { convertCircuitJsonToPcbSvg } from "circuit-to-svg"
+import { runCopperPourTest } from "./runCopperPourTest"
 import { runUsbCConnectorTest } from "./runUsbCConnectorTest"
 // @ts-ignore
 import blobUrl from "../dist/blob-url"
-
-function showPcbCircuit(circuitJson: any[]) {
-  const previewDiv = document.getElementById("circuit-preview")
-  if (!previewDiv) return
-
-  previewDiv.innerHTML = convertCircuitJsonToPcbSvg(circuitJson)
-}
 
 async function runDefaultTest() {
   try {
@@ -39,7 +32,6 @@ async function runDefaultTest() {
 
     // Get the circuit JSON
     const circuitJson = await circuitWebWorker.getCircuitJson()
-    showPcbCircuit(circuitJson)
 
     // Validate the circuit elements
     const resistor = circuitJson.find((el: any) => el.name === "R1")
@@ -95,7 +87,6 @@ async function runNgspiceTest() {
     await circuitWebWorker.renderUntilSettled()
 
     const circuitJson = await circuitWebWorker.getCircuitJson()
-    showPcbCircuit(circuitJson)
 
     const simGraph = circuitJson.some(
       (el) => el.type === "simulation_transient_voltage_graph",
@@ -116,53 +107,6 @@ async function runNgspiceTest() {
   }
 }
 
-async function runCopperPourTest() {
-  const outputDiv = document.getElementById("output")!
-  try {
-    console.log("creating worker for copper pour test...")
-    const circuitWebWorker = await createCircuitWebWorker({
-      webWorkerBlobUrl: blobUrl,
-      verbose: true,
-    })
-
-    console.log("worker created, executing copper pour...")
-
-    let capturedError: string | null = null
-    circuitWebWorker.on("asyncEffect:end", (event: any) => {
-      if (event.error) {
-        capturedError = `[${event.phase}] ${event.error}`
-      }
-    })
-
-    await circuitWebWorker.execute(`
-    circuit.add(
-      <board width="10mm" height="10mm">
-        <resistor name="R1" resistance="1k" footprint="0402" />
-        <copperpour connectsTo="net.GND" layer="top" clearance="0.15mm" />
-      </board>
-    )
-  `)
-
-    await circuitWebWorker.renderUntilSettled()
-    const circuitJson = await circuitWebWorker.getCircuitJson()
-    showPcbCircuit(circuitJson)
-    const errors = circuitJson.filter(
-      (el: any) => el.type === "pcb_component_error" || el.type === "pcb_error",
-    )
-
-    if (capturedError) {
-      outputDiv.textContent = "Fail: " + capturedError
-    } else if (errors.length > 0) {
-      outputDiv.textContent = "Fail: " + (errors[0] as any).message
-    } else {
-      outputDiv.textContent = "Success: Copper pour initialized."
-    }
-  } catch (error: any) {
-    outputDiv.textContent = "Fail: Test error occurred: " + error.toString()
-    console.error("Test failed with error:", error)
-  }
-}
-
 // Run the test when the page loads
 window.addEventListener("DOMContentLoaded", () => {
   const urlParams = new URLSearchParams(window.location.search)
@@ -171,7 +115,7 @@ window.addEventListener("DOMContentLoaded", () => {
   if (test_to_run === "ngspice") {
     runNgspiceTest()
   } else if (test_to_run === "copperpour") {
-    runCopperPourTest()
+    runCopperPourTest(blobUrl)
   } else if (test_to_run === "usb_c_connector") {
     runUsbCConnectorTest(blobUrl)
   } else {
