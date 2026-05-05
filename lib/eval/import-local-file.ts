@@ -9,6 +9,7 @@ import Debug from "debug"
 import { isStaticAssetPath } from "lib/shared/static-asset-extensions"
 import { transformWithSucrase } from "lib/transpile/transform-with-sucrase"
 import { KicadToCircuitJsonConverter } from "kicad-to-circuit-json"
+import * as React from "react"
 
 const debug = Debug("tsci:eval:import-local-file")
 
@@ -56,13 +57,29 @@ export const importLocalFile = async (
         default: jsonData,
       }
     } else if (fsPath.endsWith(".kicad_pcb")) {
+      if (
+        fileContent === "__STATIC_ASSET__" ||
+        fileContent.startsWith("blob:")
+      ) {
+        throw new Error(
+          `.kicad_pcb imports require local file contents. Static asset URLs are not supported for "${fsPath}".`,
+        )
+      }
+
       const converter = new KicadToCircuitJsonConverter()
       converter.addFile(fsPath, fileContent)
       converter.runUntilFinished()
       const circuitJson = converter.getOutput()
+      const Board = (props: Record<string, any>) =>
+        React.createElement("board", {
+          ...props,
+          circuitJson,
+        })
       preSuppliedImports[fsPath] = {
         __esModule: true,
-        circuitJson: circuitJson,
+        default: circuitJson,
+        Board,
+        circuitJson,
       }
     } else if (isStaticAssetPath(fsPath)) {
       let staticUrl: string
