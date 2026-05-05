@@ -71,7 +71,7 @@ export const importLocalFile = async (
       converter.runUntilFinished()
       const circuitJson = converter.getOutput()
       const Board = (props: Record<string, any>) =>
-        React.createElement("subcircuit", {
+        React.createElement("board", {
           ...props,
           circuitJson,
         })
