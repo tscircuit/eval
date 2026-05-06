@@ -10,6 +10,7 @@ import { isStaticAssetPath } from "lib/shared/static-asset-extensions"
 import { transformWithSucrase } from "lib/transpile/transform-with-sucrase"
 import { KicadToCircuitJsonConverter } from "kicad-to-circuit-json"
 import * as React from "react"
+import type { AnyCircuitElement } from "circuit-json"
 
 const debug = Debug("tsci:eval:import-local-file")
 
@@ -70,6 +71,10 @@ export const importLocalFile = async (
       converter.addFile(fsPath, fileContent)
       converter.runUntilFinished()
       const circuitJson = converter.getOutput()
+      // TODO: Figure out what should be present in boardContentCircuitJson
+      const boardContentCircuitJson = circuitJson.filter(
+        (elm: AnyCircuitElement) => elm.type !== "pcb_board",
+      )
       const Board = (props: Record<string, any>) =>
         React.createElement("board", {
           ...props,
@@ -79,6 +84,7 @@ export const importLocalFile = async (
         __esModule: true,
         default: circuitJson,
         Board,
+        boardContentCircuitJson,
         circuitJson,
       }
     } else if (isStaticAssetPath(fsPath)) {
