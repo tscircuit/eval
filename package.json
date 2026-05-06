@@ -114,7 +114,7 @@
     "howfat": "^0.3.8",
     "kicad-component-converter": "^0.1.30",
     "kicad-to-circuit-json": "^0.0.32",
-    "kicadts": "^0.0.22",
+    "kicadts": "^0.0.31",
     "live-server": "^1.2.2",
     "looks-same": "^9.0.1",
     "minicssgrid": "^0.0.9",
