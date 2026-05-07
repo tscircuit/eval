@@ -4,12 +4,17 @@ import {
   jlcPartsEngine,
   type EasyEdaProxyConfig,
 } from "@tscircuit/parts-engine"
+import { createKiCadRoutingToolsAutorouter } from "@tscircuit/krt-wasm"
 import { parseKicadModToCircuitJson } from "kicad-component-converter"
 import { dynamicallyLoadDependencyWithCdnBackup } from "./utils/dynamically-load-dependency-with-cdn-backup"
 
 const KICAD_FOOTPRINT_CACHE_URL = "https://kicad-mod-cache.tscircuit.com"
 
 let ngspiceEngineCache: SpiceEngine | null = null
+
+type PlatformAutorouterMap = NonNullable<PlatformConfig["autorouterMap"]>
+type PlatformCreateAutorouter =
+  PlatformAutorouterMap[string]["createAutorouter"]
 
 export const getPlatformConfig = (
   overrides: Partial<PlatformConfig> = {},
@@ -29,6 +34,18 @@ export const getPlatformConfig = (
   return {
     localCacheEngine: overrides.localCacheEngine,
     partsEngine,
+    autorouterMap: {
+      krt: {
+        // TODO: Remove this cast once @tscircuit/props models the evented
+        // GenericLocalAutorouter shape that core consumes from autorouterMap.
+        createAutorouter: createKiCadRoutingToolsAutorouter({
+          gridStep: 0.1,
+          clearance: 0.2,
+          maxIterations: 300_000,
+        }) as unknown as PlatformCreateAutorouter,
+      },
+      ...overrides.autorouterMap,
+    },
     spiceEngineMap: {
       ngspice: {
         simulate: async (spice: string) => {
