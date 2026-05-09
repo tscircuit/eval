@@ -8,11 +8,38 @@ import { importEvalPath } from "./import-eval-path"
 import Debug from "debug"
 import { isStaticAssetPath } from "lib/shared/static-asset-extensions"
 import { transformWithSucrase } from "lib/transpile/transform-with-sucrase"
-import { KicadToCircuitJsonConverter } from "kicad-to-circuit-json"
-import * as React from "react"
-import type { AnyCircuitElement } from "circuit-json"
+import type { PlatformConfig } from "@tscircuit/props"
 
 const debug = Debug("tsci:eval:import-local-file")
+
+const getFileExtension = (fsPath: string) => {
+  const ext = fsPath.split(".").pop()
+  return ext ? ext.toLowerCase() : ""
+}
+
+const getStaticFileLoader = (
+  platform: PlatformConfig | undefined,
+  fsPath: string,
+) => {
+  const ext = getFileExtension(fsPath)
+  if (!ext) return undefined
+
+  return (
+    platform?.staticFileLoaderMap?.[ext] ??
+    platform?.staticFileLoaderMap?.[`.${ext}`]
+  )
+}
+
+const normalizeStaticFileLoaderResult = (result: any) => {
+  if (result && typeof result === "object" && result.__esModule) {
+    return result
+  }
+
+  return {
+    __esModule: true,
+    default: result,
+  }
+}
 
 export const importLocalFile = async (
   importName: string,
@@ -51,41 +78,24 @@ export const importLocalFile = async (
   currentlyImporting.add(fsPath)
   importStack.push(fsPath)
   try {
-    if (fsPath.endsWith(".json")) {
+    const staticFileLoader = getStaticFileLoader(ctx.circuit.platform, fsPath)
+
+    if (staticFileLoader) {
+      try {
+        preSuppliedImports[fsPath] = normalizeStaticFileLoaderResult(
+          await staticFileLoader(fileContent),
+        )
+      } catch (error: any) {
+        const ext = getFileExtension(fsPath)
+        throw new Error(
+          `Failed to load static file "${fsPath}" with platformConfig.staticFileLoaderMap["${ext}"]: ${error.message}`,
+        )
+      }
+    } else if (fsPath.endsWith(".json")) {
       const jsonData = JSON.parse(fileContent)
       preSuppliedImports[fsPath] = {
         __esModule: true,
         default: jsonData,
-      }
-    } else if (fsPath.endsWith(".kicad_pcb")) {
-      if (
-        fileContent === "__STATIC_ASSET__" ||
-        fileContent.startsWith("blob:")
-      ) {
-        throw new Error(
-          `.kicad_pcb imports require local file contents. Static asset URLs are not supported for "${fsPath}".`,
-        )
-      }
-
-      const converter = new KicadToCircuitJsonConverter()
-      converter.addFile(fsPath, fileContent)
-      converter.runUntilFinished()
-      const circuitJson = converter.getOutput()
-      // TODO: Figure out what should be present in boardContentCircuitJson
-      const boardContentCircuitJson = circuitJson.filter(
-        (elm: AnyCircuitElement) => elm.type !== "pcb_board",
-      )
-      const Board = (props: Record<string, any>) =>
-        React.createElement("board", {
-          ...props,
-          circuitJson,
-        })
-      preSuppliedImports[fsPath] = {
-        __esModule: true,
-        default: circuitJson,
-        Board,
-        boardContentCircuitJson,
-        circuitJson,
       }
     } else if (isStaticAssetPath(fsPath)) {
       let staticUrl: string
