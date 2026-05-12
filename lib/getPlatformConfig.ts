@@ -22,6 +22,18 @@ type PlatformStaticFileLoaderMap = NonNullable<
   PlatformConfig["staticFileLoaderMap"]
 >
 
+const resolveJlcpcbSupplierPartNumber = (partNumber: string) => {
+  if (/^\d+$/.test(partNumber)) {
+    return `C${partNumber}`
+  }
+
+  if (/^c\d+$/i.test(partNumber)) {
+    return `C${partNumber.slice(1)}`
+  }
+
+  return partNumber
+}
+
 const loadKicadPcbStaticFile: PlatformStaticFileLoaderMap[string] = async (
   fileContent,
 ) => {
@@ -153,6 +165,29 @@ export const getPlatformConfig = (
         return {
           footprintCircuitJson: filtered,
           cadModel: { wrlUrl, stepUrl, modelUnitToMmScale: 2.54 },
+        }
+      },
+      jlcpcb: async (partNumber: string) => {
+        if (!partsEngine.fetchPartCircuitJson) {
+          throw new Error(
+            "Configured parts engine does not support fetchPartCircuitJson, required for jlcpcb footprints.",
+          )
+        }
+
+        const supplierPartNumber = resolveJlcpcbSupplierPartNumber(partNumber)
+        const footprintCircuitJson = await partsEngine.fetchPartCircuitJson({
+          supplierPartNumber,
+          platformFetch: overrides.platformFetch,
+        })
+
+        if (!Array.isArray(footprintCircuitJson)) {
+          throw new Error(
+            `Failed to load JLCPCB footprint "${supplierPartNumber}" from parts engine.`,
+          )
+        }
+
+        return {
+          footprintCircuitJson,
         }
       },
     },
