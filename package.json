@@ -1,7 +1,7 @@
 {
   "name": "@tscircuit/eval",
   "main": "dist/lib/index.js",
-  "version": "0.0.836",
+  "version": "0.0.837",
   "type": "module",
   "files": [
     "dist"
@@ -131,7 +131,8 @@
     "tslib": "^2.8.1",
     "tsup": "^8.2.4",
     "zod": "^3.25.67",
-    "stack-svgs": "^0.0.1"},
+    "stack-svgs": "^0.0.1"
+  },
   "peerDependencies": {
     "typescript": "^5.0.0",
     "@tscircuit/core": "*",
