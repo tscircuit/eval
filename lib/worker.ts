@@ -18,6 +18,7 @@ declare global {
 }
 
 export const getWebWorkerEntrypointCdnUrls = (evalVersion = "latest") => [
+  `https://jscdn.tscircuit.com/@tscircuit/eval/${evalVersion}/dist/webworker/entrypoint.js`,
   `https://cdn.jsdelivr.net/npm/@tscircuit/eval@${evalVersion}/dist/webworker/entrypoint.js`,
   `https://unpkg.com/@tscircuit/eval@${evalVersion}/dist/webworker/entrypoint.js`,
 ]
