@@ -5,14 +5,19 @@ import Debug from "debug"
 import { getImportsFromCode } from "lib/utils/get-imports-from-code"
 import { importEvalPath } from "./import-eval-path"
 import { transformWithSucrase } from "lib/transpile/transform-with-sucrase"
+import { getJscdnPackageUrl } from "lib/utils/npm-cdn-urls"
 
 const debug = Debug("tsci:eval:import-npm-package")
 
-function extractPackagePathFromJSDelivr(url: string) {
-  const prefix = "https://cdn.jsdelivr.net/npm/"
-  if (url.startsWith(prefix)) {
-    return url.substring(prefix.length).replace(/\/\+esm$/, "")
+function extractPackagePathFromCdnUrl(url: string, importName: string) {
+  if (url.startsWith("https://cdn.jsdelivr.net/npm/")) {
+    return url
+      .substring("https://cdn.jsdelivr.net/npm/".length)
+      .replace(/\/\+esm$/, "")
   }
+
+  if (url.startsWith("https://jscdn.tscircuit.com/")) return importName
+
   return url
 }
 
@@ -25,56 +30,62 @@ export async function importNpmPackageFromCdn(
 
   if (preSuppliedImports[importName]) return
 
-  // This path still needs jsDelivr's +esm bundling. jscdn serves package files
-  // directly and is used first in eval paths that request concrete files.
-  const npmCdnUrl = `https://cdn.jsdelivr.net/npm/${importName}/+esm`
+  const npmCdnUrls = [
+    `${getJscdnPackageUrl(importName)}/+esm`,
+    `https://cdn.jsdelivr.net/npm/${importName}/+esm`,
+  ]
+  let lastError: unknown
 
-  let finalUrl: string | undefined
-  const { content, error } = await globalThis
-    .fetch(npmCdnUrl)
-    .then(async (res) => {
-      finalUrl = res.url
-      if (!res.ok)
+  for (const npmCdnUrl of npmCdnUrls) {
+    try {
+      const response = await globalThis.fetch(npmCdnUrl)
+      if (!response.ok) {
         throw new Error(
-          `Could not fetch "${importName}" from jsdelivr: ${res.statusText}\n\n${ctx.logger.stringifyLogs()}`,
+          `Could not fetch "${importName}" from ${npmCdnUrl}: ${response.statusText}\n\n${ctx.logger.stringifyLogs()}`,
         )
-      return { content: await res.text(), error: null }
-    })
-    .catch((e) => ({ error: e, content: null }))
+      }
+      const content = await response.text()
+      const finalImportName = extractPackagePathFromCdnUrl(
+        response.url,
+        importName,
+      )
+      const cwd = dirname(finalImportName)
 
-  if (error) {
-    console.error("Error fetching npm import", importName, error)
-    throw error
-  }
+      const importNames = getImportsFromCode(content)
+      for (const subImportName of importNames) {
+        if (!preSuppliedImports[subImportName]) {
+          await importEvalPath(subImportName, ctx, depth + 1, {
+            cwd,
+          })
+        }
+      }
 
-  const finalImportName = extractPackagePathFromJSDelivr(finalUrl!)
-  const cwd = dirname(finalImportName)
-
-  const importNames = getImportsFromCode(content!)
-  for (const subImportName of importNames) {
-    if (!preSuppliedImports[subImportName]) {
-      await importEvalPath(subImportName, ctx, depth + 1, {
+      const transformedCode = transformWithSucrase(
+        content,
+        finalImportName || importName,
+      )
+      const exports = evalCompiledJs(
+        transformedCode,
+        preSuppliedImports,
         cwd,
-      })
+      ).exports
+
+      preSuppliedImports[importName] = exports
+      preSuppliedImports[finalImportName] = exports
+      preSuppliedImports[response.url] = exports
+      return
+    } catch (error) {
+      lastError = error
     }
   }
 
-  const transformedCode = transformWithSucrase(
-    content!,
-    finalImportName || importName,
-  )
-  try {
-    const exports = evalCompiledJs(
-      transformedCode,
-      preSuppliedImports,
-      cwd,
-    ).exports
-    preSuppliedImports[importName] = exports
-    preSuppliedImports[finalImportName] = exports
-    preSuppliedImports[finalUrl!] = exports
-  } catch (e: any) {
+  if (lastError instanceof Error) {
     throw new Error(
-      `Eval npm package error for "${importName}": ${e.message}\n\n${ctx.logger.stringifyLogs()}`,
+      `Eval npm package error for "${importName}": ${lastError.message}\n\n${ctx.logger.stringifyLogs()}`,
     )
   }
+
+  throw new Error(
+    `Eval npm package error for "${importName}"\n\n${ctx.logger.stringifyLogs()}`,
+  )
 }
