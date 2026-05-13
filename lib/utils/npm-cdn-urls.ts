@@ -1,5 +1,4 @@
 const JSCDN_ORIGIN = "https://jscdn.tscircuit.com"
-const JSDELIVR_NPM_ORIGIN = "https://cdn.jsdelivr.net/npm"
 
 type ParsedNpmSpecifier = {
   packageName: string
@@ -16,30 +15,6 @@ export function getJscdnPackageUrl(importName: string): string {
   }
 
   return `${JSCDN_ORIGIN}/${pathParts.join("/")}`
-}
-
-export function getJscdnPackageFileUrl({
-  packageName,
-  version,
-  filePath,
-}: {
-  packageName: string
-  version: string
-  filePath: string
-}): string {
-  return `${JSCDN_ORIGIN}/${packageName}/${version}/${filePath}`
-}
-
-export function getJsdelivrPackageFileUrl({
-  packageName,
-  version,
-  filePath,
-}: {
-  packageName: string
-  version: string
-  filePath: string
-}): string {
-  return `${JSDELIVR_NPM_ORIGIN}/${packageName}@${version}/${filePath}`
 }
 
 function parseNpmSpecifier(importName: string): ParsedNpmSpecifier {
