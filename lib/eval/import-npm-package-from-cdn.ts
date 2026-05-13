@@ -25,6 +25,8 @@ export async function importNpmPackageFromCdn(
 
   if (preSuppliedImports[importName]) return
 
+  // This path still needs jsDelivr's +esm bundling. jscdn serves package files
+  // directly and is used first in eval paths that request concrete files.
   const npmCdnUrl = `https://cdn.jsdelivr.net/npm/${importName}/+esm`
 
   let finalUrl: string | undefined

@@ -7,6 +7,10 @@ import type {
 } from "./shared/types"
 import type { RootCircuitEventName } from "./shared/types"
 import { getObjectPaths, getValueAtPath } from "./shared/obj-path"
+import {
+  getJscdnPackageFileUrl,
+  getJsdelivrPackageFileUrl,
+} from "./utils/npm-cdn-urls"
 
 export type { CircuitWebWorker, WebWorkerConfiguration }
 
@@ -18,7 +22,16 @@ declare global {
 }
 
 export const getWebWorkerEntrypointCdnUrls = (evalVersion = "latest") => [
-  `https://cdn.jsdelivr.net/npm/@tscircuit/eval@${evalVersion}/dist/webworker/entrypoint.js`,
+  getJscdnPackageFileUrl({
+    packageName: "@tscircuit/eval",
+    version: evalVersion,
+    filePath: "dist/webworker/entrypoint.js",
+  }),
+  getJsdelivrPackageFileUrl({
+    packageName: "@tscircuit/eval",
+    version: evalVersion,
+    filePath: "dist/webworker/entrypoint.js",
+  }),
   `https://unpkg.com/@tscircuit/eval@${evalVersion}/dist/webworker/entrypoint.js`,
 ]
 

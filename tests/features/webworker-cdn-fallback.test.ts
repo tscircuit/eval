@@ -11,7 +11,7 @@ afterEach(() => {
 })
 
 describe("webworker CDN fallback", () => {
-  test("uses jsdelivr first and falls back to unpkg when jsdelivr fails", async () => {
+  test("uses jscdn first and falls back to jsdelivr when jscdn fails", async () => {
     const requestedUrls: string[] = []
     const fallbackBlob = new Blob(["export {}"], {
       type: "application/javascript",
@@ -21,7 +21,7 @@ describe("webworker CDN fallback", () => {
       const url = input.toString()
       requestedUrls.push(url)
 
-      if (url.includes("cdn.jsdelivr.net")) {
+      if (url.includes("jscdn.tscircuit.com")) {
         return new Response("not found", {
           status: 404,
           statusText: "Not Found",
@@ -34,6 +34,8 @@ describe("webworker CDN fallback", () => {
     const blob = await fetchWebWorkerEntrypointBlobFromCdn("1.2.3")
 
     expect(await blob.text()).toBe("export {}")
-    expect(requestedUrls).toEqual(getWebWorkerEntrypointCdnUrls("1.2.3"))
+    expect(requestedUrls).toEqual(
+      getWebWorkerEntrypointCdnUrls("1.2.3").slice(0, 2),
+    )
   })
 })
