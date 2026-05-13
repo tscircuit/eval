@@ -34,7 +34,7 @@ export async function importNpmPackageFromCdn(
     `${getJscdnPackageUrl(importName)}/+esm`,
     `https://cdn.jsdelivr.net/npm/${importName}/+esm`,
   ]
-  let lastError: unknown
+  let lastCdnError: unknown
 
   for (const npmCdnUrl of npmCdnUrls) {
     try {
@@ -75,13 +75,13 @@ export async function importNpmPackageFromCdn(
       preSuppliedImports[response.url] = exports
       return
     } catch (error) {
-      lastError = error
+      lastCdnError = error
     }
   }
 
-  if (lastError instanceof Error) {
+  if (lastCdnError instanceof Error) {
     throw new Error(
-      `Eval npm package error for "${importName}": ${lastError.message}\n\n${ctx.logger.stringifyLogs()}`,
+      `Eval npm package error for "${importName}": ${lastCdnError.message}\n\n${ctx.logger.stringifyLogs()}`,
     )
   }
 
