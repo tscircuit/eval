@@ -27,7 +27,7 @@ type PlatformStaticFileLoaderMap = NonNullable<
   PlatformConfig["staticFileLoaderMap"]
 >
 
-const resolveJlcpcbSupplierPartNumber = (partNumber: string) => {
+const toJlcpcbSupplierPartNumber = (partNumber: string) => {
   if (/^\d+$/.test(partNumber)) {
     return `C${partNumber}`
   }
@@ -226,7 +226,7 @@ export const getPlatformConfig = (
           )
         }
 
-        const supplierPartNumber = resolveJlcpcbSupplierPartNumber(partNumber)
+        const supplierPartNumber = toJlcpcbSupplierPartNumber(partNumber)
         const footprintCircuitJson = await partsEngine.fetchPartCircuitJson({
           supplierPartNumber,
           platformFetch: overrides.platformFetch,

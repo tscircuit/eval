@@ -3,7 +3,7 @@ import type { PartsEngine } from "@tscircuit/props"
 import { getPlatformConfig } from "lib/getPlatformConfig"
 import jlcpcbC156301FootprintCircuitJson from "tests/fixtures/assets/jlcpcb-C156301-footprint.circuit.json"
 
-test("jlcpcb footprint library map returns cadModel extracted from fetched circuit json", async () => {
+test("jlcpcb footprint library map returns cadModel from fetched C156301 circuit json", async () => {
   const mockPartsEngine: PartsEngine = {
     findPart: async () => ({}),
     fetchPartCircuitJson: async ({ supplierPartNumber }) => {
@@ -16,10 +16,10 @@ test("jlcpcb footprint library map returns cadModel extracted from fetched circu
     partsEngine: mockPartsEngine,
   })
 
-  const jlcpcbLoader = platformConfig.footprintLibraryMap?.jlcpcb as (
+  const loadJlcpcbFootprint = platformConfig.footprintLibraryMap?.jlcpcb as (
     partNumber: string,
   ) => Promise<any>
-  const result = await jlcpcbLoader("156301")
+  const result = await loadJlcpcbFootprint("156301")
 
   expect(result).toBeDefined()
   expect(Array.isArray(result?.footprintCircuitJson)).toBe(true)

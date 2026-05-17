@@ -6,7 +6,7 @@ import jlcpcbC156301FootprintCircuitJson from "tests/fixtures/assets/jlcpcb-C156
 import { CircuitRunner } from "lib/runner/CircuitRunner"
 
 test(
-  "jlcpcb footprint library map renders fetched footprint data",
+  "jlcpcb footprint library map renders PCB from fetched C156301 circuit json",
   async () => {
     const mockPartsEngine: PartsEngine = {
       findPart: async () => ({}),
