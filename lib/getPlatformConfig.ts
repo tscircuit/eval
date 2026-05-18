@@ -1,6 +1,4 @@
 import {
-  cadModelProp,
-  type CadModelProp,
   type PlatformConfig,
   type SpiceEngine,
 } from "@tscircuit/props"
@@ -12,8 +10,9 @@ import {
 import { createKiCadRoutingToolsAutorouter } from "@tscircuit/krt-wasm"
 import { parseKicadModToCircuitJson } from "kicad-component-converter"
 import { dynamicallyLoadDependencyWithCdnBackup } from "./utils/dynamically-load-dependency-with-cdn-backup"
+import { extractCadModelFromCircuitJson } from "./utils/extractCadModelFromCircuitJson"
 import { KicadToCircuitJsonConverter } from "kicad-to-circuit-json"
-import type { AnyCircuitElement, CadComponent } from "circuit-json"
+import type { AnyCircuitElement } from "circuit-json"
 import * as React from "react"
 
 const KICAD_FOOTPRINT_CACHE_URL = "https://kicad-mod-cache.tscircuit.com"
@@ -37,53 +36,6 @@ const toJlcpcbSupplierPartNumber = (partNumber: string) => {
   }
 
   return partNumber
-}
-
-const extractCadModelFromCircuitJson = (
-  circuitJson: AnyCircuitElement[],
-): CadModelProp | undefined => {
-  const cadComponent = circuitJson.find(
-    (elm): elm is CadComponent => elm.type === "cad_component",
-  )
-  if (!cadComponent) return undefined
-
-  const cadModelCandidate: Record<string, unknown> = {
-    stlUrl: cadComponent.model_stl_url,
-    objUrl: cadComponent.model_obj_url,
-    gltfUrl: cadComponent.model_gltf_url,
-    glbUrl: cadComponent.model_glb_url,
-    stepUrl: cadComponent.model_step_url,
-    wrlUrl: cadComponent.model_wrl_url,
-    modelOriginPosition: cadComponent.model_origin_position ?? undefined,
-    modelUnitToMmScale: cadComponent.model_unit_to_mm_scale_factor,
-    modelBoardNormalDirection: cadComponent.model_board_normal_direction,
-    size: cadComponent.size ?? undefined,
-    rotationOffset: cadComponent.rotation ?? undefined,
-    positionOffset: cadComponent.position ?? undefined,
-    showAsTranslucentModel: cadComponent.show_as_translucent_model,
-  }
-
-  if (
-    !cadModelCandidate.stlUrl &&
-    !cadModelCandidate.objUrl &&
-    !cadModelCandidate.gltfUrl &&
-    !cadModelCandidate.glbUrl &&
-    !cadModelCandidate.stepUrl &&
-    !cadModelCandidate.wrlUrl &&
-    !cadComponent.model_jscad
-  ) {
-    return undefined
-  }
-
-  if (
-    cadComponent.model_jscad &&
-    typeof cadComponent.model_jscad === "object"
-  ) {
-    cadModelCandidate.jscad = cadComponent.model_jscad
-  }
-
-  const parsedCadModel = cadModelProp.safeParse(cadModelCandidate)
-  return parsedCadModel.success ? parsedCadModel.data : undefined
 }
 
 const loadKicadPcbStaticFile: PlatformStaticFileLoaderMap[string] = async (
