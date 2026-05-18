@@ -57,6 +57,9 @@
       "import": "./dist/platform-config/getPlatformConfig.js"
     }
   },
+  "dependencies": {
+    "@tscircuit/props": "^0.0.531"
+  },
   "devDependencies": {
     "@biomejs/biome": "^1.8.3",
     "@playwright/test": "^1.50.1",
@@ -83,7 +86,6 @@
     "@tscircuit/mm": "^0.0.9",
     "@tscircuit/ngspice-spice-engine": "^0.0.8",
     "@tscircuit/parts-engine": "^0.0.21",
-    "@tscircuit/props": "^0.0.531",
     "@tscircuit/schematic-autolayout": "^0.0.6",
     "@tscircuit/schematic-match-adapt": "^0.0.16",
     "@tscircuit/schematic-trace-solver": "^0.0.57",
