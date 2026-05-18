@@ -1,4 +1,4 @@
-import type { PlatformConfig, SpiceEngine } from "@tscircuit/props"
+import { type PlatformConfig, type SpiceEngine } from "@tscircuit/props"
 import {
   JlcPcbPartsEngine,
   jlcPartsEngine,
@@ -6,7 +6,8 @@ import {
 } from "@tscircuit/parts-engine"
 import { createKiCadRoutingToolsAutorouter } from "@tscircuit/krt-wasm"
 import { parseKicadModToCircuitJson } from "kicad-component-converter"
-import { dynamicallyLoadDependencyWithCdnBackup } from "./utils/dynamically-load-dependency-with-cdn-backup"
+import { dynamicallyLoadDependencyWithCdnBackup } from "../utils/dynamically-load-dependency-with-cdn-backup"
+import { extractCadModelFromCircuitJson } from "./extractCadModelFromCircuitJson"
 import { KicadToCircuitJsonConverter } from "kicad-to-circuit-json"
 import type { AnyCircuitElement } from "circuit-json"
 import * as React from "react"
@@ -22,7 +23,7 @@ type PlatformStaticFileLoaderMap = NonNullable<
   PlatformConfig["staticFileLoaderMap"]
 >
 
-const resolveJlcpcbSupplierPartNumber = (partNumber: string) => {
+const toJlcpcbSupplierPartNumber = (partNumber: string) => {
   if (/^\d+$/.test(partNumber)) {
     return `C${partNumber}`
   }
@@ -174,7 +175,7 @@ export const getPlatformConfig = (
           )
         }
 
-        const supplierPartNumber = resolveJlcpcbSupplierPartNumber(partNumber)
+        const supplierPartNumber = toJlcpcbSupplierPartNumber(partNumber)
         const footprintCircuitJson = await partsEngine.fetchPartCircuitJson({
           supplierPartNumber,
           platformFetch: overrides.platformFetch,
@@ -188,6 +189,7 @@ export const getPlatformConfig = (
 
         return {
           footprintCircuitJson,
+          cadModel: extractCadModelFromCircuitJson(footprintCircuitJson),
         }
       },
     },
