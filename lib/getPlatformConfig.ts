@@ -1,7 +1,4 @@
-import {
-  type PlatformConfig,
-  type SpiceEngine,
-} from "@tscircuit/props"
+import { type PlatformConfig, type SpiceEngine } from "@tscircuit/props"
 import {
   JlcPcbPartsEngine,
   jlcPartsEngine,
