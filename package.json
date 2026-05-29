@@ -68,7 +68,7 @@
     "@tscircuit/circuit-json-util": "^0.0.94",
     "@tscircuit/common": "^0.0.20",
     "@tscircuit/copper-pour-solver": "^0.0.29",
-    "@tscircuit/core": "^0.0.1274",
+    "@tscircuit/core": "^0.0.1275",
     "@tscircuit/footprinter": "^0.0.357",
     "@tscircuit/import-snippet": "^0.0.4",
     "@tscircuit/infer-cable-insertion-point": "^0.0.2",
@@ -112,7 +112,7 @@
     "debug": "^4.3.6",
     "eecircuit-engine": "^1.5.6",
     "flatbush": "^4.5.0",
-    "graphics-debug": "^0.0.89",
+    "graphics-debug": "^0.0.95",
     "howfat": "^0.3.8",
     "kicad-component-converter": "^0.1.30",
     "kicad-to-circuit-json": "^0.0.60",
@@ -131,8 +131,8 @@
     "tslib": "^2.8.1",
     "tsup": "^8.2.4",
     "zod": "^3.25.67",
-    "stack-svgs": "^0.0.1"
-  },
+    "stack-svgs": "^0.0.1",
+    "@tscircuit/breakout-point-solver": "github:tscircuit/breakout-point-solver#bac9629"},
   "peerDependencies": {
     "typescript": "^5.0.0",
     "@tscircuit/core": "*",
