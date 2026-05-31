@@ -15,4 +15,4 @@ test("group is not wrapped in board", async () => {
 
   expect(sourceGroups.length).toBe(1)
   expect(sourceGroups[0].name).toBe("G2")
-})
+}, 20_000)

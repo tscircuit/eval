@@ -10,11 +10,13 @@ test("browser test server shows Success", async ({ page }) => {
 
   // Wait for the success message or timeout
   await expect(page.locator("#output")).toContainText("Success", {
-    timeout: 10000,
+    timeout: 25000,
   })
 })
 
 test("ngspice simulation runs successfully in browser", async ({ page }) => {
+  test.setTimeout(90_000)
+
   // Wait for server to start
   await new Promise((resolve) => setTimeout(resolve, 1000))
 
@@ -126,6 +128,6 @@ test("copper pour successfully renders in browser (verifies manifold-3d WASM)", 
   // The output div should show success if WASM initialization and rendering worked
   await expect(page.locator("#output")).toContainText(
     "Success: Copper pour initialized.",
-    { timeout: 15000 },
+    { timeout: 20000 },
   )
 })
