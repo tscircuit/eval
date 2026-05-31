@@ -1,4 +1,9 @@
-import { type PlatformConfig, type SpiceEngine } from "@tscircuit/props"
+import {
+  type FootprintLibraryResult,
+  type PcbStyle,
+  type PlatformConfig,
+  type SpiceEngine,
+} from "@tscircuit/props"
 import {
   JlcPcbPartsEngine,
   jlcPartsEngine,
@@ -10,7 +15,6 @@ import { dynamicallyLoadDependencyWithCdnBackup } from "../utils/dynamically-loa
 import { extractCadModelFromCircuitJson } from "./extractCadModelFromCircuitJson"
 import { KicadToCircuitJsonConverter } from "kicad-to-circuit-json"
 import type { AnyCircuitElement } from "circuit-json"
-import { createTiFootprintLibrary } from "lib/ti-parts-engine"
 import type { TiPartsEngineConfig } from "lib/shared/types"
 import * as React from "react"
 
@@ -21,6 +25,10 @@ let ngspiceEngineCache: SpiceEngine | null = null
 type PlatformAutorouterMap = NonNullable<PlatformConfig["autorouterMap"]>
 type PlatformCreateAutorouter =
   PlatformAutorouterMap[string]["createAutorouter"]
+type PlatformFootprintLibraryLoader = (
+  path: string,
+  options?: { resolvedPcbStyle?: PcbStyle },
+) => Promise<FootprintLibraryResult>
 type PlatformStaticFileLoaderMap = NonNullable<
   PlatformConfig["staticFileLoaderMap"]
 >
@@ -93,12 +101,32 @@ export const getPlatformConfig = (
     })
   }
 
-  const tiFootprintLibraryMap = options.tiPartsEngineConfig
-    ? createTiFootprintLibrary({
-        ...options.tiPartsEngineConfig,
-        fetch: options.tiPartsEngineConfig.fetch ?? overrides.platformFetch,
-      })
-    : {}
+  let tiFootprintLoaderPromise: Promise<PlatformFootprintLibraryLoader> | null =
+    null
+
+  const tiFootprintLibraryMap: PlatformConfig["footprintLibraryMap"] =
+    options.tiPartsEngineConfig
+      ? {
+          ti: (async (mpn: string) => {
+            if (!tiFootprintLoaderPromise) {
+              tiFootprintLoaderPromise = import(
+                "@tscircuit/ti-parts-engine/footprint-library"
+              ).then(
+                ({ createTiFootprintLibrary }) =>
+                  createTiFootprintLibrary({
+                    ...options.tiPartsEngineConfig!,
+                    fetch:
+                      options.tiPartsEngineConfig!.fetch ??
+                      overrides.platformFetch,
+                  }).ti,
+              )
+            }
+
+            const loadTiFootprint = await tiFootprintLoaderPromise
+            return loadTiFootprint(mpn)
+          }) as PlatformFootprintLibraryLoader,
+        }
+      : undefined
 
   return {
     localCacheEngine: overrides.localCacheEngine,
@@ -202,7 +230,7 @@ export const getPlatformConfig = (
           cadModel: extractCadModelFromCircuitJson(footprintCircuitJson),
         }
       },
-      ...tiFootprintLibraryMap,
+      ...(tiFootprintLibraryMap ?? {}),
       ...overrides.footprintLibraryMap,
     },
     footprintFileParserMap: {

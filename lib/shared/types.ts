@@ -2,7 +2,7 @@ import type { AnyCircuitElement } from "circuit-json"
 import type { RootCircuitEventName as CoreRootCircuitEventName } from "@tscircuit/core"
 import type { PlatformConfig } from "@tscircuit/props"
 import type { EasyEdaProxyConfig } from "@tscircuit/parts-engine"
-import type { TiPartsEngineConfig } from "lib/ti-parts-engine"
+import type { TiPartsEngineConfig } from "@tscircuit/ti-parts-engine/footprint-library"
 
 export type RootCircuitEventName = CoreRootCircuitEventName | "debug:logOutput"
 export type { TiPartsEngineConfig }
