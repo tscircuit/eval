@@ -42,7 +42,7 @@ export function createExecutionContext(
 ): ExecutionContext {
   globalThis.React = React
 
-  const defaultPlatform = getPlatformConfig(
+  const basePlatform = getPlatformConfig(
     {},
     {
       easyEdaProxyConfig: webWorkerConfiguration.easyEdaProxyConfig,
@@ -52,8 +52,8 @@ export function createExecutionContext(
   const platform = opts.platform
     ? opts.platform
     : opts.projectConfig
-      ? mergePlatformConfig(defaultPlatform, opts.projectConfig)
-      : defaultPlatform
+      ? mergePlatformConfig(basePlatform, opts.projectConfig)
+      : basePlatform
 
   if (platform.partsEngineDisabled) {
     platform.partsEngine = undefined
