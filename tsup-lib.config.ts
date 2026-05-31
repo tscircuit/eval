@@ -5,7 +5,10 @@ export default defineConfig({
   format: ["esm"],
   sourcemap: "inline",
   outDir: "dist/lib",
-  noExternal: ["@tscircuit/parts-engine"],
+  noExternal: [
+    "@tscircuit/parts-engine",
+    "@tscircuit/ti-parts-engine/footprint-library",
+  ],
   clean: true,
   dts: true,
 })

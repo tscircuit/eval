@@ -6,7 +6,10 @@ export default defineConfig({
   platform: "browser",
   sourcemap: "inline", // Added for consistency
   outDir: "dist/eval",
-  noExternal: ["@tscircuit/parts-engine"],
+  noExternal: [
+    "@tscircuit/parts-engine",
+    "@tscircuit/ti-parts-engine/footprint-library",
+  ],
   clean: true, // Added for consistency
   dts: true,
 })

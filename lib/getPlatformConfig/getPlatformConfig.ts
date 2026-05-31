@@ -4,6 +4,7 @@ import {
   jlcPartsEngine,
   type EasyEdaProxyConfig,
 } from "@tscircuit/parts-engine"
+import { createTiFootprintLibrary } from "@tscircuit/ti-parts-engine/footprint-library"
 import { createKiCadRoutingToolsAutorouter } from "@tscircuit/krt-wasm"
 import { parseKicadModToCircuitJson } from "kicad-component-converter"
 import { dynamicallyLoadDependencyWithCdnBackup } from "../utils/dynamically-load-dependency-with-cdn-backup"
@@ -11,6 +12,7 @@ import { extractCadModelFromCircuitJson } from "./extractCadModelFromCircuitJson
 import { KicadToCircuitJsonConverter } from "kicad-to-circuit-json"
 import type { AnyCircuitElement } from "circuit-json"
 import * as React from "react"
+import type { TiBridgeConfig } from "../shared/types"
 
 const KICAD_FOOTPRINT_CACHE_URL = "https://kicad-mod-cache.tscircuit.com"
 
@@ -79,9 +81,16 @@ export const getPlatformConfig = (
   overrides: Partial<PlatformConfig> = {},
   options: {
     easyEdaProxyConfig?: EasyEdaProxyConfig
+    tiBridgeConfig?: TiBridgeConfig
   } = {},
 ): PlatformConfig => {
   let partsEngine = overrides.partsEngine ?? jlcPartsEngine
+  const tiFootprintLibrary = options.tiBridgeConfig
+    ? createTiFootprintLibrary({
+        ...options.tiBridgeConfig,
+        fetch: overrides.platformFetch as typeof fetch | undefined,
+      })
+    : undefined
 
   if (!overrides.partsEngine && options.easyEdaProxyConfig) {
     partsEngine = new JlcPcbPartsEngine({
@@ -135,6 +144,7 @@ export const getPlatformConfig = (
       },
     },
     footprintLibraryMap: {
+      ...tiFootprintLibrary,
       kicad: async (footprintName: string) => {
         const baseUrl = `${KICAD_FOOTPRINT_CACHE_URL}/${footprintName}`
         const circuitJsonUrl = `${baseUrl}.circuit.json`
@@ -192,6 +202,7 @@ export const getPlatformConfig = (
           cadModel: extractCadModelFromCircuitJson(footprintCircuitJson),
         }
       },
+      ...overrides.footprintLibraryMap,
     },
     footprintFileParserMap: {
       kicad_mod: {

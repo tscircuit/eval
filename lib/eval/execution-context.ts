@@ -47,6 +47,7 @@ export function createExecutionContext(
       {},
       {
         easyEdaProxyConfig: webWorkerConfiguration.easyEdaProxyConfig,
+        tiBridgeConfig: webWorkerConfiguration.tiBridgeConfig,
       },
     )
   const platform = opts.projectConfig

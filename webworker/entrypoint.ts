@@ -3,6 +3,7 @@ import * as Comlink from "comlink"
 import type {
   InternalWebWorkerApi,
   WebWorkerConfiguration,
+  TiBridgeConfig,
 } from "lib/shared/types"
 import * as React from "react"
 import type { PlatformConfig } from "@tscircuit/props"
@@ -35,6 +36,7 @@ const circuitRunnerConfiguration: WebWorkerConfiguration = {
   verbose: false,
   platform: undefined,
   projectConfig: undefined,
+  tiBridgeConfig: undefined,
 }
 
 const eventListeners: Record<string, ((...args: any[]) => void)[]> = {}
@@ -122,6 +124,10 @@ const webWorkerApi = {
     headers?: Record<string, string>
   }) => {
     circuitRunnerConfiguration.easyEdaProxyConfig = config
+  },
+
+  setTiBridgeConfig: async (config: TiBridgeConfig) => {
+    circuitRunnerConfiguration.tiBridgeConfig = config
   },
 
   setTscircuitSessionToken: async (token: string) => {

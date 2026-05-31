@@ -90,6 +90,7 @@
     "@tscircuit/simple-3d-svg": "^0.0.41",
     "@tscircuit/solver-utils": "^0.0.3",
     "@tscircuit/soup-util": "^0.0.41",
+    "@tscircuit/ti-parts-engine": "github:tscircuit/ti-parts-engine",
     "@types/bun": "^1.2.16",
     "@types/debug": "^4.1.12",
     "@types/react": "^19.1.8",

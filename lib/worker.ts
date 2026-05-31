@@ -121,24 +121,27 @@ export const createCircuitWebWorker = async (
 
     try {
       const response = await globalThis.fetch(data.input, data.init)
-      const body = await response.text()
-      rawWorker.postMessage({
-        type: "worker_fetch_result",
-        requestId: data.requestId,
-        success: true,
-        response: {
-          body,
-          status: response.status,
-          statusText: response.statusText,
-          headers: (() => {
-            const obj: Record<string, string> = {}
-            response.headers.forEach((value, key) => {
-              obj[key] = value
-            })
-            return obj
-          })(),
+      const body = await response.arrayBuffer()
+      rawWorker.postMessage(
+        {
+          type: "worker_fetch_result",
+          requestId: data.requestId,
+          success: true,
+          response: {
+            body,
+            status: response.status,
+            statusText: response.statusText,
+            headers: (() => {
+              const obj: Record<string, string> = {}
+              response.headers.forEach((value, key) => {
+                obj[key] = value
+              })
+              return obj
+            })(),
+          },
         },
-      })
+        [body],
+      )
     } catch (err: any) {
       rawWorker.postMessage({
         type: "worker_fetch_result",
@@ -222,6 +225,10 @@ export const createCircuitWebWorker = async (
 
   if (configuration.easyEdaProxyConfig) {
     await comlinkWorker.setEasyEdaProxyConfig(configuration.easyEdaProxyConfig)
+  }
+
+  if (configuration.tiBridgeConfig) {
+    await comlinkWorker.setTiBridgeConfig(configuration.tiBridgeConfig)
   }
 
   const maybeProxy = (value: any) => {
