@@ -10,6 +10,8 @@ import { dynamicallyLoadDependencyWithCdnBackup } from "../utils/dynamically-loa
 import { extractCadModelFromCircuitJson } from "./extractCadModelFromCircuitJson"
 import { KicadToCircuitJsonConverter } from "kicad-to-circuit-json"
 import type { AnyCircuitElement } from "circuit-json"
+import { createTiFootprintLibrary } from "lib/ti-parts-engine"
+import type { TiPartsEngineConfig } from "lib/shared/types"
 import * as React from "react"
 
 const KICAD_FOOTPRINT_CACHE_URL = "https://kicad-mod-cache.tscircuit.com"
@@ -79,6 +81,7 @@ export const getPlatformConfig = (
   overrides: Partial<PlatformConfig> = {},
   options: {
     easyEdaProxyConfig?: EasyEdaProxyConfig
+    tiPartsEngineConfig?: TiPartsEngineConfig
   } = {},
 ): PlatformConfig => {
   let partsEngine = overrides.partsEngine ?? jlcPartsEngine
@@ -89,6 +92,13 @@ export const getPlatformConfig = (
       easyEdaProxyConfig: options.easyEdaProxyConfig,
     })
   }
+
+  const tiFootprintLibraryMap = options.tiPartsEngineConfig
+    ? createTiFootprintLibrary({
+        ...options.tiPartsEngineConfig,
+        fetch: options.tiPartsEngineConfig.fetch ?? overrides.platformFetch,
+      })
+    : {}
 
   return {
     localCacheEngine: overrides.localCacheEngine,
@@ -192,6 +202,8 @@ export const getPlatformConfig = (
           cadModel: extractCadModelFromCircuitJson(footprintCircuitJson),
         }
       },
+      ...tiFootprintLibraryMap,
+      ...overrides.footprintLibraryMap,
     },
     footprintFileParserMap: {
       kicad_mod: {

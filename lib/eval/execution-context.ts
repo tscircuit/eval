@@ -7,6 +7,7 @@ import * as tscircuitMathUtils from "@tscircuit/math-utils"
 import * as tscircuitMm from "@tscircuit/mm"
 import type { PlatformConfig } from "@tscircuit/props"
 import { getPlatformConfig } from "lib/getPlatformConfig"
+import { mergePlatformConfig } from "lib/getPlatformConfig/mergePlatformConfig"
 import type { TsConfig } from "lib/runner/tsconfigPaths"
 import * as tslib from "tslib"
 import Debug from "debug"
@@ -41,17 +42,18 @@ export function createExecutionContext(
 ): ExecutionContext {
   globalThis.React = React
 
-  const basePlatform =
-    opts.platform ||
-    getPlatformConfig(
-      {},
-      {
-        easyEdaProxyConfig: webWorkerConfiguration.easyEdaProxyConfig,
-      },
-    )
-  const platform = opts.projectConfig
-    ? { ...basePlatform, ...opts.projectConfig }
-    : basePlatform
+  const defaultPlatform = getPlatformConfig(
+    {},
+    {
+      easyEdaProxyConfig: webWorkerConfiguration.easyEdaProxyConfig,
+      tiPartsEngineConfig: webWorkerConfiguration.tiPartsEngineConfig,
+    },
+  )
+  const platform = opts.platform
+    ? opts.platform
+    : opts.projectConfig
+      ? mergePlatformConfig(defaultPlatform, opts.projectConfig)
+      : defaultPlatform
 
   if (platform.partsEngineDisabled) {
     platform.partsEngine = undefined

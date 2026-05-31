@@ -224,6 +224,12 @@ export const createCircuitWebWorker = async (
     await comlinkWorker.setEasyEdaProxyConfig(configuration.easyEdaProxyConfig)
   }
 
+  if (configuration.tiPartsEngineConfig) {
+    await comlinkWorker.setTiPartsEngineConfig(
+      configuration.tiPartsEngineConfig,
+    )
+  }
+
   const maybeProxy = (value: any) => {
     if (typeof value === "function") {
       return Comlink.proxy(value)

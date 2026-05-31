@@ -2,6 +2,7 @@ import type { AnyCircuitElement } from "circuit-json"
 import * as Comlink from "comlink"
 import type {
   InternalWebWorkerApi,
+  TiPartsEngineConfig,
   WebWorkerConfiguration,
 } from "lib/shared/types"
 import * as React from "react"
@@ -35,6 +36,7 @@ const circuitRunnerConfiguration: WebWorkerConfiguration = {
   verbose: false,
   platform: undefined,
   projectConfig: undefined,
+  tiPartsEngineConfig: undefined,
 }
 
 const eventListeners: Record<string, ((...args: any[]) => void)[]> = {}
@@ -122,6 +124,10 @@ const webWorkerApi = {
     headers?: Record<string, string>
   }) => {
     circuitRunnerConfiguration.easyEdaProxyConfig = config
+  },
+
+  setTiPartsEngineConfig: async (config: TiPartsEngineConfig) => {
+    circuitRunnerConfiguration.tiPartsEngineConfig = config
   },
 
   setTscircuitSessionToken: async (token: string) => {
