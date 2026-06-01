@@ -16,6 +16,7 @@ import { extractCadModelFromCircuitJson } from "./extractCadModelFromCircuitJson
 import { KicadToCircuitJsonConverter } from "kicad-to-circuit-json"
 import type { AnyCircuitElement } from "circuit-json"
 import type { TiPartsEngineConfig } from "lib/shared/types"
+import { createTiFootprintLibrary } from "../ti-parts-engine"
 import * as React from "react"
 
 const KICAD_FOOTPRINT_CACHE_URL = "https://kicad-mod-cache.tscircuit.com"
@@ -109,16 +110,13 @@ export const getPlatformConfig = (
       ? {
           ti: (async (mpn: string) => {
             if (!tiFootprintLoaderPromise) {
-              tiFootprintLoaderPromise = import(
-                "@tscircuit/ti-parts-engine/footprint-library"
-              ).then(
-                ({ createTiFootprintLibrary }) =>
-                  createTiFootprintLibrary({
-                    ...options.tiPartsEngineConfig!,
-                    fetch:
-                      options.tiPartsEngineConfig!.fetch ??
-                      overrides.platformFetch,
-                  }).ti,
+              tiFootprintLoaderPromise = Promise.resolve(
+                createTiFootprintLibrary({
+                  ...options.tiPartsEngineConfig!,
+                  fetch:
+                    options.tiPartsEngineConfig!.fetch ??
+                    overrides.platformFetch,
+                }).ti,
               )
             }
 

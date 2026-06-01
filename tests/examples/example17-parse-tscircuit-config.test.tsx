@@ -1,19 +1,21 @@
 import { createCircuitWebWorker } from "lib"
 import { expect, test } from "bun:test"
 
-test("parse tscircuit.config.js with mainEntrypoint", async () => {
-  const circuitWebWorker = await createCircuitWebWorker({
-    webWorkerUrl: new URL("../../webworker/entrypoint.ts", import.meta.url),
-  })
+test(
+  "parse tscircuit.config.js with mainEntrypoint",
+  async () => {
+    const circuitWebWorker = await createCircuitWebWorker({
+      webWorkerUrl: new URL("../../webworker/entrypoint.ts", import.meta.url),
+    })
 
-  await circuitWebWorker.executeWithFsMap({
-    fsMap: {
-      "tscircuit.config.json": `
+    await circuitWebWorker.executeWithFsMap({
+      fsMap: {
+        "tscircuit.config.json": `
         {
           "mainEntrypoint": "random1.tsx"
         }
       `,
-      "random1.tsx": `
+        "random1.tsx": `
         import { MyLed } from "./random2.tsx"
         import someJson from "./random3.json"
         
@@ -23,27 +25,29 @@ test("parse tscircuit.config.js with mainEntrypoint", async () => {
           </board>
         )
       `,
-      "random2.tsx": `
+        "random2.tsx": `
         import { RedLed } from "@tsci/seveibar.red-led"
         
         export const MyLed = ({ name }) => {
           return <RedLed name={name} />
         }
       `,
-      "random3.json": `
+        "random3.json": `
         {
           "some": "value"
         }
       `,
-    },
-  })
+      },
+    })
 
-  await circuitWebWorker.renderUntilSettled()
+    await circuitWebWorker.renderUntilSettled()
 
-  const circuitJson = await circuitWebWorker.getCircuitJson()
+    const circuitJson = await circuitWebWorker.getCircuitJson()
 
-  const led = circuitJson.find((el: any) => el.name === "LED1")
-  expect(led?.type).toBe("source_component")
+    const led = circuitJson.find((el: any) => el.name === "LED1")
+    expect(led?.type).toBe("source_component")
 
-  await circuitWebWorker.kill()
-})
+    await circuitWebWorker.kill()
+  },
+  { timeout: 30000 },
+)

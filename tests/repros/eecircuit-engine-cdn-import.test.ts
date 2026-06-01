@@ -15,25 +15,25 @@ import { transformJsDelivrImports } from "lib/utils/dynamically-load-dependency-
  */
 
 describe("eecircuit-engine CDN import issue", () => {
-  test("ngspice-spice-engine CDN bundle contains relative /npm/ import that would fail in blob URL", async () => {
-    // Fetch the actual CDN bundle
-    const res = await fetch(
-      "https://cdn.jsdelivr.net/npm/@tscircuit/ngspice-spice-engine/+esm",
-    )
-    expect(res.ok).toBe(true)
+  test(
+    "ngspice-spice-engine CDN bundle contains relative /npm/ import that would fail in blob URL",
+    async () => {
+      const res = await fetch(
+        "https://cdn.jsdelivr.net/npm/@tscircuit/ngspice-spice-engine/+esm",
+      )
+      expect(res.ok).toBe(true)
 
-    const code = await res.text()
+      const code = await res.text()
 
-    // Verify the problematic pattern exists
-    const hasRelativeNpmImport = code.includes('import("/npm/')
-    expect(hasRelativeNpmImport).toBe(true)
+      const hasRelativeNpmImport = code.includes('import("/npm/')
+      expect(hasRelativeNpmImport).toBe(true)
 
-    // Verify the specific eecircuit-engine import exists
-    const hasEecircuitImport = /import\s*\(\s*["']\/npm\/eecircuit-engine/.test(
-      code,
-    )
-    expect(hasEecircuitImport).toBe(true)
-  })
+      const hasEecircuitImport =
+        /import\s*\(\s*["']\/npm\/eecircuit-engine/.test(code)
+      expect(hasEecircuitImport).toBe(true)
+    },
+    { timeout: 15000 },
+  )
 
   test("transformJsDelivrImports fixes the relative import", () => {
     const input =

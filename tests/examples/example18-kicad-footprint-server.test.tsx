@@ -2,16 +2,18 @@ import { createCircuitWebWorker } from "lib/index"
 import { expect, test } from "bun:test"
 import { convertCircuitJsonToPcbSvg } from "circuit-to-svg"
 
-test("example18-kicad-footprint-server", async () => {
-  const circuitWebWorker = await createCircuitWebWorker({
-    webWorkerUrl: new URL("../../webworker/entrypoint.ts", import.meta.url),
-    verbose: true,
-  })
+test(
+  "example18-kicad-footprint-server",
+  async () => {
+    const circuitWebWorker = await createCircuitWebWorker({
+      webWorkerUrl: new URL("../../webworker/entrypoint.ts", import.meta.url),
+      verbose: true,
+    })
 
-  await circuitWebWorker.executeWithFsMap({
-    entrypoint: "index.tsx",
-    fsMap: {
-      "index.tsx": `
+    await circuitWebWorker.executeWithFsMap({
+      entrypoint: "index.tsx",
+      fsMap: {
+        "index.tsx": `
           circuit.add(
             <board>
               <resistor name="R1" resistance="1k" footprint="kicad:Resistor_SMD.pretty/R_0402_1005Metric" pcbX={-2} />
@@ -20,20 +22,22 @@ test("example18-kicad-footprint-server", async () => {
             </board>
           )
         `,
-    },
-  })
+      },
+    })
 
-  await circuitWebWorker.renderUntilSettled()
+    await circuitWebWorker.renderUntilSettled()
 
-  const circuitJson = await circuitWebWorker.getCircuitJson()
+    const circuitJson = await circuitWebWorker.getCircuitJson()
 
-  const pcb_trace = circuitJson.filter((el: any) => el.type === "pcb_trace")
-  expect(pcb_trace).toBeDefined()
-  expect(pcb_trace.length).toBe(1)
+    const pcb_trace = circuitJson.filter((el: any) => el.type === "pcb_trace")
+    expect(pcb_trace).toBeDefined()
+    expect(pcb_trace.length).toBe(1)
 
-  expect(convertCircuitJsonToPcbSvg(circuitJson)).toMatchSvgSnapshot(
-    import.meta.path,
-  )
+    expect(convertCircuitJsonToPcbSvg(circuitJson)).toMatchSvgSnapshot(
+      import.meta.path,
+    )
 
-  await circuitWebWorker.kill()
-})
+    await circuitWebWorker.kill()
+  },
+  { timeout: 15000 },
+)
