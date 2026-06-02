@@ -13,7 +13,6 @@ import Debug from "debug"
 import { isPackageDeclaredInPackageJson } from "./isPackageDeclaredInPackageJson"
 import { getNodeModuleDirectory } from "./getNodeModuleDirectory"
 import { getPackageJsonEntrypoint } from "./getPackageJsonEntrypoint"
-import { isTypeScriptEntrypoint } from "./isTypeScriptEntrypoint"
 import { isDistDirEmpty } from "./isDistDirEmpty"
 import { resolveEntrypointPath } from "./resolveEntrypointPath"
 
@@ -210,16 +209,9 @@ export async function importEvalPath(
       )
     }
 
-    // Step 3: Check if main entrypoint is a TypeScript file (only if dir exists)
     if (nodeModuleDir) {
       const entrypoint = getPackageJsonEntrypoint(importName, ctx.fsMap)
-      if (isTypeScriptEntrypoint(entrypoint)) {
-        throw new Error(
-          `Node module "${importName}" has a typescript entrypoint that is unsupported\n\n${ctx.logger.stringifyLogs()}`,
-        )
-      }
 
-      // Step 4: Check if dist directory is empty when main points to dist
       if (entrypoint?.startsWith("dist/")) {
         if (isDistDirEmpty(importName, ctx.fsMap)) {
           throw new Error(
