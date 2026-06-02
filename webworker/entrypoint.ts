@@ -17,6 +17,8 @@ import { enhanceRootCircuitHasNoChildrenError } from "lib/utils/enhance-root-cir
 import { setupFetchProxy } from "./fetchProxy"
 import { setValueAtPath } from "lib/shared/obj-path"
 import manifoldWasmUrl from "manifold-3d/manifold.wasm"
+import { loadTscircuitConfig } from "lib/runner/loadTscircuitConfig"
+import { getPlatformConfigForTscircuitConfig } from "lib/getPlatformConfig/getPlatformConfigForTscircuitConfig"
 
 globalThis.React = React
 setupFetchProxy()
@@ -157,15 +159,31 @@ const webWorkerApi = {
 
     let entrypoint = opts.entrypoint!
 
+    const normalizedFsMap = normalizeFsMap(opts.fsMap)
+    const tscircuitConfig = await loadTscircuitConfig(
+      normalizedFsMap,
+      circuitRunnerConfiguration,
+      {
+        debugNamespace,
+      },
+    )
+    const platformFromTscircuitConfig = getPlatformConfigForTscircuitConfig(
+      circuitRunnerConfiguration,
+      tscircuitConfig,
+    )
+
     executionContext = createExecutionContext(circuitRunnerConfiguration, {
       name: opts.name,
-      platform: circuitRunnerConfiguration.platform,
-      projectConfig: circuitRunnerConfiguration.projectConfig,
+      platform:
+        platformFromTscircuitConfig ?? circuitRunnerConfiguration.platform,
+      projectConfig: platformFromTscircuitConfig
+        ? undefined
+        : circuitRunnerConfiguration.projectConfig,
       debugNamespace,
     })
     bindEventListeners(executionContext.circuit)
     executionContext.entrypoint = entrypoint
-    executionContext.fsMap = normalizeFsMap(opts.fsMap)
+    executionContext.fsMap = normalizedFsMap
     executionContext.tsConfig = getTsConfig(executionContext.fsMap)
     if (!executionContext.fsMap[entrypoint]) {
       throw new Error(`Entrypoint "${opts.entrypoint}" not found`)
