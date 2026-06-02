@@ -5,7 +5,6 @@ import Debug from "debug"
 import { isPackageDeclaredInPackageJson } from "./isPackageDeclaredInPackageJson"
 import { getNodeModuleDirectory } from "./getNodeModuleDirectory"
 import { getPackageJsonEntrypoint } from "./getPackageJsonEntrypoint"
-import { isTypeScriptEntrypoint } from "./isTypeScriptEntrypoint"
 import { isDistDirEmpty } from "./isDistDirEmpty"
 import { resolveEntrypointPath } from "./resolveEntrypointPath"
 
@@ -49,16 +48,9 @@ export const importNodeModule = async (
       )
     }
 
-    // Step 3: Check if main entrypoint is a TypeScript file
     const entrypoint = getPackageJsonEntrypoint(importName, fsMap)
-    if (isTypeScriptEntrypoint(entrypoint)) {
-      throw new Error(
-        `Node module "${importName}" has a typescript entrypoint that is unsupported\n\n${ctx.logger.stringifyLogs()}`,
-      )
-    }
 
-    // Step 4: Check if dist directory is empty when main points to dist
-    if (entrypoint && entrypoint.startsWith("dist/")) {
+    if (entrypoint?.startsWith("dist/")) {
       if (isDistDirEmpty(importName, fsMap)) {
         throw new Error(
           `"${importName}" has no files in dist, it may not be built\n\n${ctx.logger.stringifyLogs()}`,
