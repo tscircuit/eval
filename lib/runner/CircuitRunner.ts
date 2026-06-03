@@ -13,6 +13,8 @@ import { setupDefaultEntrypointIfNeeded } from "./setupDefaultEntrypointIfNeeded
 import { enhanceRootCircuitHasNoChildrenError } from "lib/utils/enhance-root-circuit-error"
 import Debug from "debug"
 import { setValueAtPath } from "lib/shared/obj-path"
+import { loadTscircuitConfig } from "./loadTscircuitConfig"
+import { getPlatformConfigForTscircuitConfig } from "lib/getPlatformConfig/getPlatformConfigForTscircuitConfig"
 
 const debug = Debug("tsci:eval:CircuitRunner")
 
@@ -60,19 +62,36 @@ export class CircuitRunner implements CircuitRunnerApi {
       entrypoint: opts.entrypoint,
     })
 
+    const normalizedFsMap = normalizeFsMap(opts.fsMap)
+    const tscircuitConfig = await loadTscircuitConfig(
+      normalizedFsMap,
+      this._circuitRunnerConfiguration,
+      {
+        debugNamespace: this._debugNamespace,
+      },
+    )
+    const platformFromTscircuitConfig = getPlatformConfigForTscircuitConfig(
+      this._circuitRunnerConfiguration,
+      tscircuitConfig,
+    )
+
     this._executionContext = createExecutionContext(
       this._circuitRunnerConfiguration,
       {
         name: opts.name,
-        platform: this._circuitRunnerConfiguration.platform,
-        projectConfig: this._circuitRunnerConfiguration.projectConfig,
+        platform:
+          platformFromTscircuitConfig ??
+          this._circuitRunnerConfiguration.platform,
+        projectConfig: platformFromTscircuitConfig
+          ? undefined
+          : this._circuitRunnerConfiguration.projectConfig,
         debugNamespace: this._debugNamespace,
       },
     )
     this._bindEventListeners(this._executionContext.circuit)
 
     this._executionContext.entrypoint = opts.entrypoint!
-    this._executionContext.fsMap = normalizeFsMap(opts.fsMap)
+    this._executionContext.fsMap = normalizedFsMap
     this._executionContext.tsConfig = getTsConfig(this._executionContext.fsMap)
     if (!this._executionContext.fsMap[opts.entrypoint!]) {
       throw new Error(`Entrypoint "${opts.entrypoint}" not found`)

@@ -1,0 +1,1 @@
+export { getPlatformConfig } from "./getPlatformConfig"

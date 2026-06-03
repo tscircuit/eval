@@ -16,10 +16,6 @@ export const setupDefaultEntrypointIfNeeded = (opts: {
       opts.mainComponentPath = "index.tsx"
     } else if ("index.ts" in opts.fsMap) {
       opts.mainComponentPath = "index.ts"
-    } else if (
-      Object.keys(opts.fsMap).filter((k) => k.endsWith(".tsx")).length === 1
-    ) {
-      opts.mainComponentPath = Object.keys(opts.fsMap)[0]
     } else if ("tscircuit.config.json" in opts.fsMap) {
       const configContent = opts.fsMap["tscircuit.config.json"]
       try {
@@ -30,6 +26,10 @@ export const setupDefaultEntrypointIfNeeded = (opts: {
       } catch (e) {
         console.warn("Failed to parse tscircuit.config.json:", e)
       }
+    } else if (
+      Object.keys(opts.fsMap).filter((k) => k.endsWith(".tsx")).length === 1
+    ) {
+      opts.mainComponentPath = Object.keys(opts.fsMap)[0]
     } else {
       throw new Error(
         "Either entrypoint or mainComponentPath must be provided (no index file, could not infer entrypoint)",

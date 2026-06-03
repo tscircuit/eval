@@ -17,6 +17,43 @@ declare global {
   var TSCIRCUIT_GLOBAL_CIRCUIT_WORKER: CircuitWebWorker | undefined
 }
 
+export const getWebWorkerEntrypointCdnUrls = (evalVersion = "latest") => [
+  `https://jscdn.tscircuit.com/@tscircuit/eval/${evalVersion}/dist/webworker/entrypoint.js`,
+  `https://cdn.jsdelivr.net/npm/@tscircuit/eval@${evalVersion}/dist/webworker/entrypoint.js`,
+  `https://unpkg.com/@tscircuit/eval@${evalVersion}/dist/webworker/entrypoint.js`,
+]
+
+export const fetchWebWorkerEntrypointBlobFromCdn = async (
+  evalVersion = "latest",
+  verbose = false,
+): Promise<Blob> => {
+  let lastError: unknown
+
+  for (const cdnUrl of getWebWorkerEntrypointCdnUrls(evalVersion)) {
+    try {
+      const response = await globalThis.fetch(cdnUrl)
+      if (!response.ok) {
+        throw new Error(
+          `Failed to fetch webworker entrypoint from ${cdnUrl}: ${response.status} ${response.statusText}`,
+        )
+      }
+      return await response.blob()
+    } catch (error) {
+      lastError = error
+      if (verbose) {
+        console.warn(
+          `[Worker] Failed to fetch webworker entrypoint from ${cdnUrl}, trying next CDN fallback if available`,
+          error,
+        )
+      }
+    }
+  }
+
+  throw lastError instanceof Error
+    ? lastError
+    : new Error("Failed to fetch webworker entrypoint from CDN fallbacks")
+}
+
 export const createCircuitWebWorker = async (
   configuration: Partial<WebWorkerConfiguration>,
 ): Promise<CircuitWebWorker> => {
@@ -53,9 +90,10 @@ export const createCircuitWebWorker = async (
     configuration.webWorkerBlobUrl ?? configuration.webWorkerUrl
 
   if (!workerBlobUrl) {
-    const cdnUrl = `https://cdn.jsdelivr.net/npm/@tscircuit/eval@${configuration.evalVersion ?? "latest"}/dist/webworker/entrypoint.js`
-
-    const workerBlob = await globalThis.fetch(cdnUrl).then((res) => res.blob())
+    const workerBlob = await fetchWebWorkerEntrypointBlobFromCdn(
+      configuration.evalVersion ?? "latest",
+      configuration.verbose,
+    )
     workerBlobUrl = URL.createObjectURL(workerBlob)
   }
 

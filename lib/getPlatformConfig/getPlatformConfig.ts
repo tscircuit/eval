@@ -1,15 +1,79 @@
-import type { PlatformConfig, SpiceEngine } from "@tscircuit/props"
+import { type PlatformConfig, type SpiceEngine } from "@tscircuit/props"
 import {
   JlcPcbPartsEngine,
   jlcPartsEngine,
   type EasyEdaProxyConfig,
 } from "@tscircuit/parts-engine"
+import { createKiCadRoutingToolsAutorouter } from "@tscircuit/krt-wasm"
 import { parseKicadModToCircuitJson } from "kicad-component-converter"
-import { dynamicallyLoadDependencyWithCdnBackup } from "./utils/dynamically-load-dependency-with-cdn-backup"
+import { dynamicallyLoadDependencyWithCdnBackup } from "../utils/dynamically-load-dependency-with-cdn-backup"
+import { extractCadModelFromCircuitJson } from "./extractCadModelFromCircuitJson"
+import { KicadToCircuitJsonConverter } from "kicad-to-circuit-json"
+import type { AnyCircuitElement } from "circuit-json"
+import * as React from "react"
 
 const KICAD_FOOTPRINT_CACHE_URL = "https://kicad-mod-cache.tscircuit.com"
 
 let ngspiceEngineCache: SpiceEngine | null = null
+
+type PlatformAutorouterMap = NonNullable<PlatformConfig["autorouterMap"]>
+type PlatformCreateAutorouter =
+  PlatformAutorouterMap[string]["createAutorouter"]
+type PlatformStaticFileLoaderMap = NonNullable<
+  PlatformConfig["staticFileLoaderMap"]
+>
+
+const toJlcpcbSupplierPartNumber = (partNumber: string) => {
+  if (/^\d+$/.test(partNumber)) {
+    return `C${partNumber}`
+  }
+
+  if (/^c\d+$/i.test(partNumber)) {
+    return `C${partNumber.slice(1)}`
+  }
+
+  return partNumber
+}
+
+const loadKicadPcbStaticFile: PlatformStaticFileLoaderMap[string] = async (
+  fileContent,
+) => {
+  const kicadPcbContent =
+    typeof fileContent === "string"
+      ? fileContent
+      : new TextDecoder().decode(fileContent)
+
+  if (
+    kicadPcbContent === "__STATIC_ASSET__" ||
+    kicadPcbContent.startsWith("blob:")
+  ) {
+    throw new Error(
+      ".kicad_pcb imports require local file contents. Static asset URLs are not supported.",
+    )
+  }
+
+  const converter = new KicadToCircuitJsonConverter()
+  converter.addFile("imported.kicad_pcb", kicadPcbContent)
+  converter.runUntilFinished()
+  const circuitJson = converter.getOutput()
+  // TODO: Figure out what should be present in boardContentCircuitJson
+  const boardContentCircuitJson = circuitJson.filter(
+    (elm: AnyCircuitElement) => elm.type !== "pcb_board",
+  )
+  const Board = (props: Record<string, any>) =>
+    React.createElement("board", {
+      ...props,
+      circuitJson,
+    })
+
+  return {
+    __esModule: true,
+    default: circuitJson,
+    Board,
+    boardContentCircuitJson,
+    circuitJson,
+  }
+}
 
 export const getPlatformConfig = (
   overrides: Partial<PlatformConfig> = {},
@@ -29,6 +93,18 @@ export const getPlatformConfig = (
   return {
     localCacheEngine: overrides.localCacheEngine,
     partsEngine,
+    autorouterMap: {
+      krt: {
+        // TODO: Remove this cast once @tscircuit/props models the evented
+        // GenericLocalAutorouter shape that core consumes from autorouterMap.
+        createAutorouter: createKiCadRoutingToolsAutorouter({
+          gridStep: 0.1,
+          clearance: 0.2,
+          maxIterations: 300_000,
+        }) as unknown as PlatformCreateAutorouter,
+      },
+      ...overrides.autorouterMap,
+    },
     spiceEngineMap: {
       ngspice: {
         simulate: async (spice: string) => {
@@ -92,6 +168,30 @@ export const getPlatformConfig = (
           cadModel: { wrlUrl, stepUrl, modelUnitToMmScale: 2.54 },
         }
       },
+      jlcpcb: async (partNumber: string) => {
+        if (!partsEngine.fetchPartCircuitJson) {
+          throw new Error(
+            "Configured parts engine does not support fetchPartCircuitJson, required for jlcpcb footprints.",
+          )
+        }
+
+        const supplierPartNumber = toJlcpcbSupplierPartNumber(partNumber)
+        const footprintCircuitJson = await partsEngine.fetchPartCircuitJson({
+          supplierPartNumber,
+          platformFetch: overrides.platformFetch,
+        })
+
+        if (!Array.isArray(footprintCircuitJson)) {
+          throw new Error(
+            `Failed to load JLCPCB footprint "${supplierPartNumber}" from parts engine.`,
+          )
+        }
+
+        return {
+          footprintCircuitJson,
+          cadModel: extractCadModelFromCircuitJson(footprintCircuitJson),
+        }
+      },
     },
     footprintFileParserMap: {
       kicad_mod: {
@@ -105,6 +205,10 @@ export const getPlatformConfig = (
           }
         },
       },
+    },
+    staticFileLoaderMap: {
+      kicad_pcb: loadKicadPcbStaticFile,
+      ...overrides.staticFileLoaderMap,
     },
   }
 }

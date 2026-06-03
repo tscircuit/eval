@@ -1,3 +1,5 @@
+import { getJscdnPackageUrl } from "./npm-cdn-urls"
+
 /**
  * Transforms relative /npm/ imports from jsdelivr CDN code to absolute URLs.
  */
@@ -21,33 +23,47 @@ export const dynamicallyLoadDependencyWithCdnBackup = async (
     return module.default
   } catch (e) {
     console.log(`Failed to load ${packageName} locally, trying CDN fallback...`)
-    // Fallback to JsDelivr CDN for browser environments
-    try {
-      const res = await fetch(
-        `https://cdn.jsdelivr.net/npm/${packageName}/+esm`,
-      )
-      if (!res.ok) {
-        throw new Error(
-          `Failed to fetch ${packageName} from CDN: ${res.statusText}`,
-        )
-      }
-      let code = await res.text()
+    const cdnUrls = [
+      `${getJscdnPackageUrl(packageName)}/+esm`,
+      `https://cdn.jsdelivr.net/npm/${packageName}/+esm`,
+    ]
+    let lastCdnError: unknown
 
-      // Transform relative /npm/ imports to absolute jsdelivr URLs
-      // This is needed because blob URLs resolve relative imports against the page origin
-      code = transformJsDelivrImports(code)
-
-      const blob = new Blob([code], { type: "application/javascript" })
-      const url = URL.createObjectURL(blob)
+    for (const cdnUrl of cdnUrls) {
       try {
-        const { default: loadedModule } = await import(url)
-        return loadedModule
-      } finally {
-        URL.revokeObjectURL(url)
+        const res = await fetch(cdnUrl)
+        if (!res.ok) {
+          throw new Error(
+            `Failed to fetch ${packageName} from CDN: ${res.statusText}`,
+          )
+        }
+        let code = await res.text()
+
+        // Transform relative /npm/ imports to absolute jsdelivr URLs.
+        // This is needed because blob URLs resolve relative imports against the page origin.
+        code = transformJsDelivrImports(code)
+
+        const blob = new Blob([code], { type: "application/javascript" })
+        const url = URL.createObjectURL(blob)
+        try {
+          const { default: loadedModule } = await import(url)
+          return loadedModule
+        } finally {
+          URL.revokeObjectURL(url)
+        }
+      } catch (cdnError) {
+        lastCdnError = cdnError
       }
-    } catch (cdnError) {
-      console.error(`CDN fallback for ${packageName} also failed:`, cdnError)
-      throw cdnError
     }
+
+    if (lastCdnError) {
+      console.error(
+        `CDN fallback for ${packageName} also failed:`,
+        lastCdnError,
+      )
+      throw lastCdnError
+    }
+
+    throw new Error(`CDN fallback for ${packageName} failed`)
   }
 }
