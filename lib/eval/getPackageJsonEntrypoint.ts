@@ -17,6 +17,19 @@ export function getPackageJsonEntrypoint(
     const packageJson = JSON.parse(packageJsonContent)
     // Prefer the browser build when provided because eval runs in a browser-like
     // environment and many CommonJS main files require Node built-ins.
+    if (packageJson.browser && typeof packageJson.browser === "object") {
+      const entrypoint = packageJson.module || packageJson.main
+      const normalizedEntrypoint = entrypoint?.replace(/^\.\//, "")
+      const browserEntrypoint =
+        packageJson.browser[entrypoint] ||
+        packageJson.browser[`./${normalizedEntrypoint}`] ||
+        packageJson.browser[normalizedEntrypoint]
+
+      if (typeof browserEntrypoint === "string") {
+        return browserEntrypoint
+      }
+    }
+
     return (
       (typeof packageJson.browser === "string" && packageJson.browser) ||
       packageJson.module ||

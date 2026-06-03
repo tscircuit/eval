@@ -202,3 +202,51 @@ test("nodeModulesResolver: should work with CDN-style resolver", async () => {
 
   expect(runner._executionContext?.preSuppliedImports.lodash).toBeDefined()
 })
+
+test("node module resolution uses browser object mapping for package main", async () => {
+  const runner = new CircuitRunner()
+
+  await runner.executeWithFsMap({
+    entrypoint: "index.tsx",
+    fsMap: {
+      "index.tsx": `
+        import { value } from "@test/github-package"
+
+        if (value !== "browser jszip") {
+          throw new Error("unexpected value")
+        }
+
+        circuit.add(<board width="10mm" height="10mm" />)
+      `,
+      "package.json": JSON.stringify({
+        dependencies: {
+          "@test/github-package": "github:test/github-package#abc123",
+        },
+      }),
+      "node_modules/@test/github-package/index.ts": `
+        import JSZip from "jszip"
+
+        export const value = JSZip.value
+      `,
+      "node_modules/@test/github-package/package.json": JSON.stringify({
+        main: "index.ts",
+        dependencies: {
+          jszip: "3.10.1",
+        },
+      }),
+      "node_modules/jszip/package.json": JSON.stringify({
+        main: "./lib/index",
+        browser: {
+          "./lib/index": "./dist/jszip.min.js",
+        },
+      }),
+      "node_modules/jszip/dist/jszip.min.js": `
+        export default { value: "browser jszip" }
+      `,
+    },
+  })
+
+  await runner.renderUntilSettled()
+
+  expect(runner._executionContext?.preSuppliedImports.jszip).toBeDefined()
+})
