@@ -17,9 +17,7 @@ interface NodeResolutionContext {
   modulePath: string
 }
 
-function getBrowserMappedEntrypoint(
-  packageJson: PackageJson,
-): string | null {
+function getBrowserMappedEntrypoint(packageJson: PackageJson): string | null {
   if (!packageJson.browser || typeof packageJson.browser === "string") {
     return null
   }

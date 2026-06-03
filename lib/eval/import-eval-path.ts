@@ -249,9 +249,11 @@ export async function importEvalPath(
 
   if (!importName.startsWith(".") && !importName.startsWith("/")) {
     // Step 1: Check if package is declared in package.json
-    if (!isPackageDeclaredInPackageJson(importName, ctx.fsMap, {
-      cwd: opts.cwd,
-    })) {
+    if (
+      !isPackageDeclaredInPackageJson(importName, ctx.fsMap, {
+        cwd: opts.cwd,
+      })
+    ) {
       throw new Error(
         `Node module imported but not in package.json "${importName}"\n\n${ctx.logger.stringifyLogs()}`,
       )
