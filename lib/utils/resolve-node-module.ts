@@ -17,6 +17,27 @@ interface NodeResolutionContext {
   modulePath: string
 }
 
+function getBrowserMappedEntrypoint(
+  packageJson: PackageJson,
+): string | null {
+  if (!packageJson.browser || typeof packageJson.browser === "string") {
+    return null
+  }
+
+  const entryPoint = packageJson.module || packageJson.main || "index.js"
+  const browserEntrypoint = packageJson.browser[entryPoint]
+  if (typeof browserEntrypoint === "string") return browserEntrypoint
+
+  const normalizedEntryPoint = normalizePackageEntrypoint(entryPoint)
+  const normalizedBrowserEntrypoint =
+    packageJson.browser[`./${normalizedEntryPoint}`] ??
+    packageJson.browser[normalizedEntryPoint]
+
+  return typeof normalizedBrowserEntrypoint === "string"
+    ? normalizedBrowserEntrypoint
+    : null
+}
+
 function createContext(
   modulePath: string,
   fsMap: Record<string, string>,
@@ -134,6 +155,7 @@ function resolvePackageEntryPoint(
 ): string | null {
   const entryPoint = normalizePackageEntrypoint(
     (typeof packageJson.browser === "string" && packageJson.browser) ||
+      getBrowserMappedEntrypoint(packageJson) ||
       packageJson.module ||
       packageJson.main ||
       "index.js",

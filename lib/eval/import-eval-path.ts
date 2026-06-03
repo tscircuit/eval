@@ -15,8 +15,35 @@ import { getNodeModuleDirectory } from "./getNodeModuleDirectory"
 import { getPackageJsonEntrypoint } from "./getPackageJsonEntrypoint"
 import { isDistDirEmpty } from "./isDistDirEmpty"
 import { resolveEntrypointPath } from "./resolveEntrypointPath"
+import { resolveRelativePath } from "lib/utils/resolveRelativePath"
 
 const debug = Debug("tsci:eval:import-eval-path")
+
+const PATH_EXT_RE = /\.[a-zA-Z0-9]+$/
+
+const getNodeModuleSpecifierFromRelativeImport = (
+  importName: string,
+  cwd?: string,
+) => {
+  if (!cwd || (!importName.startsWith("./") && !importName.startsWith("../"))) {
+    return null
+  }
+
+  const resolvedPath = resolveRelativePath(importName, cwd)
+  const nodeModulesPrefix = "node_modules/"
+  if (!resolvedPath.startsWith(nodeModulesPrefix)) return null
+
+  const moduleSpecifier = resolvedPath.slice(nodeModulesPrefix.length)
+  return moduleSpecifier.replace(/\.(tsx?|jsx?|mjs|json)$/, "")
+}
+
+const getSyntheticNodeModulePath = (moduleSpecifier: string) => {
+  if (PATH_EXT_RE.test(moduleSpecifier)) {
+    return `node_modules/${moduleSpecifier}`
+  }
+
+  return `node_modules/${moduleSpecifier}.ts`
+}
 
 export async function importEvalPath(
   importName: string,
@@ -156,7 +183,36 @@ export async function importEvalPath(
   if (resolvedNodeModulePath) {
     ctx.logger.info(`resolvedNodeModulePath="${resolvedNodeModulePath}"`)
     ctx.logger.info(`importNodeModule("${importName}")`)
-    return importNodeModule(importName, ctx, depth)
+    return importNodeModule(importName, ctx, depth, { cwd: opts.cwd })
+  }
+
+  const platform = ctx.circuit?.platform
+  const resolverModuleSpecifier = getNodeModuleSpecifierFromRelativeImport(
+    importName,
+    opts.cwd,
+  )
+  if (resolverModuleSpecifier && platform?.nodeModulesResolver) {
+    try {
+      ctx.logger.info(
+        `nodeModulesResolver("${resolverModuleSpecifier}") for relative import "${importName}"`,
+      )
+      const fileContent = await platform.nodeModulesResolver(
+        resolverModuleSpecifier,
+      )
+
+      if (fileContent) {
+        const syntheticPath = getSyntheticNodeModulePath(
+          resolverModuleSpecifier,
+        )
+        ctx.fsMap[syntheticPath] = fileContent
+        await importLocalFile(syntheticPath, ctx, depth)
+        return
+      }
+    } catch (error) {
+      ctx.logger.info(
+        `nodeModulesResolver failed for relative import "${importName}" from "${opts.cwd}"`,
+      )
+    }
   }
 
   // If not found in fsMap but might be a node module, try importNodeModule
@@ -166,7 +222,6 @@ export async function importEvalPath(
     !importName.startsWith("/") &&
     !importName.startsWith("@tsci/")
   ) {
-    const platform = ctx.circuit?.platform
     if (platform?.nodeModulesResolver) {
       ctx.logger.info(
         `importNodeModule("${importName}") via nodeModulesResolver`,
@@ -194,7 +249,9 @@ export async function importEvalPath(
 
   if (!importName.startsWith(".") && !importName.startsWith("/")) {
     // Step 1: Check if package is declared in package.json
-    if (!isPackageDeclaredInPackageJson(importName, ctx.fsMap)) {
+    if (!isPackageDeclaredInPackageJson(importName, ctx.fsMap, {
+      cwd: opts.cwd,
+    })) {
       throw new Error(
         `Node module imported but not in package.json "${importName}"\n\n${ctx.logger.stringifyLogs()}`,
       )

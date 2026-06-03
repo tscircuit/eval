@@ -14,6 +14,9 @@ export const importNodeModule = async (
   importName: string,
   ctx: ExecutionContext,
   depth = 0,
+  opts: {
+    cwd?: string
+  } = {},
 ) => {
   const { preSuppliedImports, fsMap } = ctx
 
@@ -26,7 +29,7 @@ export const importNodeModule = async (
 
   if (hasPackageJson) {
     // Step 1: Check if the package is declared in package.json
-    if (!isPackageDeclaredInPackageJson(importName, fsMap)) {
+    if (!isPackageDeclaredInPackageJson(importName, fsMap, opts)) {
       throw new Error(
         `Node module imported but not in package.json "${importName}"\n\n${ctx.logger.stringifyLogs()}`,
       )
@@ -37,7 +40,11 @@ export const importNodeModule = async (
     ? getNodeModuleDirectory(importName, fsMap)
     : null
 
-  const resolvedNodeModulePath = resolveNodeModule(importName, ctx.fsMap, "")
+  const resolvedNodeModulePath = resolveNodeModule(
+    importName,
+    ctx.fsMap,
+    opts.cwd || "",
+  )
 
   // Only run Steps 2-4 if package exists in node_modules (after resolver attempts)
   if (hasPackageJson && resolvedNodeModulePath) {
