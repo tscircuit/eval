@@ -7,6 +7,7 @@ import { getNodeModuleDirectory } from "./getNodeModuleDirectory"
 import { getPackageJsonEntrypoint } from "./getPackageJsonEntrypoint"
 import { isDistDirEmpty } from "./isDistDirEmpty"
 import { resolveEntrypointPath } from "./resolveEntrypointPath"
+import { hasPreSuppliedImport } from "./pre-supplied-imports"
 
 const debug = Debug("tsci:eval:import-node-module")
 
@@ -20,7 +21,7 @@ export const importNodeModule = async (
 ) => {
   const { preSuppliedImports, fsMap } = ctx
 
-  if (preSuppliedImports[importName]) {
+  if (hasPreSuppliedImport(preSuppliedImports, importName)) {
     return
   }
 

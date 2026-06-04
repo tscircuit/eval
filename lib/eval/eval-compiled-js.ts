@@ -1,5 +1,6 @@
 import { resolveFilePath } from "lib/runner/resolveFilePath"
 import { resolveNodeModule } from "lib/utils/resolve-node-module"
+import { hasPreSuppliedImport } from "./pre-supplied-imports"
 
 export function evalCompiledJs(
   compiledCode: string,
@@ -14,14 +15,19 @@ export function evalCompiledJs(
     }
 
     const hasResolvedFilePath =
-      resolvedFilePath && preSuppliedImports[resolvedFilePath]
+      resolvedFilePath &&
+      hasPreSuppliedImport(preSuppliedImports, resolvedFilePath)
 
-    if (!preSuppliedImports[name] && !hasResolvedFilePath) {
+    if (
+      !hasPreSuppliedImport(preSuppliedImports, name) &&
+      !hasResolvedFilePath
+    ) {
       throw new Error(`Import "${name}" not found ${cwd ? `in "${cwd}"` : ""}`)
     }
 
-    const mod =
-      preSuppliedImports[name] || preSuppliedImports[resolvedFilePath!]
+    const mod = hasPreSuppliedImport(preSuppliedImports, name)
+      ? preSuppliedImports[name]
+      : preSuppliedImports[resolvedFilePath!]
 
     // If the module is a simple ES module with only default export (like static assets),
     // return the default value directly for CommonJS interop
