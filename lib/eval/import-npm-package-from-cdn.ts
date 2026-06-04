@@ -1,11 +1,12 @@
+import Debug from "debug"
+import { transformWithSucrase } from "lib/transpile/transform-with-sucrase"
+import { dirname } from "lib/utils/dirname"
+import { enhanceStaticAssetSentinelError } from "lib/utils/enhance-static-asset-error"
+import { getImportsFromCode } from "lib/utils/get-imports-from-code"
+import { getJscdnPackageUrl } from "lib/utils/npm-cdn-urls"
 import { evalCompiledJs } from "./eval-compiled-js"
 import type { ExecutionContext } from "./execution-context"
-import { dirname } from "lib/utils/dirname"
-import Debug from "debug"
-import { getImportsFromCode } from "lib/utils/get-imports-from-code"
 import { importEvalPath } from "./import-eval-path"
-import { transformWithSucrase } from "lib/transpile/transform-with-sucrase"
-import { getJscdnPackageUrl } from "lib/utils/npm-cdn-urls"
 
 const debug = Debug("tsci:eval:import-npm-package")
 
@@ -75,7 +76,9 @@ export async function importNpmPackageFromCdn(
       preSuppliedImports[response.url] = exports
       return
     } catch (error) {
-      lastCdnError = error
+      lastCdnError = enhanceStaticAssetSentinelError(error, {
+        importName,
+      })
     }
   }
 

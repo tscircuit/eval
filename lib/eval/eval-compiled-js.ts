@@ -1,4 +1,5 @@
 import { resolveFilePath } from "lib/runner/resolveFilePath"
+import { enhanceStaticAssetSentinelError } from "lib/utils/enhance-static-asset-error"
 import { resolveNodeModule } from "lib/utils/resolve-node-module"
 
 export function evalCompiledJs(
@@ -105,5 +106,9 @@ export function evalCompiledJs(
   var circuit = globalThis.__tscircuit_circuit;
   ${compiledCode};
   return module;`.trim()
-  return Function(functionBody).call(globalThis)
+  try {
+    return Function(functionBody).call(globalThis)
+  } catch (error) {
+    throw enhanceStaticAssetSentinelError(error, { cwd })
+  }
 }

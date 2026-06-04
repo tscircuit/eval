@@ -1,14 +1,15 @@
+import type { PlatformConfig } from "@tscircuit/props"
+import Debug from "debug"
 import { resolveFilePathOrThrow } from "lib/runner/resolveFilePath"
+import { isStaticAssetPath } from "lib/shared/static-asset-extensions"
+import { transformWithSucrase } from "lib/transpile/transform-with-sucrase"
 import { dirname } from "lib/utils/dirname"
+import { enhanceStaticAssetSentinelError } from "lib/utils/enhance-static-asset-error"
 import { getImportsFromCode } from "lib/utils/get-imports-from-code"
 import { getTypeExportsFromCode } from "lib/utils/get-type-exports-from-code"
 import { evalCompiledJs } from "./eval-compiled-js"
 import type { ExecutionContext } from "./execution-context"
 import { importEvalPath } from "./import-eval-path"
-import Debug from "debug"
-import { isStaticAssetPath } from "lib/shared/static-asset-extensions"
-import { transformWithSucrase } from "lib/transpile/transform-with-sucrase"
-import type { PlatformConfig } from "@tscircuit/props"
 
 const debug = Debug("tsci:eval:import-local-file")
 
@@ -160,8 +161,19 @@ export const importLocalFile = async (
         }
         preSuppliedImports[fsPath] = moduleExports
       } catch (error: any) {
+        const enhancedError = enhanceStaticAssetSentinelError(error, {
+          importName,
+          cwd: dirname(fsPath),
+        })
         throw new Error(
-          `Eval compiled js error for "${importName}": ${error.message}`,
+          `Eval compiled js error for "${importName}": ${
+            enhancedError instanceof Error
+              ? enhancedError.message
+              : String(enhancedError)
+          }`,
+          {
+            cause: enhancedError instanceof Error ? enhancedError : error,
+          },
         )
       }
     } else if (fsPath.endsWith(".js") || fsPath.endsWith(".mjs")) {
@@ -177,11 +189,28 @@ export const importLocalFile = async (
       }
 
       // Then transform and evaluate
-      preSuppliedImports[fsPath] = evalCompiledJs(
-        transformWithSucrase(fileContent, fsPath),
-        preSuppliedImports,
-        dirname(fsPath),
-      ).exports
+      try {
+        preSuppliedImports[fsPath] = evalCompiledJs(
+          transformWithSucrase(fileContent, fsPath),
+          preSuppliedImports,
+          dirname(fsPath),
+        ).exports
+      } catch (error: any) {
+        const enhancedError = enhanceStaticAssetSentinelError(error, {
+          importName,
+          cwd: dirname(fsPath),
+        })
+        throw new Error(
+          `Eval compiled js error for "${importName}": ${
+            enhancedError instanceof Error
+              ? enhancedError.message
+              : String(enhancedError)
+          }`,
+          {
+            cause: enhancedError instanceof Error ? enhancedError : error,
+          },
+        )
+      }
     } else {
       throw new Error(
         `Unsupported file extension "${fsPath.split(".").pop()}" for "${fsPath}"`,
