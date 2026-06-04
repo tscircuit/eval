@@ -16,6 +16,7 @@ import { getPackageJsonEntrypoint } from "./getPackageJsonEntrypoint"
 import { isDistDirEmpty } from "./isDistDirEmpty"
 import { resolveEntrypointPath } from "./resolveEntrypointPath"
 import { resolveRelativePath } from "lib/utils/resolveRelativePath"
+import { hasPreSuppliedImport } from "./pre-supplied-imports"
 
 const debug = Debug("tsci:eval:import-eval-path")
 
@@ -67,11 +68,14 @@ export async function importEvalPath(
   const disableCdnLoading =
     ctx.disableCdnLoading || (globalThis as any).__DISABLE_CDN_LOADING__
 
-  if (preSuppliedImports[importName]) {
+  if (hasPreSuppliedImport(preSuppliedImports, importName)) {
     ctx.logger.info(`Import "${importName}" in preSuppliedImports[1]`)
     return
   }
-  if (importName.startsWith("./") && preSuppliedImports[importName.slice(2)]) {
+  if (
+    importName.startsWith("./") &&
+    hasPreSuppliedImport(preSuppliedImports, importName.slice(2))
+  ) {
     ctx.logger.info(`Import "${importName}" in preSuppliedImports[2]`)
     return
   }
@@ -92,7 +96,7 @@ export async function importEvalPath(
       ? importName.split("/").slice(2).join("/")
       : importName.split("/").slice(1).join("/")
 
-    if (preSuppliedImports[pkgName]) {
+    if (hasPreSuppliedImport(preSuppliedImports, pkgName)) {
       try {
         // Try to import the subpath from the actual package
         const resolved = await import(`${pkgName}/${subpath}`)
@@ -125,9 +129,8 @@ export async function importEvalPath(
     }
     ctx.logger.info(`importNpmPackageFromCdn("${pkgName}")`)
     await importNpmPackageFromCdn({ importName: pkgName, depth }, ctx)
-    const pkg = preSuppliedImports[pkgName]
-    if (pkg) {
-      preSuppliedImports[importName] = pkg
+    if (hasPreSuppliedImport(preSuppliedImports, pkgName)) {
+      preSuppliedImports[importName] = preSuppliedImports[pkgName]
     }
     return
   }

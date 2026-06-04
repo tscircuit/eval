@@ -6,6 +6,7 @@ import { getImportsFromCode } from "lib/utils/get-imports-from-code"
 import { importEvalPath } from "./import-eval-path"
 import { transformWithSucrase } from "lib/transpile/transform-with-sucrase"
 import { getJscdnPackageUrl } from "lib/utils/npm-cdn-urls"
+import { hasPreSuppliedImport } from "./pre-supplied-imports"
 
 const debug = Debug("tsci:eval:import-npm-package")
 
@@ -28,7 +29,7 @@ export async function importNpmPackageFromCdn(
   debug(`importing npm package from CDN: ${importName}`)
   const { preSuppliedImports } = ctx
 
-  if (preSuppliedImports[importName]) return
+  if (hasPreSuppliedImport(preSuppliedImports, importName)) return
 
   const npmCdnUrls = [
     `${getJscdnPackageUrl(importName)}/+esm`,
@@ -53,7 +54,7 @@ export async function importNpmPackageFromCdn(
 
       const importNames = getImportsFromCode(content)
       for (const subImportName of importNames) {
-        if (!preSuppliedImports[subImportName]) {
+        if (!hasPreSuppliedImport(preSuppliedImports, subImportName)) {
           await importEvalPath(subImportName, ctx, depth + 1, {
             cwd,
           })

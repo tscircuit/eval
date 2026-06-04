@@ -3,6 +3,7 @@ import type { ExecutionContext } from "./execution-context"
 import { getImportsFromCode } from "lib/utils/get-imports-from-code"
 import { importEvalPath } from "./import-eval-path"
 import { isStaticAssetPath } from "lib/shared/static-asset-extensions"
+import { hasPreSuppliedImport } from "./pre-supplied-imports"
 
 export async function importSnippet(
   importName: string,
@@ -53,7 +54,7 @@ export async function importSnippet(
   const otherImports: string[] = []
 
   for (const subImportName of importNames) {
-    if (!preSuppliedImports[subImportName]) {
+    if (!hasPreSuppliedImport(preSuppliedImports, subImportName)) {
       // required static assets can be fetched from: cjs.tscircuit.com/@tsci/author.package/assets/...
       if (subImportName.startsWith("./") && isStaticAssetPath(subImportName)) {
         const assetPath = subImportName.slice(2)
@@ -93,7 +94,7 @@ export async function importSnippet(
 
   // Process other imports sequentially
   for (const subImportName of otherImports) {
-    if (!preSuppliedImports[subImportName]) {
+    if (!hasPreSuppliedImport(preSuppliedImports, subImportName)) {
       await importEvalPath(subImportName, ctx, depth + 1)
     }
   }

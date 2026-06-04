@@ -9,6 +9,7 @@ import Debug from "debug"
 import { isStaticAssetPath } from "lib/shared/static-asset-extensions"
 import { transformWithSucrase } from "lib/transpile/transform-with-sucrase"
 import type { PlatformConfig } from "@tscircuit/props"
+import { hasPreSuppliedImport } from "./pre-supplied-imports"
 
 const debug = Debug("tsci:eval:import-local-file")
 
@@ -131,7 +132,7 @@ export const importLocalFile = async (
       const importNames = getImportsFromCode(fileContent)
 
       for (const importName of importNames) {
-        if (!preSuppliedImports[importName]) {
+        if (!hasPreSuppliedImport(preSuppliedImports, importName)) {
           await importEvalPath(importName, ctx, depth + 1, {
             cwd: dirname(fsPath),
           })
@@ -169,7 +170,7 @@ export const importLocalFile = async (
       const importNames = getImportsFromCode(fileContent)
 
       for (const importName of importNames) {
-        if (!preSuppliedImports[importName]) {
+        if (!hasPreSuppliedImport(preSuppliedImports, importName)) {
           await importEvalPath(importName, ctx, depth + 1, {
             cwd: dirname(fsPath),
           })
