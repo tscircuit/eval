@@ -1,4 +1,4 @@
-import { type PlatformConfig, type SpiceEngine } from "@tscircuit/props"
+import type { PlatformConfig, SpiceEngine, PartsEngine } from "@tscircuit/props"
 import {
   JlcPcbPartsEngine,
   jlcPartsEngine,
@@ -92,7 +92,7 @@ export const getPlatformConfig = (
 
   return {
     localCacheEngine: overrides.localCacheEngine,
-    partsEngine,
+    partsEngine: partsEngine as PartsEngine,
     autorouterMap: {
       krt: {
         // TODO: Remove this cast once @tscircuit/props models the evented
@@ -189,7 +189,9 @@ export const getPlatformConfig = (
 
         return {
           footprintCircuitJson,
-          cadModel: extractCadModelFromCircuitJson(footprintCircuitJson),
+          cadModel: extractCadModelFromCircuitJson(
+            footprintCircuitJson as AnyCircuitElement[],
+          ),
         }
       },
     },
