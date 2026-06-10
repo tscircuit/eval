@@ -120,7 +120,9 @@ export const getPlatformConfig = (
               })
 
             if (createNgspiceSpiceEngine) {
-              ngspiceEngineCache = await createNgspiceSpiceEngine()
+              ngspiceEngineCache = await createNgspiceSpiceEngine({
+                pspiceCompatibility: true,
+              })
             }
           }
 
