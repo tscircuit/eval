@@ -3,11 +3,11 @@ import { transformJsDelivrImports } from "lib/utils/dynamically-load-dependency-
 
 /**
  * This test reproduces the error:
- * "simulation_unknown_experiment_error:Error resolving module specifier '/npm/@tscircuit/eecircuit-engine@1.7.2/+esm'"
+ * "simulation_unknown_experiment_error:Error resolving module specifier '/npm/@tscircuit/eecircuit-engine@1.7.4/+esm'"
  *
  * The issue occurs when:
  * 1. ngspice-spice-engine is loaded from jsdelivr CDN
- * 2. The CDN bundle contains: import("/npm/@tscircuit/eecircuit-engine@1.7.2/+esm")
+ * 2. The CDN bundle contains: import("/npm/@tscircuit/eecircuit-engine@1.7.4/+esm")
  * 3. When loaded via blob URL, the browser resolves "/npm/..." relative to page origin
  *
  * This test verifies the CDN code contains the problematic import pattern
@@ -36,23 +36,23 @@ describe("@tscircuit/eecircuit-engine CDN import issue", () => {
 
   test("transformJsDelivrImports fixes the relative import", () => {
     const input =
-      'const{Simulation:t}=await import("/npm/@tscircuit/eecircuit-engine@1.7.2/+esm")'
+      'const{Simulation:t}=await import("/npm/@tscircuit/eecircuit-engine@1.7.4/+esm")'
     const output = transformJsDelivrImports(input)
 
     expect(output).toBe(
-      'const{Simulation:t}=await import("https://cdn.jsdelivr.net/npm/@tscircuit/eecircuit-engine@1.7.2/+esm")',
+      'const{Simulation:t}=await import("https://cdn.jsdelivr.net/npm/@tscircuit/eecircuit-engine@1.7.4/+esm")',
     )
     expect(output).not.toContain('"/npm/')
   })
 
   test("blob URL with untransformed /npm/ import fails with module resolution error", async () => {
     // This reproduces the actual error:
-    // "Cannot find module '/npm/@tscircuit/eecircuit-engine@1.7.2/+esm'"
+    // "Cannot find module '/npm/@tscircuit/eecircuit-engine@1.7.4/+esm'"
     // which in browser manifests as:
-    // "Error resolving module specifier '/npm/@tscircuit/eecircuit-engine@1.7.2/+esm'"
+    // "Error resolving module specifier '/npm/@tscircuit/eecircuit-engine@1.7.4/+esm'"
     const codeWithRelativeImport = `
       export default async function test() {
-        const { Simulation } = await import("/npm/@tscircuit/eecircuit-engine@1.7.2/+esm");
+        const { Simulation } = await import("/npm/@tscircuit/eecircuit-engine@1.7.4/+esm");
         return Simulation;
       }
     `
@@ -85,7 +85,7 @@ describe("@tscircuit/eecircuit-engine CDN import issue", () => {
     // After transformation, the import points to the full jsdelivr URL
     const codeWithRelativeImport = `
       export default async function test() {
-        const { Simulation } = await import("/npm/@tscircuit/eecircuit-engine@1.7.2/+esm");
+        const { Simulation } = await import("/npm/@tscircuit/eecircuit-engine@1.7.4/+esm");
         return Simulation;
       }
     `
