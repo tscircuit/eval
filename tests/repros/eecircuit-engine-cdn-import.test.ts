@@ -3,11 +3,11 @@ import { transformJsDelivrImports } from "lib/utils/dynamically-load-dependency-
 
 /**
  * This test reproduces the error:
- * "simulation_unknown_experiment_error:Error resolving module specifier '/npm/eecircuit-engine@1.5.6/+esm'"
+ * "simulation_unknown_experiment_error:Error resolving module specifier '/npm/@tscircuit/eecircuit-engine@1.7.2/+esm'"
  *
  * The issue occurs when:
  * 1. ngspice-spice-engine is loaded from jsdelivr CDN
- * 2. The CDN bundle contains: import("/npm/eecircuit-engine@1.5.6/+esm")
+ * 2. The CDN bundle contains: import("/npm/@tscircuit/eecircuit-engine@1.7.2/+esm")
  * 3. When loaded via blob URL, the browser resolves "/npm/..." relative to page origin
  *
  * This test verifies the CDN code contains the problematic import pattern
@@ -28,32 +28,31 @@ describe("eecircuit-engine CDN import issue", () => {
     const hasRelativeNpmImport = code.includes('import("/npm/')
     expect(hasRelativeNpmImport).toBe(true)
 
-    // Verify the specific eecircuit-engine import exists
-    const hasEecircuitImport = /import\s*\(\s*["']\/npm\/eecircuit-engine/.test(
-      code,
-    )
+    // Verify the specific @tscircuit/eecircuit-engine import exists
+    const hasEecircuitImport =
+      /import\s*\(\s*["']\/npm\/@tscircuit\/eecircuit-engine/.test(code)
     expect(hasEecircuitImport).toBe(true)
   })
 
   test("transformJsDelivrImports fixes the relative import", () => {
     const input =
-      'const{Simulation:t}=await import("/npm/eecircuit-engine@1.5.6/+esm")'
+      'const{Simulation:t}=await import("/npm/@tscircuit/eecircuit-engine@1.7.2/+esm")'
     const output = transformJsDelivrImports(input)
 
     expect(output).toBe(
-      'const{Simulation:t}=await import("https://cdn.jsdelivr.net/npm/eecircuit-engine@1.5.6/+esm")',
+      'const{Simulation:t}=await import("https://cdn.jsdelivr.net/npm/@tscircuit/eecircuit-engine@1.7.2/+esm")',
     )
     expect(output).not.toContain('"/npm/')
   })
 
   test("blob URL with untransformed /npm/ import fails with module resolution error", async () => {
     // This reproduces the actual error:
-    // "Cannot find module '/npm/eecircuit-engine@1.5.6/+esm'"
+    // "Cannot find module '/npm/@tscircuit/eecircuit-engine@1.7.2/+esm'"
     // which in browser manifests as:
-    // "Error resolving module specifier '/npm/eecircuit-engine@1.5.6/+esm'"
+    // "Error resolving module specifier '/npm/@tscircuit/eecircuit-engine@1.7.2/+esm'"
     const codeWithRelativeImport = `
       export default async function test() {
-        const { Simulation } = await import("/npm/eecircuit-engine@1.5.6/+esm");
+        const { Simulation } = await import("/npm/@tscircuit/eecircuit-engine@1.7.2/+esm");
         return Simulation;
       }
     `
@@ -75,7 +74,7 @@ describe("eecircuit-engine CDN import issue", () => {
       }
       expect(error).not.toBeNull()
       expect(error!.message).toMatch(
-        /Cannot find module.*\/npm\/eecircuit-engine/,
+        /Cannot find module.*\/npm\/@tscircuit\/eecircuit-engine/,
       )
     } finally {
       URL.revokeObjectURL(url)
@@ -86,7 +85,7 @@ describe("eecircuit-engine CDN import issue", () => {
     // After transformation, the import points to the full jsdelivr URL
     const codeWithRelativeImport = `
       export default async function test() {
-        const { Simulation } = await import("/npm/eecircuit-engine@1.5.6/+esm");
+        const { Simulation } = await import("/npm/@tscircuit/eecircuit-engine@1.7.2/+esm");
         return Simulation;
       }
     `
@@ -95,7 +94,7 @@ describe("eecircuit-engine CDN import issue", () => {
 
     // Verify the transformation happened
     expect(transformedCode).toContain(
-      "https://cdn.jsdelivr.net/npm/eecircuit-engine",
+      "https://cdn.jsdelivr.net/npm/@tscircuit/eecircuit-engine",
     )
     expect(transformedCode).not.toContain('"/npm/')
 
@@ -130,7 +129,7 @@ describe("eecircuit-engine CDN import issue", () => {
 
     // Verify the imports are now absolute
     expect(transformedCode).toContain(
-      "https://cdn.jsdelivr.net/npm/eecircuit-engine",
+      "https://cdn.jsdelivr.net/npm/@tscircuit/eecircuit-engine",
     )
   })
 })
