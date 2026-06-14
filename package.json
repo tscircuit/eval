@@ -1,7 +1,7 @@
 {
   "name": "@tscircuit/eval",
   "main": "dist/lib/index.js",
-  "version": "0.0.924",
+  "version": "0.0.925",
   "type": "module",
   "files": [
     "dist"
@@ -134,7 +134,8 @@
     "stack-svgs": "^0.0.1",
     "@tscircuit/breakout-point-solver": "github:tscircuit/breakout-point-solver#bac9629",
     "spicets": "^0.0.2",
-    "eecircuit-engine": "^1.5.6"},
+    "eecircuit-engine": "^1.5.6"
+  },
   "peerDependencies": {
     "typescript": "^5.0.0",
     "@tscircuit/core": "*",
