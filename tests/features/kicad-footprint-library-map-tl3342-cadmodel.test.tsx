@@ -58,7 +58,7 @@ const renderCircuitJsonTo3dPng = async (
     (element): element is PcbBoard => element.type === "pcb_board",
   )
 
-  const camPos =
+  const camPos: readonly [number, number, number] | undefined =
     board?.width && board?.height
       ? [board.width / 2, (board.width + board.height) / 2, board.height / 2]
       : undefined
