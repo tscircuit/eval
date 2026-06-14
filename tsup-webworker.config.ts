@@ -10,6 +10,8 @@ export default defineConfig({
   minify: false,
   noExternal: [
     "@tscircuit/core",
+    "@tscircuit/eecircuit-engine",
+    "@tscircuit/ngspice-spice-engine",
     "circuit-json",
     "@tscircuit/parts-engine",
     "sucrase",

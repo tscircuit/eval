@@ -14,9 +14,14 @@ export const transformJsDelivrImports = (code: string): string => {
     )
 }
 
-export const dynamicallyLoadDependencyWithCdnBackup = async (
+export const dynamicallyLoadDependencyWithCdnBackup = async <T = any>(
   packageName: string,
-): Promise<any> => {
+  localModule?: T,
+): Promise<T> => {
+  if (localModule) {
+    return localModule
+  }
+
   try {
     // First, try to import using Node.js resolution
     const module = await import(packageName)

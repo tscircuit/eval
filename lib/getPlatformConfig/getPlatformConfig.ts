@@ -1,4 +1,5 @@
 import type { PlatformConfig, SpiceEngine, PartsEngine } from "@tscircuit/props"
+import createNgspiceSpiceEngineDefault from "@tscircuit/ngspice-spice-engine"
 import {
   JlcPcbPartsEngine,
   jlcPartsEngine,
@@ -22,6 +23,7 @@ type PlatformCreateAutorouter =
 type PlatformStaticFileLoaderMap = NonNullable<
   PlatformConfig["staticFileLoaderMap"]
 >
+type CreateNgspiceSpiceEngine = typeof createNgspiceSpiceEngineDefault
 
 const toJlcpcbSupplierPartNumber = (partNumber: string) => {
   if (/^\d+$/.test(partNumber)) {
@@ -110,19 +112,18 @@ export const getPlatformConfig = (
         simulate: async (spice: string) => {
           if (!ngspiceEngineCache) {
             const createNgspiceSpiceEngine =
-              await dynamicallyLoadDependencyWithCdnBackup(
+              (await dynamicallyLoadDependencyWithCdnBackup(
                 "@tscircuit/ngspice-spice-engine",
+                createNgspiceSpiceEngineDefault,
               ).catch((error) => {
                 throw new Error(
                   "Could not load ngspice engine from local node_modules or CDN fallback.",
                   { cause: error },
                 )
-              })
+              })) as CreateNgspiceSpiceEngine
 
             if (createNgspiceSpiceEngine) {
-              ngspiceEngineCache = await createNgspiceSpiceEngine({
-                pspiceCompatibility: true,
-              })
+              ngspiceEngineCache = await createNgspiceSpiceEngine()
             }
           }
 
