@@ -53,6 +53,44 @@ test("resolves imports using tsconfig paths aliases", async () => {
   expect(resistor.resistance).toBe(1000)
 })
 
+test("resolves imports using tsconfig paths aliases with JSONC trailing commas", async () => {
+  const circuitJson = await runTscircuitCode(
+    {
+      "tsconfig.json": `{
+        "compilerOptions": {
+          "types": [
+            "tscircuit",
+          ],
+          "baseUrl": ".",
+          "paths": {
+            "@imports/*": [
+              "imports/*",
+            ],
+          },
+        },
+      }`,
+      "imports/alias-resistor.tsx": `
+        export function AliasResistor() {
+          return <resistor name="Rjsonc" resistance="3k" />
+        }
+      `,
+      "user.tsx": `
+        import { AliasResistor } from "@imports/alias-resistor"
+        export default () => (<AliasResistor />)
+      `,
+    },
+    {
+      mainComponentPath: "user",
+    },
+  )
+
+  const resistor = circuitJson.find(
+    (el) => el.type === "source_component" && el.name === "Rjsonc",
+  ) as any
+  expect(resistor).toBeDefined()
+  expect(resistor.resistance).toBe(3000)
+})
+
 test("throws error when tsconfig path alias cannot be resolved (instead of trying jsdelivr)", async () => {
   expect(
     runTscircuitCode(

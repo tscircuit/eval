@@ -1,4 +1,6 @@
 import { normalizeFilePath } from "./normalizeFsMap"
+import { stripComments } from "../utils/strip-comments"
+import { stripJsonTrailingCommas } from "../utils/strip-json-trailing-commas"
 
 export type TsConfig = {
   compilerOptions?: {
@@ -21,11 +23,9 @@ export function getTsConfig(
   const tsconfigContent = fsMapOrAllFilePaths["tsconfig.json"]
   if (!tsconfigContent) return null
   try {
-    const sanitizedContent = tsconfigContent.replace(
-      /\/\*[\s\S]*?\*\/|\/\/.*/g,
-      "",
-    ) // remove comments
-
+    const sanitizedContent = stripJsonTrailingCommas(
+      stripComments(tsconfigContent),
+    )
     const parsed = JSON.parse(sanitizedContent) as TsConfig
     return parsed
   } catch (e: any) {
