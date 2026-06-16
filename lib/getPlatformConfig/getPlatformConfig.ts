@@ -167,7 +167,7 @@ export const getPlatformConfig = (
         const stepUrl = `${baseUrl}.step`
         return {
           footprintCircuitJson: filtered,
-          cadModel: { wrlUrl, stepUrl, modelUnitToMmScale: 2.54 },
+          cadModel: { wrlUrl, stepUrl },
         }
       },
       jlcpcb: async (partNumber: string) => {
