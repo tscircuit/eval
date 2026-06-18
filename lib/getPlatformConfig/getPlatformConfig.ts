@@ -5,10 +5,12 @@ import {
   type EasyEdaProxyConfig,
 } from "@tscircuit/parts-engine"
 import { createKiCadRoutingToolsAutorouter } from "@tscircuit/krt-wasm"
-import { parseKicadModToCircuitJson } from "kicad-component-converter"
 import { dynamicallyLoadDependencyWithCdnBackup } from "../utils/dynamically-load-dependency-with-cdn-backup"
 import { extractCadModelFromCircuitJson } from "./extractCadModelFromCircuitJson"
-import { KicadToCircuitJsonConverter } from "kicad-to-circuit-json"
+import {
+  KicadFootprintToCircuitJsonConverter,
+  KicadToCircuitJsonConverter,
+} from "kicad-to-circuit-json"
 import type { AnyCircuitElement } from "circuit-json"
 import * as React from "react"
 
@@ -201,7 +203,10 @@ export const getPlatformConfig = (
       kicad_mod: {
         loadFromUrl: async (url: string) => {
           const kicadContent = await fetch(url).then((res) => res.text())
-          const kicadJson = await parseKicadModToCircuitJson(kicadContent)
+          const converter = new KicadFootprintToCircuitJsonConverter()
+          converter.addFile("footprint.kicad_mod", kicadContent)
+          converter.runUntilFinished()
+          const kicadJson = converter.getOutput()
           return {
             footprintCircuitJson: Array.isArray(kicadJson)
               ? kicadJson
