@@ -7,7 +7,7 @@ import { CircuitRunner } from "lib/runner/CircuitRunner"
 import * as fs from "node:fs"
 import * as path from "node:path"
 import looksSame from "looks-same"
-import { renderGLTFToPNGBufferFromGLBBuffer } from "poppygl"
+import { renderGLTFToPNGFromGLB } from "poppygl"
 import tl3342FootprintCircuitJson from "tests/fixtures/assets/SW_SPST_TL3342.json"
 import { repoFileUrl } from "tests/fixtures/resourcePaths"
 
@@ -63,21 +63,18 @@ const renderCircuitJsonTo3dPng = async (
       ? [board.width / 2, (board.width + board.height) / 2, board.height / 2]
       : undefined
 
-  const png = await renderGLTFToPNGBufferFromGLBBuffer(
-    Buffer.from(glb as any),
-    {
-      width: 1024,
-      height: 1024,
-      lookAt: [0, 0, 0],
-      backgroundColor: [0, 0, 0],
-      grid: {
-        cellSize: 1,
-        color: [128, 128, 128],
-        infiniteGrid: true,
-      },
-      ...(camPos ? { camPos } : {}),
+  const png = await renderGLTFToPNGFromGLB(Buffer.from(glb as any), {
+    width: 1024,
+    height: 1024,
+    lookAt: [0, 0, 0],
+    backgroundColor: [0, 0, 0],
+    grid: {
+      cellSize: 1,
+      color: [128, 128, 128],
+      infiniteGrid: true,
     },
-  )
+    ...(camPos ? { camPos } : {}),
+  })
 
   return Buffer.isBuffer(png) ? png : Buffer.from(png)
 }
