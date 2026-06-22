@@ -1,11 +1,11 @@
 import { describe, expect, test } from "bun:test"
 import { transformJsDelivrImports } from "lib/utils/dynamically-load-dependency-with-cdn-backup"
 
-const legacyJsDelivrBundle = `
+const bundleWithRelativeNpmImport = `
   const { Simulation } = await import("/npm/@tscircuit/eecircuit-engine@1.7.4/+esm")
 `
 
-const currentAbsoluteCdnBundle = `
+const bundleWithAbsoluteJscdnImport = `
   const engineUrl = "https://jscdn.tscircuit.com/@tscircuit/eecircuit-engine/1.7.4/+esm"
 `
 
@@ -25,13 +25,14 @@ const currentAbsoluteCdnBundle = `
 describe("@tscircuit/eecircuit-engine CDN import issue", () => {
   test("legacy CDN bundle contains relative /npm/ import that would fail in blob URL", () => {
     // Verify the problematic pattern exists
-    const hasRelativeNpmImport = legacyJsDelivrBundle.includes('import("/npm/')
+    const hasRelativeNpmImport =
+      bundleWithRelativeNpmImport.includes('import("/npm/')
     expect(hasRelativeNpmImport).toBe(true)
 
     // Verify the specific @tscircuit/eecircuit-engine import exists
     const hasEecircuitImport =
       /import\s*\(\s*["']\/npm\/@tscircuit\/eecircuit-engine/.test(
-        legacyJsDelivrBundle,
+        bundleWithRelativeNpmImport,
       )
     expect(hasEecircuitImport).toBe(true)
   })
@@ -118,7 +119,9 @@ describe("@tscircuit/eecircuit-engine CDN import issue", () => {
   })
 
   test("verify the CDN code transformation produces valid absolute URLs", () => {
-    const transformedCode = transformJsDelivrImports(legacyJsDelivrBundle)
+    const transformedCode = transformJsDelivrImports(
+      bundleWithRelativeNpmImport,
+    )
 
     // Verify no relative /npm/ imports remain
     expect(transformedCode).not.toMatch(/import\s*\(\s*["']\/npm\//)
@@ -131,8 +134,8 @@ describe("@tscircuit/eecircuit-engine CDN import issue", () => {
   })
 
   test("absolute CDN urls are left unchanged", () => {
-    expect(transformJsDelivrImports(currentAbsoluteCdnBundle)).toBe(
-      currentAbsoluteCdnBundle,
+    expect(transformJsDelivrImports(bundleWithAbsoluteJscdnImport)).toBe(
+      bundleWithAbsoluteJscdnImport,
     )
   })
 })
