@@ -12,10 +12,18 @@ import { transformJsDelivrImports } from "lib/utils/dynamically-load-dependency-
  *
  * This test verifies the CDN code contains the problematic import pattern
  * and that our transformation would fix it.
+ *
+ * NOTE: the deterministic unit tests below pin `transformJsDelivrImports` against
+ * fixed inputs. The two live-CDN tests assert the *invariant* the transform
+ * guarantees (no blob-unsafe relative `/npm/` imports remain) rather than the
+ * exact shape of the external bundle — upstream `@tscircuit/ngspice-spice-engine`
+ * now references eecircuit-engine via an absolute `jscdn.tscircuit.com` URL
+ * instead of a jsDelivr-relative `import("/npm/...")`, so shape-specific
+ * assertions against the live bundle are brittle and broke CI.
  */
 
 describe("@tscircuit/eecircuit-engine CDN import issue", () => {
-  test("ngspice-spice-engine CDN bundle contains relative /npm/ import that would fail in blob URL", async () => {
+  test("ngspice-spice-engine CDN bundle references @tscircuit/eecircuit-engine", async () => {
     // Fetch the actual CDN bundle
     const res = await fetch(
       "https://cdn.jsdelivr.net/npm/@tscircuit/ngspice-spice-engine/+esm",
@@ -24,14 +32,11 @@ describe("@tscircuit/eecircuit-engine CDN import issue", () => {
 
     const code = await res.text()
 
-    // Verify the problematic pattern exists
-    const hasRelativeNpmImport = code.includes('import("/npm/')
-    expect(hasRelativeNpmImport).toBe(true)
-
-    // Verify the specific @tscircuit/eecircuit-engine import exists
-    const hasEecircuitImport =
-      /import\s*\(\s*["']\/npm\/@tscircuit\/eecircuit-engine/.test(code)
-    expect(hasEecircuitImport).toBe(true)
+    // The bundle pulls in @tscircuit/eecircuit-engine. Historically it did so via a
+    // jsDelivr-relative `import("/npm/...")` (the bug this repro captured); it now
+    // ships an absolute `jscdn.tscircuit.com` URL. We only assert the dependency is
+    // referenced here — the transform's blob-safety invariant is checked below.
+    expect(code).toContain("@tscircuit/eecircuit-engine")
   })
 
   test("transformJsDelivrImports fixes the relative import", () => {
@@ -115,7 +120,7 @@ describe("@tscircuit/eecircuit-engine CDN import issue", () => {
     }
   })
 
-  test("verify the CDN code transformation produces valid absolute URLs", async () => {
+  test("transformJsDelivrImports leaves the live CDN bundle free of blob-unsafe /npm/ imports", async () => {
     // Fetch and transform the actual CDN code
     const res = await fetch(
       "https://cdn.jsdelivr.net/npm/@tscircuit/ngspice-spice-engine/+esm",
@@ -123,13 +128,10 @@ describe("@tscircuit/eecircuit-engine CDN import issue", () => {
     const originalCode = await res.text()
     const transformedCode = transformJsDelivrImports(originalCode)
 
-    // Verify no relative /npm/ imports remain
+    // The invariant: no relative /npm/ imports remain. Such imports resolve
+    // relative to the page origin under a blob: URL and fail; absolute CDN URLs
+    // (jsDelivr or jscdn.tscircuit.com) are left untouched and load fine.
     expect(transformedCode).not.toMatch(/import\s*\(\s*["']\/npm\//)
     expect(transformedCode).not.toMatch(/from\s*["']\/npm\//)
-
-    // Verify the imports are now absolute
-    expect(transformedCode).toContain(
-      "https://cdn.jsdelivr.net/npm/@tscircuit/eecircuit-engine",
-    )
   })
 })
