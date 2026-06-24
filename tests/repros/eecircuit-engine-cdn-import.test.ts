@@ -1,36 +1,39 @@
 import { describe, expect, test } from "bun:test"
 import { transformJsDelivrImports } from "lib/utils/dynamically-load-dependency-with-cdn-backup"
 
+const bundleWithRelativeNpmImport = `
+  const { Simulation } = await import("/npm/@tscircuit/eecircuit-engine@1.7.4/+esm")
+`
+
+const bundleWithAbsoluteJscdnImport = `
+  const engineUrl = "https://jscdn.tscircuit.com/@tscircuit/eecircuit-engine/1.7.4/+esm"
+`
+
 /**
  * This test reproduces the error:
  * "simulation_unknown_experiment_error:Error resolving module specifier '/npm/@tscircuit/eecircuit-engine@1.7.4/+esm'"
  *
- * The issue occurs when:
- * 1. ngspice-spice-engine is loaded from jsdelivr CDN
- * 2. The CDN bundle contains: import("/npm/@tscircuit/eecircuit-engine@1.7.4/+esm")
- * 3. When loaded via blob URL, the browser resolves "/npm/..." relative to page origin
+ * The issue occurred when a CDN bundle contained:
+ * import("/npm/@tscircuit/eecircuit-engine@1.7.4/+esm")
  *
- * This test verifies the CDN code contains the problematic import pattern
- * and that our transformation would fix it.
+ * When loaded via blob URL, the browser resolves "/npm/..." relative to page origin.
+ *
+ * These tests use inline fixtures so they stay deterministic even if the live
+ * CDN output changes over time.
  */
 
 describe("@tscircuit/eecircuit-engine CDN import issue", () => {
-  test("ngspice-spice-engine CDN bundle contains relative /npm/ import that would fail in blob URL", async () => {
-    // Fetch the actual CDN bundle
-    const res = await fetch(
-      "https://cdn.jsdelivr.net/npm/@tscircuit/ngspice-spice-engine/+esm",
-    )
-    expect(res.ok).toBe(true)
-
-    const code = await res.text()
-
+  test("legacy CDN bundle contains relative /npm/ import that would fail in blob URL", () => {
     // Verify the problematic pattern exists
-    const hasRelativeNpmImport = code.includes('import("/npm/')
+    const hasRelativeNpmImport =
+      bundleWithRelativeNpmImport.includes('import("/npm/')
     expect(hasRelativeNpmImport).toBe(true)
 
     // Verify the specific @tscircuit/eecircuit-engine import exists
     const hasEecircuitImport =
-      /import\s*\(\s*["']\/npm\/@tscircuit\/eecircuit-engine/.test(code)
+      /import\s*\(\s*["']\/npm\/@tscircuit\/eecircuit-engine/.test(
+        bundleWithRelativeNpmImport,
+      )
     expect(hasEecircuitImport).toBe(true)
   })
 
@@ -115,13 +118,10 @@ describe("@tscircuit/eecircuit-engine CDN import issue", () => {
     }
   })
 
-  test("verify the CDN code transformation produces valid absolute URLs", async () => {
-    // Fetch and transform the actual CDN code
-    const res = await fetch(
-      "https://cdn.jsdelivr.net/npm/@tscircuit/ngspice-spice-engine/+esm",
+  test("verify the CDN code transformation produces valid absolute URLs", () => {
+    const transformedCode = transformJsDelivrImports(
+      bundleWithRelativeNpmImport,
     )
-    const originalCode = await res.text()
-    const transformedCode = transformJsDelivrImports(originalCode)
 
     // Verify no relative /npm/ imports remain
     expect(transformedCode).not.toMatch(/import\s*\(\s*["']\/npm\//)
@@ -130,6 +130,12 @@ describe("@tscircuit/eecircuit-engine CDN import issue", () => {
     // Verify the imports are now absolute
     expect(transformedCode).toContain(
       "https://cdn.jsdelivr.net/npm/@tscircuit/eecircuit-engine",
+    )
+  })
+
+  test("absolute CDN urls are left unchanged", () => {
+    expect(transformJsDelivrImports(bundleWithAbsoluteJscdnImport)).toBe(
+      bundleWithAbsoluteJscdnImport,
     )
   })
 })
