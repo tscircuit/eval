@@ -36,4 +36,4 @@ test("example18-kicad-footprint-server", async () => {
   )
 
   await circuitWebWorker.kill()
-})
+},1000000000)

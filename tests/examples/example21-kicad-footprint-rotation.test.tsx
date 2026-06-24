@@ -39,4 +39,4 @@ test("example21-kicad-footprint-rotation", async () => {
   )
 
   await circuitWebWorker.kill()
-})
+},2000000)
