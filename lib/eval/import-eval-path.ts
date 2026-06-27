@@ -46,6 +46,13 @@ const getSyntheticNodeModulePath = (moduleSpecifier: string) => {
   return `node_modules/${moduleSpecifier}.ts`
 }
 
+const getNpmPackageSpecifierFromCdnImport = (importName: string) => {
+  const npmPath = importName.match(/^(?:\.\/|\/)npm\/(.+)$/)?.[1]
+  if (!npmPath) return null
+
+  return npmPath.replace(/\/\+esm$/, "")
+}
+
 export async function importEvalPath(
   importName: string,
   ctx: ExecutionContext,
@@ -120,17 +127,24 @@ export async function importEvalPath(
     )
   }
 
-  if (importName.startsWith("/npm/")) {
-    const pkgName = importName.replace(/^\/npm\//, "").replace(/\/\+esm$/, "")
+  const cdnNpmPackageSpecifier = getNpmPackageSpecifierFromCdnImport(importName)
+  if (cdnNpmPackageSpecifier) {
     if (disableCdnLoading) {
       throw new Error(
-        `Cannot find module "${pkgName}". The package is not available in the local environment.\n\n${ctx.logger.stringifyLogs()}`,
+        `Cannot find module "${cdnNpmPackageSpecifier}". The package is not available in the local environment.\n\n${ctx.logger.stringifyLogs()}`,
       )
     }
-    ctx.logger.info(`importNpmPackageFromCdn("${pkgName}")`)
-    await importNpmPackageFromCdn({ importName: pkgName, depth }, ctx)
-    if (hasPreSuppliedImport(preSuppliedImports, pkgName)) {
-      preSuppliedImports[importName] = preSuppliedImports[pkgName]
+    ctx.logger.info(`importNpmPackageFromCdn("${cdnNpmPackageSpecifier}")`)
+    await importNpmPackageFromCdn(
+      {
+        importName: cdnNpmPackageSpecifier,
+        depth,
+      },
+      ctx,
+    )
+    if (hasPreSuppliedImport(preSuppliedImports, cdnNpmPackageSpecifier)) {
+      preSuppliedImports[importName] =
+        preSuppliedImports[cdnNpmPackageSpecifier]
     }
     return
   }
