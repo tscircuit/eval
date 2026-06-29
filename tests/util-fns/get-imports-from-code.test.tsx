@@ -81,6 +81,11 @@ test("getImportsFromCode should handle minified static imports after declaration
   expect(getImportsFromCode(sourceCode)).toEqual(["object-hash"])
 })
 
+test("getImportsFromCode should handle minified namespace imports without spaces", () => {
+  const sourceCode = `import*as s from"/npm/is-number@6.0.0/+esm";function i(e){return e}`
+  expect(getImportsFromCode(sourceCode)).toEqual(["/npm/is-number@6.0.0/+esm"])
+})
+
 test("getImportsFromCode should handle comments and commented imports", () => {
   const sourceCode = `
     // import foo from './commented'
