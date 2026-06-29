@@ -174,7 +174,8 @@ test("resolves full jscdn url imports while evaluating cdn package code", async 
     "dep-loaded",
   )
   expect(
-    ctx.preSuppliedImports["https://jscdn.tscircuit.com/dep-package/latest/+esm"]
-      .default,
+    ctx.preSuppliedImports[
+      "https://jscdn.tscircuit.com/dep-package/latest/+esm"
+    ].default,
   ).toBe("dep-loaded")
 })
