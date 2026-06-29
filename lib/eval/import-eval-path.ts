@@ -48,9 +48,34 @@ const getSyntheticNodeModulePath = (moduleSpecifier: string) => {
 
 const getNpmPackageSpecifierFromCdnImport = (importName: string) => {
   const npmPath = importName.match(/^(?:\.\/|\/)npm\/(.+)$/)?.[1]
-  if (!npmPath) return null
+  if (npmPath) return npmPath.replace(/\/\+esm$/, "")
 
-  return npmPath.replace(/\/\+esm$/, "")
+  const jsdelivrPath = importName.match(
+    /^https:\/\/cdn\.jsdelivr\.net\/npm\/(.+)$/,
+  )?.[1]
+  if (jsdelivrPath) return jsdelivrPath.replace(/\/\+esm$/, "")
+
+  const jscdnPath = importName.match(
+    /^https:\/\/jscdn\.tscircuit\.com\/(.+)$/,
+  )?.[1]
+  if (!jscdnPath) return null
+
+  const pathParts = jscdnPath.replace(/\/\+esm$/, "").split("/")
+  const packageName = importName.startsWith("https://jscdn.tscircuit.com/@")
+    ? pathParts.slice(0, 2).join("/")
+    : pathParts[0]
+  const version = importName.startsWith("https://jscdn.tscircuit.com/@")
+    ? pathParts[2]
+    : pathParts[1]
+  const filePath = importName.startsWith("https://jscdn.tscircuit.com/@")
+    ? pathParts.slice(3).join("/")
+    : pathParts.slice(2).join("/")
+
+  if (!packageName) return null
+  const packageSpecifier =
+    version && version !== "latest" ? `${packageName}@${version}` : packageName
+
+  return filePath ? `${packageSpecifier}/${filePath}` : packageSpecifier
 }
 
 export async function importEvalPath(
