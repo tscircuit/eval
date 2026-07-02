@@ -178,11 +178,16 @@ export const importLocalFile = async (
       }
 
       // Then transform and evaluate
-      preSuppliedImports[fsPath] = evalCompiledJs(
+      const typeExports = getTypeExportsFromCode(fileContent)
+      const moduleExports = evalCompiledJs(
         transformWithSucrase(fileContent, fsPath),
         preSuppliedImports,
         dirname(fsPath),
       ).exports
+      if (typeExports.length > 0) {
+        moduleExports.__typeOnlyExports__ = typeExports
+      }
+      preSuppliedImports[fsPath] = moduleExports
     } else {
       throw new Error(
         `Unsupported file extension "${fsPath.split(".").pop()}" for "${fsPath}"`,

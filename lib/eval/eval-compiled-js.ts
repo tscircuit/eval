@@ -2,6 +2,45 @@ import { resolveFilePath } from "lib/runner/resolveFilePath"
 import { resolveNodeModule } from "lib/utils/resolve-node-module"
 import { hasPreSuppliedImport } from "./pre-supplied-imports"
 
+/**
+ * Errors thrown from the dynamically generated `Function(...)` body carry stack
+ * frames for the anonymous generated function whose line/column offsets shift
+ * with the size of the compiled code. Error tracking then fingerprints
+ * otherwise-identical errors as separate issues. Dropping those generated
+ * frames leaves a stable stack anchored at real source locations so repeat
+ * occurrences of the same error collapse into a single issue.
+ *
+ * This regex matches only the generated-function frames:
+ *  - V8: `at <anonymous>:12:34` / `at fn (<anonymous>:12:34)` (the `<anonymous>`
+ *    pseudo-filename) and `eval at evalCompiledJs (...)`
+ *  - bun: `at anonymous (file://.../eval-compiled-js.ts:28:14)` (the generated
+ *    function is named bare `anonymous`, unlike real anonymous callbacks which
+ *    render as `<anonymous>`)
+ * It intentionally does not match legitimate anonymous library frames such as
+ * `at <anonymous> (/real/file.js:1:2)`.
+ */
+const GENERATED_FUNCTION_FRAME_REGEX =
+  /\beval at\b|<anonymous>:|^\s*at anonymous\s/
+
+const stripGeneratedFunctionFrames = <T>(error: T): T => {
+  if (!(error instanceof Error) || typeof error.stack !== "string") {
+    return error
+  }
+
+  const lines = error.stack.split("\n")
+  const filteredLines = lines.filter(
+    (line) => !GENERATED_FUNCTION_FRAME_REGEX.test(line),
+  )
+
+  // Only rewrite the stack if at least one real source frame remains, so we
+  // never blank out the stack for errors that came entirely from eval'd code.
+  if (filteredLines.some((line) => /^\s+at\s/.test(line))) {
+    error.stack = filteredLines.join("\n")
+  }
+
+  return error
+}
+
 export function evalCompiledJs(
   compiledCode: string,
   preSuppliedImports: Record<string, any>,
@@ -111,5 +150,9 @@ export function evalCompiledJs(
   var circuit = globalThis.__tscircuit_circuit;
   ${compiledCode};
   return module;`.trim()
-  return Function(functionBody).call(globalThis)
+  try {
+    return Function(functionBody).call(globalThis)
+  } catch (error) {
+    throw stripGeneratedFunctionFrames(error)
+  }
 }
