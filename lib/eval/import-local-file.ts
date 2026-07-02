@@ -10,6 +10,7 @@ import { isStaticAssetPath } from "lib/shared/static-asset-extensions"
 import { transformWithSucrase } from "lib/transpile/transform-with-sucrase"
 import type { PlatformConfig } from "@tscircuit/props"
 import { hasPreSuppliedImport } from "./pre-supplied-imports"
+import { getJsxCommentErrorHint } from "./get-jsx-comment-error-hint"
 
 const debug = Debug("tsci:eval:import-local-file")
 
@@ -161,8 +162,11 @@ export const importLocalFile = async (
         }
         preSuppliedImports[fsPath] = moduleExports
       } catch (error: any) {
+        const hint = getJsxCommentErrorHint(error?.message)
         throw new Error(
-          `Eval compiled js error for "${importName}": ${error.message}`,
+          `Eval compiled js error for "${importName}": ${error.message}${
+            hint ? `\n\n${hint}` : ""
+          }`,
         )
       }
     } else if (fsPath.endsWith(".js") || fsPath.endsWith(".mjs")) {
