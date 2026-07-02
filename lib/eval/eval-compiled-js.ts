@@ -109,6 +109,7 @@ export function evalCompiledJs(
   var require = globalThis.__tscircuit_require;
   var module = { exports };
   var circuit = globalThis.__tscircuit_circuit;
+  var process = globalThis.process || { env: { NODE_ENV: "production" } };
   ${compiledCode};
   return module;`.trim()
   return Function(functionBody).call(globalThis)

@@ -28,6 +28,12 @@ setWasmUrl(manifoldWasmUrl)
 // Needed because @tscircuit/core and dependencies reference global.debugGraphics/debugOutputArray
 globalThis.global = globalThis.global || globalThis
 
+// Polyfill for Node.js process in browser workers
+// Needed because CommonJS development builds (e.g. *.development.js) read process.env.NODE_ENV
+;(globalThis as any).process = (globalThis as any).process || {
+  env: { NODE_ENV: "production" },
+}
+
 let executionContext: ExecutionContext | null = null
 let debugNamespace: string | undefined
 
