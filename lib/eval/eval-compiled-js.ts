@@ -29,6 +29,19 @@ export function evalCompiledJs(
       ? preSuppliedImports[name]
       : preSuppliedImports[resolvedFilePath!]
 
+    // A resolved import whose value is still undefined means the module was
+    // registered (e.g. a placeholder from a partially-completed transitive
+    // load) but never actually evaluated. Surface a clear error here instead
+    // of letting the caller trip over "Cannot read properties of undefined"
+    // at some arbitrary downstream property access.
+    if (mod === undefined || mod === null) {
+      throw new Error(
+        `Import "${name}" was resolved but not loaded (module not resolved)${
+          cwd ? ` in "${cwd}"` : ""
+        }. A dependency likely failed to evaluate before it was required.`,
+      )
+    }
+
     // If the module is a simple ES module with only default export (like static assets),
     // return the default value directly for CommonJS interop
     // e.g., require('./assets/file.glb') should return the URL string, not a module object

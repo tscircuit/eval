@@ -133,6 +133,64 @@ test("resolves jsdelivr relative /npm imports while evaluating cdn package code"
   )
 })
 
+test("reloads a transitive dependency left as an undefined placeholder", async () => {
+  const requestedUrls: string[] = []
+  const ctx = createTestExecutionContext()
+
+  // Simulate a partially-completed prior load that registered the dependency
+  // key but left its value undefined. The loader must not treat this as
+  // "already loaded" and skip it, otherwise the importing package would run
+  // its compiled code against an undefined dependency.
+  ctx.preSuppliedImports["/npm/dep-package@1.0.0/+esm"] = undefined
+
+  globalThis.fetch = (async (input: RequestInfo | URL) => {
+    const url = input.toString()
+    requestedUrls.push(url)
+
+    if (url.startsWith("https://jscdn.tscircuit.com/")) {
+      return new Response("not found", {
+        status: 404,
+        statusText: "Not Found",
+      })
+    }
+
+    if (url === "https://cdn.jsdelivr.net/npm/example-package/+esm") {
+      return new Response(
+        'import value from "/npm/dep-package@1.0.0/+esm"; export const loadedValue = value',
+        {
+          status: 200,
+          headers: { "content-type": "application/javascript" },
+        },
+      )
+    }
+
+    if (url === "https://cdn.jsdelivr.net/npm/dep-package@1.0.0/+esm") {
+      return new Response("export default 'dep-loaded'", {
+        status: 200,
+        headers: { "content-type": "application/javascript" },
+      })
+    }
+
+    return new Response("not found", {
+      status: 404,
+      statusText: "Not Found",
+    })
+  }) as typeof fetch
+
+  await importNpmPackageFromCdn({ importName: "example-package" }, ctx)
+
+  // The dependency should have been (re)fetched despite the undefined placeholder
+  expect(requestedUrls).toContain(
+    "https://cdn.jsdelivr.net/npm/dep-package@1.0.0/+esm",
+  )
+  expect(ctx.preSuppliedImports["/npm/dep-package@1.0.0/+esm"].default).toBe(
+    "dep-loaded",
+  )
+  expect(ctx.preSuppliedImports["example-package"].loadedValue).toBe(
+    "dep-loaded",
+  )
+})
+
 test("resolves full jscdn url imports while evaluating cdn package code", async () => {
   const requestedUrls: string[] = []
   const ctx = createTestExecutionContext()

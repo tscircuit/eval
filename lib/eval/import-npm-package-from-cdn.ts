@@ -54,10 +54,43 @@ export async function importNpmPackageFromCdn(
 
       const importNames = getImportsFromCode(content)
       for (const subImportName of importNames) {
-        if (!hasPreSuppliedImport(preSuppliedImports, subImportName)) {
+        // A key that is present but undefined is a placeholder left behind by a
+        // partially-completed load, not a fully-evaluated module. Treat it as
+        // not-yet-loaded so the dependency is actually resolved before we run
+        // this package's compiled code against it.
+        const isRegistered = hasPreSuppliedImport(
+          preSuppliedImports,
+          subImportName,
+        )
+        const isFullyLoaded =
+          isRegistered && preSuppliedImports[subImportName] !== undefined
+        if (!isFullyLoaded) {
+          // Drop the undefined placeholder so downstream resolution
+          // (importEvalPath) doesn't short-circuit on the existing key and
+          // actually loads the dependency.
+          if (isRegistered) {
+            delete preSuppliedImports[subImportName]
+          }
           await importEvalPath(subImportName, ctx, depth + 1, {
             cwd,
           })
+        }
+      }
+
+      // Every transitive dependency must be fully evaluated and registered
+      // before this package's compiled code runs. If one still resolves to
+      // undefined, evaluating the body would throw a cryptic
+      // "Cannot read properties of undefined" at an arbitrary property access
+      // (e.g. a legacy @tscircuit/soup chain reading `zod.string`). Fail here
+      // with an actionable message instead.
+      for (const subImportName of importNames) {
+        if (
+          hasPreSuppliedImport(preSuppliedImports, subImportName) &&
+          preSuppliedImports[subImportName] === undefined
+        ) {
+          throw new Error(
+            `Transitive dependency "${subImportName}" required by "${finalImportName || importName}" resolved to undefined and could not be loaded before evaluation`,
+          )
         }
       }
 
