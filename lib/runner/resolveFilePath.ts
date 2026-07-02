@@ -67,6 +67,23 @@ export const resolveFilePath = (
         return normalizedFilePathMap.get(possibleFilePath)!
       }
     }
+
+    // Handle ESM-style imports that use an explicit ".js"/".jsx" extension
+    // pointing at TypeScript source (e.g. "../core/util.js" -> "util.ts").
+    // Strip the JS suffix and retry with the TS/JS candidate extensions.
+    const jsExtMatch = normalizedResolvedPath.match(/\.(jsx?)$/)
+    if (jsExtMatch) {
+      const withoutJsExt = normalizedResolvedPath.slice(
+        0,
+        -jsExtMatch[0].length,
+      )
+      for (const ext of FILE_EXTENSIONS) {
+        const possibleFilePath = `${withoutJsExt}.${ext}`
+        if (normalizedFilePathMap.has(possibleFilePath)) {
+          return normalizedFilePathMap.get(possibleFilePath)!
+        }
+      }
+    }
   }
 
   // Try resolving using tsconfig "paths" mapping when the import is non-relative
