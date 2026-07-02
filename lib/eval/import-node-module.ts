@@ -8,6 +8,7 @@ import { getPackageJsonEntrypoint } from "./getPackageJsonEntrypoint"
 import { isDistDirEmpty } from "./isDistDirEmpty"
 import { resolveEntrypointPath } from "./resolveEntrypointPath"
 import { hasPreSuppliedImport } from "./pre-supplied-imports"
+import { createNodeBuiltinStub, isNodeBuiltin } from "./node-builtins"
 
 const debug = Debug("tsci:eval:import-node-module")
 
@@ -22,6 +23,13 @@ export const importNodeModule = async (
   const { preSuppliedImports, fsMap } = ctx
 
   if (hasPreSuppliedImport(preSuppliedImports, importName)) {
+    return
+  }
+
+  // Node builtins (e.g. "fs", "path", "node:crypto") aren't real node_modules;
+  // stub them so a bundled package that requires one doesn't fail resolution.
+  if (isNodeBuiltin(importName)) {
+    preSuppliedImports[importName] = createNodeBuiltinStub()
     return
   }
 

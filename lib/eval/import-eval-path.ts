@@ -17,6 +17,7 @@ import { isDistDirEmpty } from "./isDistDirEmpty"
 import { resolveEntrypointPath } from "./resolveEntrypointPath"
 import { resolveRelativePath } from "lib/utils/resolveRelativePath"
 import { hasPreSuppliedImport } from "./pre-supplied-imports"
+import { createNodeBuiltinStub, isNodeBuiltin } from "./node-builtins"
 
 const debug = Debug("tsci:eval:import-eval-path")
 
@@ -109,6 +110,18 @@ export async function importEvalPath(
     hasPreSuppliedImport(preSuppliedImports, importName.slice(2))
   ) {
     ctx.logger.info(`Import "${importName}" in preSuppliedImports[2]`)
+    return
+  }
+
+  // Node builtins (e.g. "fs", "path", "node:crypto") can be required by
+  // bundled third-party packages such as `typescript`. The eval resolver has
+  // no filesystem/CDN concept of them, so short-circuit with a stub module
+  // before the package.json/node_modules validation would otherwise throw.
+  if (isNodeBuiltin(importName)) {
+    if (!hasPreSuppliedImport(preSuppliedImports, importName)) {
+      preSuppliedImports[importName] = createNodeBuiltinStub()
+    }
+    ctx.logger.info(`Node builtin "${importName}" resolved to stub module`)
     return
   }
 
