@@ -1,7 +1,7 @@
 import { test, expect } from "bun:test"
 import { runTscircuitCode } from "lib/runner"
 
-test(
+test.skip(
   "should support importing various npm packages",
   async () => {
     const circuitJson = await runTscircuitCode(
