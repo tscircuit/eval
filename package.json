@@ -1,7 +1,7 @@
 {
   "name": "@tscircuit/eval",
   "main": "dist/lib/index.js",
-  "version": "0.0.996",
+  "version": "0.0.997",
   "type": "module",
   "files": [
     "dist"
