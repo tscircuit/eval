@@ -1,7 +1,7 @@
 {
   "name": "@tscircuit/eval",
   "main": "dist/lib/index.js",
-  "version": "0.0.996",
+  "version": "0.0.997",
   "type": "module",
   "files": [
     "dist"
@@ -78,6 +78,7 @@
     "@tscircuit/layout": "^0.0.28",
     "@tscircuit/log-soup": "^1.0.2",
     "@tscircuit/matchpack": "^0.0.34",
+    "@tscircuit/manifold-2d": "^0.0.6",
     "@tscircuit/math-utils": "^0.0.36",
     "@tscircuit/miniflex": "^0.0.4",
     "@tscircuit/mm": "^0.0.9",
