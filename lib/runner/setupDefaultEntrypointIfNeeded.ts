@@ -39,11 +39,16 @@ export const setupDefaultEntrypointIfNeeded = (opts: {
 
   if (!opts.entrypoint && opts.mainComponentPath) {
     opts.entrypoint = "entrypoint.tsx"
-    const mainComponentCode =
-      opts.fsMap[resolveFilePathOrThrow(opts.mainComponentPath, opts.fsMap)]
+    // resolveFilePathOrThrow throws its own "File not found" error if the path
+    // can't be resolved, so reaching this point means the file exists in fsMap.
+    const resolvedMainComponentPath = resolveFilePathOrThrow(
+      opts.mainComponentPath,
+      opts.fsMap,
+    )
+    const mainComponentCode = opts.fsMap[resolvedMainComponentPath]
     if (!mainComponentCode) {
       throw new Error(
-        `Main component path "${opts.mainComponentPath}" not found in fsMap. Available paths: ${Object.keys(opts.fsMap).join(", ")}`,
+        `Main component file "${resolvedMainComponentPath}" is empty`,
       )
     }
     opts.fsMap[opts.entrypoint] = `
