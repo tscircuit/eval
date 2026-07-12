@@ -46,7 +46,7 @@ export const setupDefaultEntrypointIfNeeded = (opts: {
       opts.fsMap,
     )
     const mainComponentCode = opts.fsMap[resolvedMainComponentPath]
-    if (!mainComponentCode) {
+    if (!mainComponentCode || mainComponentCode.trim() === "") {
       throw new Error(
         `Main component file "${resolvedMainComponentPath}" is empty`,
       )
