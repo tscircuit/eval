@@ -117,7 +117,7 @@ test("usb_c connector renders without CORS errors", async ({ page }) => {
   }
 })
 
-test("copper pour successfully renders in browser (verifies manifold-3d WASM)", async ({
+test("copper pour successfully renders in browser (verifies manifold-2d WASM)", async ({
   page,
 }) => {
   await new Promise((resolve) => setTimeout(resolve, 1000))
