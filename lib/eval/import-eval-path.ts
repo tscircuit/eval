@@ -17,6 +17,7 @@ import { isDistDirEmpty } from "./isDistDirEmpty"
 import { resolveEntrypointPath } from "./resolveEntrypointPath"
 import { resolveRelativePath } from "lib/utils/resolveRelativePath"
 import { hasPreSuppliedImport } from "./pre-supplied-imports"
+import { getMissingNodeModuleErrorMessage } from "./missing-node-module-error"
 
 const debug = Debug("tsci:eval:import-eval-path")
 
@@ -269,7 +270,7 @@ export async function importEvalPath(
         `importNodeModule("${importName}") via nodeModulesResolver`,
       )
       try {
-        await importNodeModule(importName, ctx, depth)
+        await importNodeModule(importName, ctx, depth, { cwd: opts.cwd })
         return
       } catch (error) {
         ctx.logger.info(
@@ -297,7 +298,9 @@ export async function importEvalPath(
       })
     ) {
       throw new Error(
-        `Node module imported but not in package.json "${importName}"\n\n${ctx.logger.stringifyLogs()}`,
+        `${getMissingNodeModuleErrorMessage(importName, "not-declared", {
+          cwd: opts.cwd,
+        })}\n\n${ctx.logger.stringifyLogs()}`,
       )
     }
 
@@ -306,7 +309,9 @@ export async function importEvalPath(
     const nodeModuleDir = getNodeModuleDirectory(importName, ctx.fsMap)
     if (!nodeModuleDir && disableCdnLoading) {
       throw new Error(
-        `Node module "${importName}" has no files in the node_modules directory\n\n${ctx.logger.stringifyLogs()}`,
+        `${getMissingNodeModuleErrorMessage(importName, "no-files", {
+          cwd: opts.cwd,
+        })}\n\n${ctx.logger.stringifyLogs()}`,
       )
     }
 

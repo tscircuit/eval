@@ -8,6 +8,7 @@ import { getPackageJsonEntrypoint } from "./getPackageJsonEntrypoint"
 import { isDistDirEmpty } from "./isDistDirEmpty"
 import { resolveEntrypointPath } from "./resolveEntrypointPath"
 import { hasPreSuppliedImport } from "./pre-supplied-imports"
+import { getMissingNodeModuleErrorMessage } from "./missing-node-module-error"
 
 const debug = Debug("tsci:eval:import-node-module")
 
@@ -32,7 +33,9 @@ export const importNodeModule = async (
     // Step 1: Check if the package is declared in package.json
     if (!isPackageDeclaredInPackageJson(importName, fsMap, opts)) {
       throw new Error(
-        `Node module imported but not in package.json "${importName}"\n\n${ctx.logger.stringifyLogs()}`,
+        `${getMissingNodeModuleErrorMessage(importName, "not-declared", {
+          cwd: opts.cwd,
+        })}\n\n${ctx.logger.stringifyLogs()}`,
       )
     }
   }
@@ -52,7 +55,9 @@ export const importNodeModule = async (
     // Step 2: Check if node_modules directory exists for the package
     if (!nodeModuleDir) {
       throw new Error(
-        `Node module "${importName}" has no files in the node_modules directory\n\n${ctx.logger.stringifyLogs()}`,
+        `${getMissingNodeModuleErrorMessage(importName, "no-files", {
+          cwd: opts.cwd,
+        })}\n\n${ctx.logger.stringifyLogs()}`,
       )
     }
 
