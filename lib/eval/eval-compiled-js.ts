@@ -104,11 +104,20 @@ export function evalCompiledJs(
     })
   }
 
+  // Expose `sel` (tscircuit's selector helper) as an ambient global, mirroring
+  // how `circuit` is ambient. Users frequently reference `sel` without importing
+  // it (reasonably assuming it's ambient like `circuit`), which otherwise throws
+  // a confusing "sel is not defined" ReferenceError.
+  const tscircuitModule =
+    preSuppliedImports["@tscircuit/core"] ?? preSuppliedImports.tscircuit
+  ;(globalThis as any).__tscircuit_sel = tscircuitModule?.sel
+
   const functionBody = `
   var exports = {};
   var require = globalThis.__tscircuit_require;
   var module = { exports };
   var circuit = globalThis.__tscircuit_circuit;
+  var sel = globalThis.__tscircuit_sel;
   ${compiledCode};
   return module;`.trim()
   return Function(functionBody).call(globalThis)
