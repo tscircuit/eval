@@ -9,6 +9,7 @@ import { dynamicallyLoadDependencyWithCdnBackup } from "../utils/dynamically-loa
 import { extractCadModelFromCircuitJson } from "./extractCadModelFromCircuitJson"
 import {
   KicadFootprintToCircuitJsonConverter,
+  KicadSymbolToCircuitJsonConverter,
   KicadToCircuitJsonConverter,
 } from "kicad-to-circuit-json"
 import type { AnyCircuitElement } from "circuit-json"
@@ -73,6 +74,35 @@ const loadKicadPcbStaticFile: PlatformStaticFileLoaderMap[string] = async (
     default: circuitJson,
     Board,
     boardContentCircuitJson,
+    circuitJson,
+  }
+}
+
+const loadKicadSymbolStaticFile: PlatformStaticFileLoaderMap[string] = async (
+  fileContent,
+) => {
+  const kicadSymbolContent =
+    typeof fileContent === "string"
+      ? fileContent
+      : new TextDecoder().decode(fileContent)
+
+  if (
+    kicadSymbolContent === "__STATIC_ASSET__" ||
+    kicadSymbolContent.startsWith("blob:")
+  ) {
+    throw new Error(
+      ".kicad_sym imports require local file contents. Static asset URLs are not supported.",
+    )
+  }
+
+  const converter = new KicadSymbolToCircuitJsonConverter()
+  converter.addFile("imported.kicad_sym", kicadSymbolContent)
+  converter.runUntilFinished()
+  const circuitJson = converter.getOutput()
+
+  return {
+    __esModule: true,
+    default: circuitJson,
     circuitJson,
   }
 }
@@ -217,6 +247,7 @@ export const getPlatformConfig = (
     },
     staticFileLoaderMap: {
       kicad_pcb: loadKicadPcbStaticFile,
+      kicad_sym: loadKicadSymbolStaticFile,
       ...overrides.staticFileLoaderMap,
     },
   }
