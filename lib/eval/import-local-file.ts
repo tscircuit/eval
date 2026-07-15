@@ -1,14 +1,14 @@
+import type { PlatformConfig } from "@tscircuit/props"
+import Debug from "debug"
 import { resolveFilePathOrThrow } from "lib/runner/resolveFilePath"
+import { isStaticAssetPath } from "lib/shared/static-asset-extensions"
+import { transformWithSucrase } from "lib/transpile/transform-with-sucrase"
 import { dirname } from "lib/utils/dirname"
 import { getImportsFromCode } from "lib/utils/get-imports-from-code"
 import { getTypeExportsFromCode } from "lib/utils/get-type-exports-from-code"
 import { evalCompiledJs } from "./eval-compiled-js"
 import type { ExecutionContext } from "./execution-context"
 import { importEvalPath } from "./import-eval-path"
-import Debug from "debug"
-import { isStaticAssetPath } from "lib/shared/static-asset-extensions"
-import { transformWithSucrase } from "lib/transpile/transform-with-sucrase"
-import type { PlatformConfig } from "@tscircuit/props"
 import { hasPreSuppliedImport } from "./pre-supplied-imports"
 
 const debug = Debug("tsci:eval:import-local-file")
@@ -40,6 +40,33 @@ const normalizeStaticFileLoaderResult = (result: any) => {
     __esModule: true,
     default: result,
   }
+}
+
+const resolveStaticFileLoaderInput = async (
+  fileContent: string,
+  fsPath: string,
+  platform: PlatformConfig | undefined,
+): Promise<string | ArrayBuffer> => {
+  const isStaticAssetMarker = fileContent === "__STATIC_ASSET__"
+  const isBlobUrl = fileContent.startsWith("blob:")
+  if (!isStaticAssetMarker && !isBlobUrl) return fileContent
+
+  let assetUrl = fileContent
+  if (isStaticAssetMarker) {
+    const projectBaseUrl = platform?.projectBaseUrl?.replace(/\/$/, "")
+    if (!projectBaseUrl) return fileContent
+    const normalizedPath = fsPath.startsWith("./") ? fsPath.slice(2) : fsPath
+    assetUrl = `${projectBaseUrl}/${normalizedPath}`
+  }
+
+  const response = await (platform?.platformFetch ?? globalThis.fetch)(assetUrl)
+  if (!response.ok) {
+    throw new Error(
+      `Failed to fetch static file content from "${assetUrl}" (HTTP ${response.status})`,
+    )
+  }
+
+  return response.arrayBuffer()
 }
 
 export const importLocalFile = async (
@@ -83,8 +110,13 @@ export const importLocalFile = async (
 
     if (staticFileLoader) {
       try {
+        const loaderInput = await resolveStaticFileLoaderInput(
+          fileContent,
+          fsPath,
+          ctx.circuit.platform,
+        )
         preSuppliedImports[fsPath] = normalizeStaticFileLoaderResult(
-          await staticFileLoader(fileContent),
+          await staticFileLoader(loaderInput),
         )
       } catch (error: any) {
         const ext = getFileExtension(fsPath)
