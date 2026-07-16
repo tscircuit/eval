@@ -5,6 +5,19 @@ import { importEvalPath } from "./import-eval-path"
 import { isStaticAssetPath } from "lib/shared/static-asset-extensions"
 import { hasPreSuppliedImport } from "./pre-supplied-imports"
 
+type PackageRelease = {
+  package_release_id: string
+  has_transpiled: boolean
+  is_pr_preview: boolean
+}
+
+const getPackageFileDownloadUrl = (
+  params: { package_release_id: string; file_path: string },
+  ctx: ExecutionContext,
+) => {
+  return `${ctx.snippetsApiBaseUrl.replace(/\/$/, "")}/package_files/download?${new URLSearchParams(params)}`
+}
+
 export async function importSnippet(
   importName: string,
   ctx: ExecutionContext,
@@ -13,14 +26,13 @@ export async function importSnippet(
   const { preSuppliedImports } = ctx
   const fullSnippetName = importName.replace("@tsci/", "").replace(".", "/")
 
-  const fetchOptions: RequestInit = {}
+  const headers: Record<string, string> = {}
   if (ctx.tscircuitSessionToken) {
-    fetchOptions.headers = {
-      Authorization: `Bearer ${ctx.tscircuitSessionToken}`,
-    }
+    headers.Authorization = `Bearer ${ctx.tscircuitSessionToken}`
   }
+  const fetchOptions: RequestInit = { headers }
 
-  const { cjs, error } = await globalThis
+  let { cjs, error } = await globalThis
     .fetch(`${ctx.cjsRegistryUrl}/${fullSnippetName}`, fetchOptions)
     .then(async (res) => ({ cjs: await res.text(), error: null }))
     .catch((e) => ({ error: e, cjs: null }))
@@ -30,11 +42,54 @@ export async function importSnippet(
     return
   }
 
+  let fallbackPackageReleaseId: string | undefined
+
   // Check if the response is a JSON error (package not built)
   if (cjs?.startsWith("{")) {
     try {
       const jsonResponse = JSON.parse(cjs)
-      if (jsonResponse.ok === false && jsonResponse.error) {
+      const errorMessage = jsonResponse.error?.message ?? jsonResponse.error
+
+      if (
+        jsonResponse.ok === false &&
+        errorMessage &&
+        !fullSnippetName.includes("@") &&
+        /not been built|bundle not found|no files in dist/i.test(errorMessage)
+      ) {
+        const release = await globalThis
+          .fetch(`${ctx.snippetsApiBaseUrl}/package_releases/list`, {
+            method: "POST",
+            headers: { ...headers, "Content-Type": "application/json" },
+            body: JSON.stringify({ package_name: fullSnippetName }),
+          })
+          .then((res) => res.json())
+          .then(({ package_releases }) =>
+            package_releases.find(
+              (release: PackageRelease) =>
+                release.has_transpiled && !release.is_pr_preview,
+            ),
+          )
+          .catch(() => null)
+
+        if (release) {
+          const response = await globalThis.fetch(
+            getPackageFileDownloadUrl(
+              {
+                package_release_id: release.package_release_id,
+                file_path: "dist/index.cjs",
+              },
+              ctx,
+            ),
+            fetchOptions,
+          )
+          if (response.ok) {
+            cjs = await response.text()
+            fallbackPackageReleaseId = release.package_release_id
+          }
+        }
+      }
+
+      if (!fallbackPackageReleaseId && jsonResponse.ok === false) {
         throw new Error(
           `"${importName}" has no files in dist, it may not be built`,
         )
@@ -58,7 +113,15 @@ export async function importSnippet(
       // required static assets can be fetched from: cjs.tscircuit.com/@tsci/author.package/assets/...
       if (subImportName.startsWith("./") && isStaticAssetPath(subImportName)) {
         const assetPath = subImportName.slice(2)
-        const assetUrl = `${ctx.cjsRegistryUrl}/${importName}/${assetPath}`
+        const assetUrl = fallbackPackageReleaseId
+          ? getPackageFileDownloadUrl(
+              {
+                package_release_id: fallbackPackageReleaseId,
+                file_path: `dist/${assetPath}`,
+              },
+              ctx,
+            )
+          : `${ctx.cjsRegistryUrl}/${importName}/${assetPath}`
         staticAssetImports.push({ subImportName, assetUrl })
       } else {
         otherImports.push(subImportName)
