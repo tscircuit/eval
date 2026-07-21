@@ -1,5 +1,5 @@
-import { createCircuitWebWorker } from "lib/index"
 import { expect, test } from "bun:test"
+import { createCircuitWebWorker } from "lib/index"
 
 test("example9-not-defined-component", async () => {
   const circuitWebWorker = await createCircuitWebWorker({
@@ -17,7 +17,7 @@ test("example9-not-defined-component", async () => {
         );
       `)
   }).toThrowError(
-    `Eval compiled js error for \"entrypoint.tsx\": \"NotExportedComponent\" is not exported by \"@tsci/seveibar.a555timer\".\nIf \"NotExportedComponent\" is a type, use \"export type { NotExportedComponent }\" instead of \"export { NotExportedComponent }\"`,
+    `Error evaluating \"entrypoint.tsx\": \"NotExportedComponent\" is not exported by \"@tsci/seveibar.a555timer\".\nIf \"NotExportedComponent\" is a type, use \"export type { NotExportedComponent }\" instead of \"export { NotExportedComponent }\"`,
   )
 
   await circuitWebWorker.kill()
