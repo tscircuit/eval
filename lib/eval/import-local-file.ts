@@ -171,8 +171,8 @@ export const importLocalFile = async (
         }
       }
 
+      const transformedCode = transformWithSucrase(fileContent, fsPath)
       try {
-        const transformedCode = transformWithSucrase(fileContent, fsPath)
         debug("evalCompiledJs called with:", {
           code: transformedCode.slice(0, 100),
           dirname: dirname(fsPath),
@@ -193,9 +193,7 @@ export const importLocalFile = async (
         }
         preSuppliedImports[fsPath] = moduleExports
       } catch (error: any) {
-        throw new Error(
-          `Eval compiled js error for "${importName}": ${error.message}`,
-        )
+        throw new Error(`Error evaluating "${fsPath}": ${error.message}`)
       }
     } else if (fsPath.endsWith(".js") || fsPath.endsWith(".mjs")) {
       // For .js/.mjs files, especially from node_modules, we need to extract and resolve imports first
