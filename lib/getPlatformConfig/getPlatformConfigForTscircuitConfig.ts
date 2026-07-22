@@ -2,22 +2,26 @@ import type { WebWorkerConfiguration } from "lib/shared/types"
 import type { PlatformConfig } from "@tscircuit/props"
 import { getPlatformConfig } from "./getPlatformConfig"
 
-interface TscircuitConfigWithPlatformConfig {
+type TscircuitConfigWithPlatformConfig = Partial<PlatformConfig> & {
   platformConfig?: Partial<PlatformConfig>
-  partsEngine?: PlatformConfig["partsEngine"]
 }
 
 export const getPlatformConfigForTscircuitConfig = (
   webWorkerConfiguration: WebWorkerConfiguration,
   config: TscircuitConfigWithPlatformConfig | null,
 ): PlatformConfig | undefined => {
-  const configPlatform = config?.platformConfig
-    ? config.platformConfig
-    : config?.partsEngine
-      ? { partsEngine: config.partsEngine }
-      : undefined
+  const configPlatform: Partial<PlatformConfig> = {
+    ...(typeof config?.pcbDisabled === "boolean"
+      ? { pcbDisabled: config.pcbDisabled }
+      : {}),
+    ...(typeof config?.schematicDisabled === "boolean"
+      ? { schematicDisabled: config.schematicDisabled }
+      : {}),
+    ...(config?.partsEngine ? { partsEngine: config.partsEngine } : {}),
+    ...config?.platformConfig,
+  }
 
-  if (!configPlatform) return undefined
+  if (Object.keys(configPlatform).length === 0) return undefined
 
   const mergedConfigPlatform = {
     ...webWorkerConfiguration.projectConfig,

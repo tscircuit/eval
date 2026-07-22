@@ -3,11 +3,14 @@ import { createExecutionContext, importEvalPath } from "lib/eval"
 import type { WebWorkerConfiguration } from "lib/shared/types"
 import { getTsConfig } from "./tsconfigPaths"
 
-const TSCIRCUIT_CONFIG_PATHS = ["tscircuit.config.ts", "tscircuit.config.js"]
+const TSCIRCUIT_CONFIG_PATHS = [
+  "tscircuit.config.ts",
+  "tscircuit.config.js",
+  "tscircuit.config.json",
+]
 
-interface LoadedTscircuitConfig {
+type LoadedTscircuitConfig = Partial<PlatformConfig> & {
   platformConfig?: Partial<PlatformConfig>
-  partsEngine?: PlatformConfig["partsEngine"]
   [key: string]: any
 }
 
@@ -18,8 +21,21 @@ export const loadTscircuitConfig = async (
     debugNamespace?: string
   } = {},
 ): Promise<LoadedTscircuitConfig | null> => {
-  const configPath = TSCIRCUIT_CONFIG_PATHS.find((path) => path in fsMap)
-  if (!configPath) return null
+  const configPaths = TSCIRCUIT_CONFIG_PATHS.filter((path) => path in fsMap)
+  if (configPaths.length === 0) return null
+
+  let jsonConfig: LoadedTscircuitConfig | null = null
+  const jsonConfigPath = configPaths.find((path) => path.endsWith(".json"))
+  if (jsonConfigPath) {
+    try {
+      jsonConfig = JSON.parse(fsMap[jsonConfigPath])
+    } catch (error) {
+      console.warn("Failed to parse tscircuit.config.json:", error)
+    }
+  }
+
+  const configPath = configPaths.find((path) => !path.endsWith(".json"))
+  if (!configPath) return jsonConfig
 
   const ctx = createExecutionContext(webWorkerConfiguration, {
     platform: webWorkerConfiguration.platform,
@@ -34,5 +50,10 @@ export const loadTscircuitConfig = async (
   await importEvalPath(`./${configPath}`, ctx)
 
   const moduleExports = ctx.preSuppliedImports[configPath]
-  return moduleExports?.default ?? moduleExports ?? null
+  const moduleConfig = moduleExports?.default ?? moduleExports ?? null
+
+  return {
+    ...(jsonConfig ?? {}),
+    ...(moduleConfig ?? {}),
+  }
 }
