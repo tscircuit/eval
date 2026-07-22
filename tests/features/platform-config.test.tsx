@@ -32,6 +32,13 @@ test("disabled flags from tscircuit.config.json are forwarded to RootCircuit", a
         pcbDisabled: true,
         schematicDisabled: true,
       }),
+      "tscircuit.config.ts": `
+        export default {
+          platformConfig: {
+            routingDisabled: true,
+          },
+        }
+      `,
       "example.tsx": `
         circuit.add(
           <board width="10mm" height="10mm">
@@ -45,6 +52,7 @@ test("disabled flags from tscircuit.config.json are forwarded to RootCircuit", a
   const circuit = (globalThis as any).__tscircuit_circuit
   expect(circuit.platform?.pcbDisabled).toBe(true)
   expect(circuit.platform?.schematicDisabled).toBe(true)
+  expect(circuit.platform?.routingDisabled).toBe(true)
 
   await runner.kill()
 })
