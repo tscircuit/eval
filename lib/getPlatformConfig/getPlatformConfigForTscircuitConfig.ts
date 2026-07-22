@@ -1,25 +1,25 @@
 import type { WebWorkerConfiguration } from "lib/shared/types"
-import type { PlatformConfig } from "@tscircuit/props"
+import type { PlatformConfig, ProjectConfig } from "@tscircuit/props"
 import { getPlatformConfig } from "./getPlatformConfig"
 
-interface TscircuitConfigWithPlatformConfig {
+interface TscircuitConfigWithPlatformConfig extends ProjectConfig {
   platformConfig?: Partial<PlatformConfig>
   partsEngine?: PlatformConfig["partsEngine"]
-  pcbDisabled?: boolean
-  schematicDisabled?: boolean
 }
 
 export const getPlatformConfigForTscircuitConfig = (
   webWorkerConfiguration: WebWorkerConfiguration,
   config: TscircuitConfigWithPlatformConfig | null,
 ): PlatformConfig | undefined => {
+  const pcbDisabled =
+    config && "pcbDisabled" in config ? config.pcbDisabled : undefined
+  const schematicDisabled =
+    config && "schematicDisabled" in config
+      ? config.schematicDisabled
+      : undefined
   const configPlatform: Partial<PlatformConfig> = {
-    ...(typeof config?.pcbDisabled === "boolean"
-      ? { pcbDisabled: config.pcbDisabled }
-      : {}),
-    ...(typeof config?.schematicDisabled === "boolean"
-      ? { schematicDisabled: config.schematicDisabled }
-      : {}),
+    ...(typeof pcbDisabled === "boolean" ? { pcbDisabled } : {}),
+    ...(typeof schematicDisabled === "boolean" ? { schematicDisabled } : {}),
     ...(config?.partsEngine ? { partsEngine: config.partsEngine } : {}),
     ...config?.platformConfig,
   }
