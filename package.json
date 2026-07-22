@@ -68,7 +68,7 @@
     "@tscircuit/circuit-json-util": "^0.0.97",
     "@tscircuit/common": "^0.0.20",
     "@tscircuit/copper-pour-solver": "0.0.39",
-    "@tscircuit/core": "^0.0.1475",
+    "@tscircuit/core": "^0.0.1476",
     "@tscircuit/footprinter": "^0.0.380",
     "@tscircuit/import-snippet": "^0.0.4",
     "@tscircuit/infer-cable-insertion-point": "^0.0.2",
@@ -103,7 +103,7 @@
     "circuit-json": "^0.0.450",
     "circuit-json-to-bpc": "^0.0.13",
     "circuit-json-to-connectivity-map": "^0.0.23",
-    "circuit-json-to-gltf": "^0.0.105",
+    "circuit-json-to-gltf": "^0.0.107",
     "circuit-json-to-spice": "^0.0.43",
     "circuit-to-svg": "^0.0.391",
     "comlink": "^4.4.2",
@@ -133,8 +133,8 @@
     "@tscircuit/breakout-point-solver": "github:tscircuit/breakout-point-solver#bac9629",
     "spicets": "^0.0.2",
     "eecircuit-engine": "^1.5.6",
-    "@tscircuit/image-utils": "^0.0.8"
-  },
+    "@tscircuit/image-utils": "^0.0.8",
+    "@tscircuit/create-fdm-enclosure": "0.0.2"},
   "peerDependencies": {
     "typescript": "^5.0.0",
     "@tscircuit/core": "*",
