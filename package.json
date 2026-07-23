@@ -1,7 +1,7 @@
 {
   "name": "@tscircuit/eval",
   "main": "dist/lib/index.js",
-  "version": "0.0.1050",
+  "version": "0.0.1051",
   "type": "module",
   "files": [
     "dist"
@@ -135,7 +135,8 @@
     "eecircuit-engine": "^1.5.6",
     "@tscircuit/image-utils": "^0.0.8",
     "@tscircuit/create-fdm-enclosure": "0.0.3",
-    "@tsci/tscircuit.ti": "github:tscircuit/ti#57e314be4b2b06bc546d4def7453e619604d1157"},
+    "@tsci/tscircuit.ti": "github:tscircuit/ti#57e314be4b2b06bc546d4def7453e619604d1157"
+  },
   "peerDependencies": {
     "typescript": "^5.0.0",
     "@tscircuit/core": "*",
