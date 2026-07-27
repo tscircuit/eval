@@ -67,6 +67,15 @@ export const resolveFilePath = (
         return normalizedFilePathMap.get(possibleFilePath)!
       }
     }
+
+    // Match Node/TypeScript directory import behavior (e.g. "./section-solver"
+    // resolving to "./section-solver/index.ts").
+    for (const ext of FILE_EXTENSIONS) {
+      const possibleIndexPath = `${normalizedResolvedPath}/index.${ext}`
+      if (normalizedFilePathMap.has(possibleIndexPath)) {
+        return normalizedFilePathMap.get(possibleIndexPath)!
+      }
+    }
   }
 
   // Try resolving using tsconfig "paths" mapping when the import is non-relative
@@ -101,6 +110,12 @@ export const resolveFilePath = (
       const possibleFilePath = `${normalizedUnknownFilePath}.${ext}`
       if (normalizedFilePathMap.has(possibleFilePath)) {
         return normalizedFilePathMap.get(possibleFilePath)!
+      }
+    }
+    for (const ext of FILE_EXTENSIONS) {
+      const possibleIndexPath = `${normalizedUnknownFilePath}/index.${ext}`
+      if (normalizedFilePathMap.has(possibleIndexPath)) {
+        return normalizedFilePathMap.get(possibleIndexPath)!
       }
     }
   }

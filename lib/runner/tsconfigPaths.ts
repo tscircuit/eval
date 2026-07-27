@@ -62,6 +62,12 @@ export function resolveWithTsconfigPaths(opts: {
         return normalizedFilePathMap.get(withExt)!
       }
     }
+    for (const ext of extensions) {
+      const indexPath = `${normalizedCandidate}/index.${ext}`
+      if (normalizedFilePathMap.has(indexPath)) {
+        return normalizedFilePathMap.get(indexPath)!
+      }
+    }
     return null
   }
 
@@ -148,6 +154,13 @@ export function resolveWithBaseUrl(opts: {
     const withExt = `${normalizedFilePath}.${ext}`
     if (normalizedFilePathMap.has(withExt)) {
       return normalizedFilePathMap.get(withExt)!
+    }
+  }
+
+  for (const ext of extensions) {
+    const indexPath = `${normalizedFilePath}/index.${ext}`
+    if (normalizedFilePathMap.has(indexPath)) {
+      return normalizedFilePathMap.get(indexPath)!
     }
   }
 
