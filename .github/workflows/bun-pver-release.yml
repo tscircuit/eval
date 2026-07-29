@@ -7,9 +7,9 @@ on:
   workflow_dispatch:
 
 env:
-  UPSTREAM_REPOS: "runframe,tscircuit.com" # for example: "eval,runframe"
+  DOWNSTREAM_REPOS: "runframe,tscircuit.com" # for example: "eval,runframe"
   PACKAGE_NAMES: "@tscircuit/eval" # comma-separated list, e.g. "@tscircuit/core,@tscircuit/props"
-  UPSTREAM_PACKAGES_TO_UPDATE: "@tscircuit/eval"
+  UPSTREAM_PACKAGE_JUST_RELEASED: "@tscircuit/eval"
 
 jobs:
   publish:
@@ -55,10 +55,10 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.TSCIRCUIT_BOT_GITHUB_TOKEN }}
 
-      - name: Trigger upstream repo updates
-        if: env.UPSTREAM_REPOS && env.UPSTREAM_PACKAGES_TO_UPDATE
+      - name: Trigger downstream repo update workflow to pull new package version
+        if: env.DOWNSTREAM_REPOS && env.UPSTREAM_PACKAGE_JUST_RELEASED
         run: |
-          IFS=',' read -ra REPOS <<< "${{ env.UPSTREAM_REPOS }}"
+          IFS=',' read -ra REPOS <<< "${{ env.DOWNSTREAM_REPOS }}"
           for repo in "${REPOS[@]}"; do
             if [[ -n "$repo" ]]; then
               echo "Triggering update for repo: $repo"
@@ -67,7 +67,7 @@ jobs:
                 -H "Authorization: token ${{ secrets.TSCIRCUIT_BOT_GITHUB_TOKEN }}" \
                 -H "Content-Type: application/json" \
                 "https://api.github.com/repos/tscircuit/$repo/actions/workflows/update-package.yml/dispatches" \
-                -d "{\"ref\":\"main\",\"inputs\":{\"package_names\":\"${{ env.UPSTREAM_PACKAGES_TO_UPDATE }}\"}}"
+                -d "{\"ref\":\"main\",\"inputs\":{\"package_names\":\"${{ env.UPSTREAM_PACKAGE_JUST_RELEASED }}\"}}"
             fi
           done
       - name: Notify release-tracker of version update
