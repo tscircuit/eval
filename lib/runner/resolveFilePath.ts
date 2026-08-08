@@ -20,6 +20,30 @@ const FILE_EXTENSIONS = [
   "stp",
 ]
 
+const resolveNormalizedFilePath = (
+  normalizedPath: string,
+  normalizedFilePathMap: Map<string, string>,
+) => {
+  const exactMatch = normalizedFilePathMap.get(normalizedPath)
+  if (exactMatch) return exactMatch
+
+  for (const ext of FILE_EXTENSIONS) {
+    const fileMatch = normalizedFilePathMap.get(`${normalizedPath}.${ext}`)
+    if (fileMatch) return fileMatch
+  }
+
+  const directoryPath = normalizedPath.replace(/\/+$/, "")
+  for (const ext of FILE_EXTENSIONS) {
+    const indexPath = directoryPath
+      ? `${directoryPath}/index.${ext}`
+      : `index.${ext}`
+    const indexMatch = normalizedFilePathMap.get(indexPath)
+    if (indexMatch) return indexMatch
+  }
+
+  return null
+}
+
 export const resolveFilePath = (
   unknownFilePath: string,
   fsMapOrAllFilePaths: Record<string, string> | string[],
@@ -56,17 +80,11 @@ export const resolveFilePath = (
 
   // When baseUrl is set, non-relative imports should go through baseUrl resolution
   if (isRelativeImport || !hasBaseUrl) {
-    if (normalizedFilePathMap.has(normalizedResolvedPath)) {
-      return normalizedFilePathMap.get(normalizedResolvedPath)!
-    }
-
-    // Search for file with a set of different extensions
-    for (const ext of FILE_EXTENSIONS) {
-      const possibleFilePath = `${normalizedResolvedPath}.${ext}`
-      if (normalizedFilePathMap.has(possibleFilePath)) {
-        return normalizedFilePathMap.get(possibleFilePath)!
-      }
-    }
+    const resolvedFilePath = resolveNormalizedFilePath(
+      normalizedResolvedPath,
+      normalizedFilePathMap,
+    )
+    if (resolvedFilePath) return resolvedFilePath
   }
 
   // Try resolving using tsconfig "paths" mapping when the import is non-relative
@@ -94,15 +112,10 @@ export const resolveFilePath = (
   // When baseUrl is set, imports should resolve via baseUrl or fail, not fall back to absolute paths
   if (!isRelativeImport && !hasBaseUrl) {
     const normalizedUnknownFilePath = normalizeFilePath(unknownFilePath)
-    if (normalizedFilePathMap.has(normalizedUnknownFilePath)) {
-      return normalizedFilePathMap.get(normalizedUnknownFilePath)!
-    }
-    for (const ext of FILE_EXTENSIONS) {
-      const possibleFilePath = `${normalizedUnknownFilePath}.${ext}`
-      if (normalizedFilePathMap.has(possibleFilePath)) {
-        return normalizedFilePathMap.get(possibleFilePath)!
-      }
-    }
+    return resolveNormalizedFilePath(
+      normalizedUnknownFilePath,
+      normalizedFilePathMap,
+    )
   }
 
   return null
