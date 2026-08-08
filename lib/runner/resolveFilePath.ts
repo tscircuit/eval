@@ -20,6 +20,11 @@ const FILE_EXTENSIONS = [
   "stp",
 ]
 
+/**
+ * Resolves a normalized path against the virtual filesystem, preferring an
+ * exact file, then an extension match, and finally a directory index file.
+ * Returns the original filesystem path so callers preserve its casing.
+ */
 const resolveNormalizedFilePath = (
   normalizedPath: string,
   normalizedFilePathMap: Map<string, string>,
