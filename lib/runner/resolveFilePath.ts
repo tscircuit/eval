@@ -24,21 +24,22 @@ const resolveNormalizedFilePath = (
   normalizedPath: string,
   normalizedFilePathMap: Map<string, string>,
 ) => {
-  const exactMatch = normalizedFilePathMap.get(normalizedPath)
-  if (exactMatch) return exactMatch
+  const candidatePaths = [normalizedPath]
 
   for (const ext of FILE_EXTENSIONS) {
-    const fileMatch = normalizedFilePathMap.get(`${normalizedPath}.${ext}`)
-    if (fileMatch) return fileMatch
+    candidatePaths.push(`${normalizedPath}.${ext}`)
   }
 
   const directoryPath = normalizedPath.replace(/\/+$/, "")
-  for (const ext of FILE_EXTENSIONS) {
-    const indexPath = directoryPath
-      ? `${directoryPath}/index.${ext}`
-      : `index.${ext}`
-    const indexMatch = normalizedFilePathMap.get(indexPath)
-    if (indexMatch) return indexMatch
+  if (directoryPath) {
+    for (const ext of FILE_EXTENSIONS) {
+      candidatePaths.push(`${directoryPath}/index.${ext}`)
+    }
+  }
+
+  for (const candidatePath of candidatePaths) {
+    const resolvedPath = normalizedFilePathMap.get(candidatePath)
+    if (resolvedPath) return resolvedPath
   }
 
   return null
