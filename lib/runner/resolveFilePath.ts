@@ -20,6 +20,39 @@ const FILE_EXTENSIONS = [
   "stp",
 ]
 
+/**
+ * Resolves a normalized path against the virtual filesystem, preferring an
+ * exact file, then an extension match, and finally a directory index file.
+ * Returns the original filesystem path so callers preserve its casing.
+ */
+const resolveNormalizedFilePath = (
+  normalizedPath: string,
+  normalizedFilePathMap: Map<string, string>,
+) => {
+  const candidatePaths = [normalizedPath]
+
+  for (const ext of FILE_EXTENSIONS) {
+    candidatePaths.push(`${normalizedPath}.${ext}`)
+  }
+
+  let directoryPath = normalizedPath
+  while (directoryPath.endsWith("/")) {
+    directoryPath = directoryPath.slice(0, -1)
+  }
+  if (directoryPath) {
+    for (const ext of FILE_EXTENSIONS) {
+      candidatePaths.push(`${directoryPath}/index.${ext}`)
+    }
+  }
+
+  for (const candidatePath of candidatePaths) {
+    const resolvedPath = normalizedFilePathMap.get(candidatePath)
+    if (resolvedPath) return resolvedPath
+  }
+
+  return null
+}
+
 export const resolveFilePath = (
   unknownFilePath: string,
   fsMapOrAllFilePaths: Record<string, string> | string[],
@@ -56,17 +89,11 @@ export const resolveFilePath = (
 
   // When baseUrl is set, non-relative imports should go through baseUrl resolution
   if (isRelativeImport || !hasBaseUrl) {
-    if (normalizedFilePathMap.has(normalizedResolvedPath)) {
-      return normalizedFilePathMap.get(normalizedResolvedPath)!
-    }
-
-    // Search for file with a set of different extensions
-    for (const ext of FILE_EXTENSIONS) {
-      const possibleFilePath = `${normalizedResolvedPath}.${ext}`
-      if (normalizedFilePathMap.has(possibleFilePath)) {
-        return normalizedFilePathMap.get(possibleFilePath)!
-      }
-    }
+    const resolvedFilePath = resolveNormalizedFilePath(
+      normalizedResolvedPath,
+      normalizedFilePathMap,
+    )
+    if (resolvedFilePath) return resolvedFilePath
   }
 
   // Try resolving using tsconfig "paths" mapping when the import is non-relative
@@ -94,15 +121,10 @@ export const resolveFilePath = (
   // When baseUrl is set, imports should resolve via baseUrl or fail, not fall back to absolute paths
   if (!isRelativeImport && !hasBaseUrl) {
     const normalizedUnknownFilePath = normalizeFilePath(unknownFilePath)
-    if (normalizedFilePathMap.has(normalizedUnknownFilePath)) {
-      return normalizedFilePathMap.get(normalizedUnknownFilePath)!
-    }
-    for (const ext of FILE_EXTENSIONS) {
-      const possibleFilePath = `${normalizedUnknownFilePath}.${ext}`
-      if (normalizedFilePathMap.has(possibleFilePath)) {
-        return normalizedFilePathMap.get(possibleFilePath)!
-      }
-    }
+    return resolveNormalizedFilePath(
+      normalizedUnknownFilePath,
+      normalizedFilePathMap,
+    )
   }
 
   return null
