@@ -35,7 +35,10 @@ const resolveNormalizedFilePath = (
     candidatePaths.push(`${normalizedPath}.${ext}`)
   }
 
-  const directoryPath = normalizedPath.replace(/\/+$/, "")
+  let directoryPath = normalizedPath
+  while (directoryPath.endsWith("/")) {
+    directoryPath = directoryPath.slice(0, -1)
+  }
   if (directoryPath) {
     for (const ext of FILE_EXTENSIONS) {
       candidatePaths.push(`${directoryPath}/index.${ext}`)
