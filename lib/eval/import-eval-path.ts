@@ -17,6 +17,7 @@ import { isDistDirEmpty } from "./isDistDirEmpty"
 import { resolveEntrypointPath } from "./resolveEntrypointPath"
 import { resolveRelativePath } from "lib/utils/resolveRelativePath"
 import { hasPreSuppliedImport } from "./pre-supplied-imports"
+import { isStaticAssetPath } from "lib/shared/static-asset-extensions"
 
 const debug = Debug("tsci:eval:import-eval-path")
 
@@ -338,6 +339,20 @@ export async function importEvalPath(
     }
     ctx.logger.info(`importNpmPackageFromCdn("${importName}")`)
     return importNpmPackageFromCdn({ importName, depth }, ctx)
+  }
+
+  // A missing static asset (3D model or footprint file) must not take down the
+  // whole render. Register an empty default so the component draws without its
+  // asset, and surface a warning so the user knows the asset is missing.
+  if (isStaticAssetPath(importName)) {
+    const warning = `Static asset "${importName}"${opts.cwd ? ` from directory "${opts.cwd}"` : ""} could not be resolved. The component renders without it.`
+    ctx.logger.info(warning)
+    console.warn(warning)
+    preSuppliedImports[importName] = {
+      __esModule: true,
+      default: "",
+    }
+    return
   }
 
   throw new Error(
