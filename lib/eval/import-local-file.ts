@@ -18,6 +18,22 @@ const getFileExtension = (fsPath: string) => {
   return ext ? ext.toLowerCase() : ""
 }
 
+// JavaScript engines word an undefined-identifier ReferenceError differently:
+// V8 and Gecko say "X is not defined", WebKit says "Can't find variable: X".
+const UNDEFINED_IDENTIFIER_PATTERNS = [
+  /^(.+?) is not defined$/,
+  /^Can't find variable: (.+)$/,
+]
+
+const getUndefinedIdentifier = (error: any): string | undefined => {
+  const message = typeof error?.message === "string" ? error.message : ""
+  for (const pattern of UNDEFINED_IDENTIFIER_PATTERNS) {
+    const match = message.match(pattern)
+    if (match) return match[1]
+  }
+  return undefined
+}
+
 const getStaticFileLoader = (
   platform: PlatformConfig | undefined,
   fsPath: string,
@@ -193,6 +209,16 @@ export const importLocalFile = async (
         }
         preSuppliedImports[fsPath] = moduleExports
       } catch (error: any) {
+        // Undefined identifiers carry a project-unique name (often a part
+        // number) and a per-engine wording. Both split error tracking into a
+        // separate issue for every project. Normalize to a stable message and
+        // keep the identifier in a suffix so the family groups as one issue.
+        const undefinedIdentifier = getUndefinedIdentifier(error)
+        if (undefinedIdentifier) {
+          throw new Error(
+            `Error evaluating "${fsPath}": undefined identifier "${undefinedIdentifier}"`,
+          )
+        }
         throw new Error(`Error evaluating "${fsPath}": ${error.message}`)
       }
     } else if (fsPath.endsWith(".js") || fsPath.endsWith(".mjs")) {
