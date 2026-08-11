@@ -71,7 +71,19 @@ export function evalCompiledJs(
               return undefined
             }
 
-            if (typeof target === "function" || typeof target === "object") {
+            if (typeof target === "function") {
+              return target
+            }
+
+            if (typeof target === "object") {
+              // A file with no imports or exports produces an empty exports
+              // object with no __esModule marker. Do not pass that empty object
+              // off as a default export, or a bare-JSX file with no export reads
+              // as a truthy component. Return undefined so the caller's fallback
+              // can fire.
+              if (Object.keys(target).length === 0) {
+                return undefined
+              }
               return target
             }
 

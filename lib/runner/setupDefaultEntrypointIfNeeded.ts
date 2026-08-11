@@ -54,10 +54,16 @@ export const setupDefaultEntrypointIfNeeded = (opts: {
           ? `
         const ComponentToRender = UserComponents["${opts.mainComponentName}"]
         `
-          : `const ComponentToRender = UserComponents.default || 
+          : `const ComponentToRender = UserComponents.default ||
           Object.entries(UserComponents)
           .filter(([name]) => !name.startsWith("use"))
-          .map(([_, component]) => component)[0] || (() => null);`
+          .map(([_, component]) => component)[0];`
+      }
+
+      if (typeof ComponentToRender !== "function") {
+        throw new Error(${JSON.stringify(
+          `No component was exported from "${opts.mainComponentPath}". You need to export a component, e.g.\n\nexport default () => (\n  <board width="10mm" height="10mm" />\n)`,
+        )});
       }
 
            ${
