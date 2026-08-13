@@ -117,9 +117,7 @@ test("C11337 supplier enrichment preserves an explicit SOT-23-5 footprint", asyn
         "OUT",
       ],
       "smtPadCount": 5,
-      "supplierWarningMessages": [
-        "Failed to fetch supplier footprint for <chip#N name=\".U_LDO\" /> (jlcpcb:C11337): [ { \"received\": \" \", \"code\": \"invalid_enum_value\", \"options\": [ \"normal\", \"italic\" ], \"path\": [ \"fontStyle\" ], \"message\": \"Invalid enum value. Expected 'normal' | 'italic', received ' '\" } ]",
-      ],
+      "supplierWarningMessages": [],
     }
   `)
 
