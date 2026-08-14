@@ -123,6 +123,7 @@ export const getPlatformConfig = (
   }
 
   return {
+    ...overrides,
     localCacheEngine: overrides.localCacheEngine,
     partsEngine: partsEngine as PartsEngine,
     autorouterMap: {
@@ -167,6 +168,7 @@ export const getPlatformConfig = (
           return ngspiceEngineCache.simulate(spice)
         },
       },
+      ...overrides.spiceEngineMap,
     },
     footprintLibraryMap: {
       kicad: async (footprintName: string) => {
@@ -228,6 +230,7 @@ export const getPlatformConfig = (
           ),
         }
       },
+      ...overrides.footprintLibraryMap,
     },
     footprintFileParserMap: {
       kicad_mod: {
@@ -244,6 +247,7 @@ export const getPlatformConfig = (
           }
         },
       },
+      ...overrides.footprintFileParserMap,
     },
     staticFileLoaderMap: {
       kicad_pcb: loadKicadPcbStaticFile,
