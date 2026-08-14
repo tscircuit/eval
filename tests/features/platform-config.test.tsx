@@ -21,3 +21,22 @@ test("platform configuration is forwarded to RootCircuit", async () => {
 
   await runner.kill()
 })
+
+test("partial platform configuration preserves default footprint libraries", async () => {
+  const runner = new CircuitRunner({
+    platform: {
+      localCacheEngine: {
+        getItem: () => null,
+        setItem: () => {},
+      },
+    },
+  })
+
+  await runner.execute(`circuit.add(<board width="10mm" height="10mm" />)`)
+
+  const circuit = (globalThis as any).__tscircuit_circuit
+  expect(typeof circuit.platform?.footprintLibraryMap?.kicad).toBe("function")
+  expect(typeof circuit.platform?.footprintLibraryMap?.jlcpcb).toBe("function")
+
+  await runner.kill()
+})
