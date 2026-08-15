@@ -17,6 +17,7 @@ import { isDistDirEmpty } from "./isDistDirEmpty"
 import { resolveEntrypointPath } from "./resolveEntrypointPath"
 import { resolveRelativePath } from "lib/utils/resolveRelativePath"
 import { hasPreSuppliedImport } from "./pre-supplied-imports"
+import { parseNpmSpecifier } from "lib/utils/npm-cdn-urls"
 
 const debug = Debug("tsci:eval:import-eval-path")
 
@@ -76,6 +77,11 @@ const getNpmPackageSpecifierFromCdnImport = (importName: string) => {
     version && version !== "latest" ? `${packageName}@${version}` : packageName
 
   return filePath ? `${packageSpecifier}/${filePath}` : packageSpecifier
+}
+
+const getUnversionedNpmSpecifier = (importName: string) => {
+  const { packageName, filePath } = parseNpmSpecifier(importName)
+  return filePath ? `${packageName}/${filePath}` : packageName
 }
 
 export async function importEvalPath(
@@ -154,6 +160,20 @@ export async function importEvalPath(
 
   const cdnNpmPackageSpecifier = getNpmPackageSpecifierFromCdnImport(importName)
   if (cdnNpmPackageSpecifier) {
+    const unversionedSpecifier = getUnversionedNpmSpecifier(
+      cdnNpmPackageSpecifier,
+    )
+
+    if (hasPreSuppliedImport(preSuppliedImports, unversionedSpecifier)) {
+      const preSuppliedImport = preSuppliedImports[unversionedSpecifier]
+      preSuppliedImports[cdnNpmPackageSpecifier] = preSuppliedImport
+      preSuppliedImports[importName] = preSuppliedImport
+      ctx.logger.info(
+        `Import "${importName}" resolved from preSuppliedImports as "${unversionedSpecifier}"`,
+      )
+      return
+    }
+
     if (disableCdnLoading) {
       throw new Error(
         `Cannot find module "${cdnNpmPackageSpecifier}". The package is not available in the local environment.\n\n${ctx.logger.stringifyLogs()}`,

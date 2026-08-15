@@ -133,6 +133,56 @@ test("resolves jsdelivr relative /npm imports while evaluating cdn package code"
   )
 })
 
+test("resolves versioned CDN imports from pre-supplied package subpaths", async () => {
+  const requestedUrls: string[] = []
+  const ctx = createTestExecutionContext()
+  const reactJsxRuntime = {
+    jsx: "pre-supplied-jsx",
+    jsxs: "pre-supplied-jsxs",
+  }
+  ctx.preSuppliedImports["react/jsx-runtime"] = reactJsxRuntime
+
+  globalThis.fetch = (async (input: RequestInfo | URL) => {
+    const url = input.toString()
+    requestedUrls.push(url)
+
+    if (url.startsWith("https://jscdn.tscircuit.com/")) {
+      return new Response("not found", {
+        status: 404,
+        statusText: "Not Found",
+      })
+    }
+
+    if (url === "https://cdn.jsdelivr.net/npm/example-package/+esm") {
+      return new Response(
+        'import { jsx } from "/npm/react@19.2.8/jsx-runtime/+esm"; export const loadedValue = jsx',
+        {
+          status: 200,
+          headers: { "content-type": "application/javascript" },
+        },
+      )
+    }
+
+    return new Response("not found", {
+      status: 404,
+      statusText: "Not Found",
+    })
+  }) as typeof fetch
+
+  await importNpmPackageFromCdn({ importName: "example-package" }, ctx)
+
+  expect(requestedUrls).toEqual([
+    "https://jscdn.tscircuit.com/example-package/latest/+esm",
+    "https://cdn.jsdelivr.net/npm/example-package/+esm",
+  ])
+  expect(ctx.preSuppliedImports["example-package"].loadedValue).toBe(
+    "pre-supplied-jsx",
+  )
+  expect(ctx.preSuppliedImports["/npm/react@19.2.8/jsx-runtime/+esm"]).toBe(
+    reactJsxRuntime,
+  )
+})
+
 test("resolves full jscdn url imports while evaluating cdn package code", async () => {
   const requestedUrls: string[] = []
   const ctx = createTestExecutionContext()

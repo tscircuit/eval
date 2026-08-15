@@ -17,7 +17,7 @@ export function getJscdnPackageUrl(importName: string): string {
   return `${JSCDN_ORIGIN}/${pathParts.join("/")}`
 }
 
-function parseNpmSpecifier(importName: string): ParsedNpmSpecifier {
+export function parseNpmSpecifier(importName: string): ParsedNpmSpecifier {
   const pathParts = importName.split("/")
 
   if (importName.startsWith("@")) {
