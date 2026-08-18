@@ -68,7 +68,7 @@
     "@tscircuit/circuit-json-util": "^0.0.106",
     "@tscircuit/common": "^0.0.20",
     "@tscircuit/copper-pour-solver": "0.0.47",
-    "@tscircuit/core": "^0.0.1706",
+    "@tscircuit/core": "^0.0.1707",
     "@tscircuit/footprinter": "^0.0.418",
     "@tscircuit/import-snippet": "^0.0.4",
     "@tscircuit/infer-cable-insertion-point": "^0.0.3",
