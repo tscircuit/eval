@@ -1,7 +1,7 @@
 {
   "name": "@tscircuit/eval",
   "main": "dist/lib/index.js",
-  "version": "0.0.1249",
+  "version": "0.0.1250",
   "repository": {
     "type": "git",
     "url": "https://github.com/tscircuit/eval"
@@ -141,7 +141,8 @@
     "@tscircuit/create-fdm-enclosure": "0.0.4",
     "@tsci/tscircuit.ti": "github:tscircuit/ti#57e314be4b2b06bc546d4def7453e619604d1157",
     "@tscircuit/fanout-solver": "0.0.35",
-    "@tscircuit/winding-breakout-point-solver": "github:tscircuit/winding-breakout-point-solver#202dbe9eb0088633b6fa094120dba6f2f41f8803"},
+    "@tscircuit/winding-breakout-point-solver": "github:tscircuit/winding-breakout-point-solver#202dbe9eb0088633b6fa094120dba6f2f41f8803"
+  },
   "peerDependencies": {
     "typescript": "^5.0.0",
     "@tscircuit/core": "*",
