@@ -72,7 +72,7 @@
     "@tscircuit/circuit-json-util": "^0.0.106",
     "@tscircuit/common": "^0.0.20",
     "@tscircuit/copper-pour-solver": "^0.0.52",
-    "@tscircuit/core": "^0.0.1844",
+    "@tscircuit/core": "^0.0.1845",
     "@tscircuit/footprinter": "^0.0.426",
     "@tscircuit/import-snippet": "^0.0.4",
     "@tscircuit/infer-cable-insertion-point": "^0.0.4",
@@ -143,7 +143,7 @@
     "@tscircuit/fanout-solver": "0.0.57",
     "@tscircuit/winding-breakout-point-solver": "github:tscircuit/winding-breakout-point-solver#202dbe9eb0088633b6fa094120dba6f2f41f8803",
     "@tscircuit/bga-fanout-solver": "github:tscircuit/bga-fanout-solver#247c835cb8d69b65e53891dcf869731079415b39",
-    "@tscircuit/implicit-copper-pour-solver": "github:tscircuit/implicit-copper-pour-solver#d880f80e4eb7a34d5da5a521f10a63c810d4728b",
+    "@tscircuit/implicit-copper-pour-solver": "github:tscircuit/implicit-copper-pour-solver#a5cbbda0cd65fd4707c5c1af25779837c25aba92",
     "@tsci/tscircuit.ti-am62l": "github:tscircuit/ti#0a290ae9d1ba1a534e45d1980830d150a9a2c278"
   },
   "peerDependencies": {
