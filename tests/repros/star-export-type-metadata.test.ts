@@ -13,9 +13,9 @@ const fixture = (reexport: string) => ({
 /*
  * Reproduces the AM62L export pattern: the leaf exports an interface and a
  * value, and the barrel wildcard-re-exports them while exporting its own
- * interface. Evaluation should succeed, but currently the barrel inherits
- * a getter-only __typeOnlyExports__ property and assigning its own metadata
- * throws. This test stays failing until that evaluator bug is fixed.
+ * interface. Evaluation must succeed without forwarding the leaf's internal
+ * __typeOnlyExports__ metadata as a getter-only binding that prevents the
+ * barrel from storing its own metadata.
  */
 test("wildcard re-export plus a local interface does not collide with type metadata", async () => {
   const runner = new CircuitRunner()

@@ -189,7 +189,14 @@ export const importLocalFile = async (
         })
         const moduleExports = importRunResult.exports
         if (typeExports.length > 0) {
-          moduleExports.__typeOnlyExports__ = typeExports
+          // Keep evaluator metadata out of wildcard re-exports, which expose
+          // enumerable properties as getter-only bindings on the next module.
+          Object.defineProperty(moduleExports, "__typeOnlyExports__", {
+            value: typeExports,
+            enumerable: false,
+            writable: true,
+            configurable: true,
+          })
         }
         preSuppliedImports[fsPath] = moduleExports
       } catch (error: any) {
