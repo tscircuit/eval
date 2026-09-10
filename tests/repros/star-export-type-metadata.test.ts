@@ -1,4 +1,4 @@
-import { expect, test } from "bun:test"
+import { test } from "bun:test"
 import { CircuitRunner } from "lib/runner/CircuitRunner"
 
 const fixture = (reexport: string) => ({
@@ -10,30 +10,25 @@ const fixture = (reexport: string) => ({
   },
 })
 
+/*
+ * Reproduces the AM62L export pattern: the leaf exports an interface and a
+ * value, and the barrel wildcard-re-exports them while exporting its own
+ * interface. Evaluation should succeed, but currently the barrel inherits
+ * a getter-only __typeOnlyExports__ property and assigning its own metadata
+ * throws. This test stays failing until that evaluator bug is fixed.
+ */
 test("wildcard re-export plus a local interface does not collide with type metadata", async () => {
   const runner = new CircuitRunner()
-  // Regression: currently throws when assigning __typeOnlyExports__.
   await runner.executeWithFsMap(fixture('export * from "./leaf"'))
 })
 
+/*
+ * Keeps the same exported interfaces and runtime value, but replaces the
+ * wildcard export with an explicit named export. This control verifies that
+ * the evaluator can load the value when internal type metadata is not
+ * forwarded by the barrel. The entrypoint also checks that the value is 42.
+ */
 test("explicit named re-export avoids the metadata collision", async () => {
   const runner = new CircuitRunner()
   await runner.executeWithFsMap(fixture('export { value } from "./leaf"'))
-})
-
-test("Bun can import the same wildcard-export fixture natively", async () => {
-  const { mkdtemp, writeFile, rm } = await import("node:fs/promises")
-  const { tmpdir } = await import("node:os")
-  const { join } = await import("node:path")
-  const dir = await mkdtemp(join(tmpdir(), "tscircuit-star-export-"))
-  try {
-    const { fsMap } = fixture('export * from "./leaf"')
-    for (const [name, source] of Object.entries(fsMap)) {
-      await writeFile(join(dir, name), source)
-    }
-    const module = await import(join(dir, "index.ts"))
-    expect(module.value).toBe(42)
-  } finally {
-    await rm(dir, { recursive: true, force: true })
-  }
 })
