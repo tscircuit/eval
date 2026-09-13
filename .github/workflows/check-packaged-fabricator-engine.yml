@@ -1,0 +1,16 @@
+name: Check Packaged Fabricator Engine
+
+on: [pull_request, workflow_dispatch]
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+      - run: bun install
+      - run: bun run build:lib
+      - run: bun run build:runner
+      - run: bun run build:platform-config
+      - run: bun run build:webworker
+      - run: bun run test:packaged-fabricator
