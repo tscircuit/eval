@@ -1,3 +1,4 @@
+import { fabricatorEngine } from "@tscircuit/fabricator-drc"
 import type { PlatformConfig, SpiceEngine, PartsEngine } from "@tscircuit/props"
 import {
   JlcPcbPartsEngine,
@@ -126,6 +127,7 @@ export const getPlatformConfig = (
     ...overrides,
     localCacheEngine: overrides.localCacheEngine,
     partsEngine: partsEngine as PartsEngine,
+    fabricatorEngine: overrides.fabricatorEngine ?? fabricatorEngine,
     autorouterMap: {
       krt: {
         // TODO: Remove this cast once @tscircuit/props models the evented

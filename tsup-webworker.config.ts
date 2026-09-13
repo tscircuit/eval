@@ -12,6 +12,7 @@ export default defineConfig({
     "@tscircuit/core",
     "circuit-json",
     "@tscircuit/parts-engine",
+    "@tscircuit/fabricator-drc",
     "sucrase",
     "@tscircuit/math-utils",
     "@tscircuit/mm",
