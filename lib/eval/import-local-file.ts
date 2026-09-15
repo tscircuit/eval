@@ -200,7 +200,15 @@ export const importLocalFile = async (
         }
         preSuppliedImports[fsPath] = moduleExports
       } catch (error: any) {
-        throw new Error(`Error evaluating "${fsPath}": ${error.message}`)
+        // Re-throw the original error so its type and stack survive. Error
+        // tracking must blame the real throw site, not this importer frame.
+        if (error instanceof Error) {
+          error.message = `Error evaluating "${fsPath}": ${error.message}`
+          throw error
+        }
+        throw new Error(`Error evaluating "${fsPath}": ${String(error)}`, {
+          cause: error,
+        })
       }
     } else if (fsPath.endsWith(".js") || fsPath.endsWith(".mjs")) {
       // For .js/.mjs files, especially from node_modules, we need to extract and resolve imports first
