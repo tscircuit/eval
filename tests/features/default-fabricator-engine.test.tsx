@@ -17,7 +17,7 @@ test("default eval platform emits via surcharge warnings for all JLCPCB presets"
     "jlcpcb_standard",
     "jlcpcb_economy_20260912",
     "jlcpcb_standard_20260912",
-  ]) {
+  ] as const) {
     const runner = new CircuitRunner()
     try {
       await runner.execute(boardCode(preset))
@@ -37,6 +37,32 @@ test("default eval platform emits via surcharge warnings for all JLCPCB presets"
       )
       expect(warnings[0].pcb_via_ids).toHaveLength(1)
       expect(warnings[0].message).toContain("0.3 mm")
+
+      // The packaged engine must share the caller's Circuit JSON types so
+      // newer records coexist with its via checks.
+      const circuitJson = [
+        ...json,
+        {
+          type: "source_bus" as const,
+          source_bus_id: "source_bus_0",
+          source_trace_ids: [],
+        },
+      ]
+      const originalJson = structuredClone(circuitJson)
+      const diagnostics =
+        await getPlatformConfig().fabricatorEngine!.runDrcChecks({
+          circuitJson,
+          fabricatorPreset: preset,
+          pcbBoardId: json.find((element) => element.type === "pcb_board")!
+            .pcb_board_id,
+        })
+      expect(diagnostics).toHaveLength(1)
+      expect(diagnostics[0]).toMatchObject({
+        type: "pcb_fabricator_extra_charge_warning",
+        fabricator_preset: preset,
+        pcb_via_ids: warnings[0].pcb_via_ids,
+      })
+      expect(circuitJson).toEqual(originalJson)
     } finally {
       await runner.kill()
     }
