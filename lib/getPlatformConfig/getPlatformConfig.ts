@@ -18,6 +18,20 @@ import * as React from "react"
 
 const KICAD_FOOTPRINT_CACHE_URL = "https://kicad-mod-cache.tscircuit.com"
 
+const defaultFabricatorEngine: NonNullable<PlatformConfig["fabricatorEngine"]> =
+  {
+    runDrcChecks: (params) =>
+      fabricatorEngine.runDrcChecks({
+        ...params,
+        // fabricator-drc 0.0.3 only checks vias and uses an older circuit-json
+        // union. Pass its supported records so newer element types remain valid
+        // platform inputs without casting away the engine's type contract.
+        circuitJson: params.circuitJson.filter(
+          (element) => element.type === "pcb_via",
+        ),
+      }),
+  }
+
 let ngspiceEngineCache: SpiceEngine | null = null
 
 type PlatformAutorouterMap = NonNullable<PlatformConfig["autorouterMap"]>
@@ -127,7 +141,7 @@ export const getPlatformConfig = (
     ...overrides,
     localCacheEngine: overrides.localCacheEngine,
     partsEngine: partsEngine as PartsEngine,
-    fabricatorEngine: overrides.fabricatorEngine ?? fabricatorEngine,
+    fabricatorEngine: overrides.fabricatorEngine ?? defaultFabricatorEngine,
     autorouterMap: {
       krt: {
         // TODO: Remove this cast once @tscircuit/props models the evented
