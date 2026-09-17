@@ -38,8 +38,8 @@ test("default eval platform emits via surcharge warnings for all JLCPCB presets"
       expect(warnings[0].pcb_via_ids).toHaveLength(1)
       expect(warnings[0].message).toContain("0.3 mm")
 
-      // New circuit-json records must coexist with the packaged engine's
-      // older schema without preventing its via checks.
+      // The packaged engine must share the caller's Circuit JSON types so
+      // newer records coexist with its via checks.
       const circuitJson = [
         ...json,
         {
