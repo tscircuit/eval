@@ -91,16 +91,18 @@ jobs:
                 break
               fi
 
-              if [ $code -ne 139 ] && [ $code -ne 132 ]; then
+              # Bun allocator panics can exit with SIGTRAP (133).
+              # Retry runtime crashes only; assertion failures still fail immediately.
+              if [ $code -ne 139 ] && [ $code -ne 132 ] && [ $code -ne 133 ]; then
                 exit $code
               fi
 
               if [ $attempt -eq 4 ]; then
-                echo "Segmentation fault or illegal instruction detected for $test_file after $attempt attempts (exit=$code)."
+                echo "Bun runtime crash detected for $test_file after $attempt attempts (exit=$code)."
                 exit $code
               fi
 
               attempt=$((attempt + 1))
-              echo "Segfault (139) or illegal instruction (132) detected for $test_file, retrying ($attempt/4)..."
+              echo "Bun runtime crash detected for $test_file (exit=$code), retrying ($attempt/4)..."
             done
           done
