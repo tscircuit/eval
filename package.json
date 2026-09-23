@@ -73,7 +73,7 @@
     "@tscircuit/circuit-json-util": "^0.0.116",
     "@tscircuit/common": "^0.0.20",
     "@tscircuit/copper-pour-solver": "^0.0.57",
-    "@tscircuit/core": "^0.0.1971",
+    "@tscircuit/core": "^0.0.1972",
     "@tscircuit/footprinter": "^0.0.426",
     "@tscircuit/import-snippet": "^0.0.4",
     "@tscircuit/infer-cable-insertion-point": "^0.0.4",
@@ -105,7 +105,7 @@
     "bun-match-svg": "0.0.12",
     "calculate-elbow": "^0.0.12",
     "chokidar-cli": "^3.0.0",
-    "circuit-json": "^0.0.499",
+    "circuit-json": "^0.0.500",
     "circuit-json-to-bpc": "^0.0.13",
     "circuit-json-to-connectivity-map": "^0.0.30",
     "circuit-json-to-gltf": "^0.0.133",
@@ -148,8 +148,8 @@
     "@tsci/tscircuit.ti-am62l": "github:tscircuit/ti#0a290ae9d1ba1a534e45d1980830d150a9a2c278",
     "@tscircuit/via-stitch-solver": "github:tscircuit/via-stitch-solver#64f2ac7781b795bdc0d74ba411988e60767fa653",
     "@tscircuit/fabricator-drc": "^0.0.4",
-    "@tscircuit/bus-lanes-solver": "github:tscircuit/bus-lanes-solver#0bc8d071241b18a3e7465a878881abe4998f6384"
-  },
+    "@tscircuit/bus-lanes-solver": "github:tscircuit/bus-lanes-solver#0bc8d071241b18a3e7465a878881abe4998f6384",
+    "@tscircuit/flex-utils": "https://jscdn.tscircuit.com/@tscircuit/flex-utils/0.0.5.tgz"},
   "peerDependencies": {
     "typescript": "^5.0.0",
     "@tscircuit/core": ">=0.0.1906",
