@@ -23,9 +23,12 @@ test("should hint to use mainComponentPath when entrypoint exports a component",
       },
     })
 
-    await expect(circuitWebWorker.renderUntilSettled()).rejects.toThrow(
-      expectedMessage,
+    const renderError = await circuitWebWorker.renderUntilSettled().then(
+      () => undefined,
+      (error: unknown) => error,
     )
+    expect(renderError).toBeInstanceOf(Error)
+    expect((renderError as Error).message).toContain(expectedMessage)
   } finally {
     await circuitWebWorker.kill()
   }

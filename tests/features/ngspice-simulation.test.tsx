@@ -77,7 +77,12 @@ test(
         )
       `)
 
-      await expect(circuitWebWorker.renderUntilSettled()).rejects.toThrow(
+      const renderError = await circuitWebWorker.renderUntilSettled().then(
+        () => undefined,
+        (error: unknown) => error,
+      )
+      expect(renderError).toBeInstanceOf(Error)
+      expect((renderError as Error).message).toContain(
         'SPICE engine "not-a-real-engine" not found in platform config. Available engines: ["ngspice"]',
       )
     } finally {
