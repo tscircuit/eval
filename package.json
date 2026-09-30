@@ -1,7 +1,7 @@
 {
   "name": "@tscircuit/eval",
   "main": "dist/lib/index.js",
-  "version": "0.0.1500",
+  "version": "0.0.1501",
   "repository": {
     "type": "git",
     "url": "https://github.com/tscircuit/eval"
@@ -150,7 +150,8 @@
     "@tscircuit/fabricator-drc": "^0.0.4",
     "@tscircuit/bus-lanes-solver": "github:tscircuit/bus-lanes-solver#0bc8d071241b18a3e7465a878881abe4998f6384",
     "@tscircuit/flex-utils": "https://jscdn.tscircuit.com/@tscircuit/flex-utils/0.0.5.tgz",
-    "@tscircuit/dogbone-solver": "https://jscdn.tscircuit.com/@tscircuit/dogbone-solver/0.0.1.tgz"},
+    "@tscircuit/dogbone-solver": "https://jscdn.tscircuit.com/@tscircuit/dogbone-solver/0.0.1.tgz"
+  },
   "peerDependencies": {
     "typescript": "^5.0.0",
     "@tscircuit/core": ">=0.0.1906",
