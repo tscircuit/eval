@@ -105,7 +105,6 @@
     "bun-match-svg": "0.0.12",
     "calculate-elbow": "^0.0.12",
     "chokidar-cli": "^3.0.0",
-    "circuit-json": "^0.0.507",
     "circuit-json-to-bpc": "^0.0.13",
     "circuit-json-to-connectivity-map": "^0.0.33",
     "circuit-json-to-gltf": "^0.0.133",
@@ -155,7 +154,9 @@
   "peerDependencies": {
     "typescript": "^5.0.0",
     "@tscircuit/core": ">=0.0.1906",
-    "circuit-json": "*",
     "zod": "3"
+  },
+  "dependencies": {
+    "circuit-json": "^0.0.507"
   }
 }
