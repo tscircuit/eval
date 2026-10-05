@@ -1,7 +1,7 @@
 {
   "name": "@tscircuit/eval",
   "main": "dist/lib/index.js",
-  "version": "0.0.1553",
+  "version": "0.0.1554",
   "repository": {
     "type": "git",
     "url": "https://github.com/tscircuit/eval"
@@ -154,7 +154,8 @@
     "@tscircuit/modelprinter": "^0.0.6",
     "@types/clipper-lib": "^6.4.0",
     "@jscad/modeling": "^2.13.0",
-    "@tscircuit/cableprinter": "^0.0.4"},
+    "@tscircuit/cableprinter": "^0.0.4"
+  },
   "peerDependencies": {
     "typescript": "^5.0.0",
     "@tscircuit/core": ">=0.0.1906",
