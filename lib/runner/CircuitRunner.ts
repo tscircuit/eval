@@ -1,20 +1,20 @@
+import type { RootCircuit } from "@tscircuit/core"
+import type { PlatformConfig } from "@tscircuit/props"
 import type { AnyCircuitElement } from "circuit-json"
+import Debug from "debug"
+import { createExecutionContext, importEvalPath } from "lib/eval"
+import { getPlatformConfigForTscircuitConfig } from "lib/getPlatformConfig/getPlatformConfigForTscircuitConfig"
+import { setValueAtPath } from "lib/shared/obj-path"
 import type {
   CircuitRunnerApi,
   CircuitRunnerConfiguration,
 } from "lib/shared/types"
-import type { PlatformConfig } from "@tscircuit/props"
-import { createExecutionContext, importEvalPath } from "lib/eval"
-import { normalizeFsMap } from "./normalizeFsMap"
-import { getTsConfig } from "./tsconfigPaths"
-import type { RootCircuit } from "@tscircuit/core"
-import * as React from "react"
-import { setupDefaultEntrypointIfNeeded } from "./setupDefaultEntrypointIfNeeded"
 import { enhanceRootCircuitHasNoChildrenError } from "lib/utils/enhance-root-circuit-error"
-import Debug from "debug"
-import { setValueAtPath } from "lib/shared/obj-path"
+import * as React from "react"
 import { loadTscircuitConfig } from "./loadTscircuitConfig"
-import { getPlatformConfigForTscircuitConfig } from "lib/getPlatformConfig/getPlatformConfigForTscircuitConfig"
+import { normalizeFsMap } from "./normalizeFsMap"
+import { setupDefaultEntrypointIfNeeded } from "./setupDefaultEntrypointIfNeeded"
+import { getTsConfig } from "./tsconfigPaths"
 
 const debug = Debug("tsci:eval:CircuitRunner")
 
@@ -253,6 +253,29 @@ export class CircuitRunner implements CircuitRunnerApi {
     headers?: Record<string, string>
   }) {
     this._circuitRunnerConfiguration.easyEdaProxyConfig = config
+  }
+
+  addPreSuppliedImport(name: string, value: any) {
+    if (!this._circuitRunnerConfiguration.preSuppliedImports) {
+      this._circuitRunnerConfiguration.preSuppliedImports = {}
+    }
+    this._circuitRunnerConfiguration.preSuppliedImports[name] = value
+    if (this._executionContext) {
+      this._executionContext.preSuppliedImports[name] = value
+    }
+  }
+
+  setPreSuppliedImports(imports: Record<string, any>) {
+    this._circuitRunnerConfiguration.preSuppliedImports = {
+      ...this._circuitRunnerConfiguration.preSuppliedImports,
+      ...imports,
+    }
+    if (this._executionContext) {
+      this._executionContext.preSuppliedImports = {
+        ...this._executionContext.preSuppliedImports,
+        ...imports,
+      }
+    }
   }
 
   async enableDebug(namespace: string) {

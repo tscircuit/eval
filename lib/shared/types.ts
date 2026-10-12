@@ -1,7 +1,7 @@
-import type { AnyCircuitElement } from "circuit-json"
 import type { RootCircuitEventName as CoreRootCircuitEventName } from "@tscircuit/core"
-import type { PlatformConfig } from "@tscircuit/props"
 import type { EasyEdaProxyConfig } from "@tscircuit/parts-engine"
+import type { PlatformConfig } from "@tscircuit/props"
+import type { AnyCircuitElement } from "circuit-json"
 
 export type RootCircuitEventName = CoreRootCircuitEventName | "debug:logOutput"
 
@@ -16,6 +16,10 @@ export interface CircuitRunnerConfiguration {
    * Used to fetch private @tsci/* packages from npm.tscircuit.com
    */
   tscircuitSessionToken?: string
+  /**
+   * Optional pre-supplied imports provided directly by the environment.
+   */
+  preSuppliedImports?: Record<string, any>
   /**
    * Configuration for proxying EasyEDA API requests, used by the parts engine
    * when fetching part circuit JSON (e.g. for connector footprints).

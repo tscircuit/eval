@@ -1,23 +1,24 @@
-import type { ExecutionContext } from "./execution-context"
-import { importLocalFile } from "./import-local-file"
-import { importSnippet } from "./import-snippet"
+import Debug from "debug"
 import { resolveFilePath } from "lib/runner/resolveFilePath"
-import { resolveNodeModule } from "lib/utils/resolve-node-module"
-import { importNodeModule } from "./import-node-module"
-import { importNpmPackageFromCdn } from "./import-npm-package-from-cdn"
 import {
   getTsConfig,
   matchesTsconfigPathPattern,
 } from "lib/runner/tsconfigPaths"
-import Debug from "debug"
-import { isPackageDeclaredInPackageJson } from "./isPackageDeclaredInPackageJson"
+import { parseNpmSpecifier } from "lib/utils/npm-cdn-urls"
+import { resolveNodeModule } from "lib/utils/resolve-node-module"
+import { resolveRelativePath } from "lib/utils/resolveRelativePath"
+import type { ExecutionContext } from "./execution-context"
 import { getNodeModuleDirectory } from "./getNodeModuleDirectory"
 import { getPackageJsonEntrypoint } from "./getPackageJsonEntrypoint"
+import { importLocalFile } from "./import-local-file"
+import { importNodeModule } from "./import-node-module"
+import { importNpmPackageFromCdn } from "./import-npm-package-from-cdn"
+import { importSnippet } from "./import-snippet"
 import { isDistDirEmpty } from "./isDistDirEmpty"
-import { resolveEntrypointPath } from "./resolveEntrypointPath"
-import { resolveRelativePath } from "lib/utils/resolveRelativePath"
+import { isPackageDeclaredInPackageJson } from "./isPackageDeclaredInPackageJson"
+import { getNodeBuiltinUnavailableError, isNodeBuiltin } from "./node-builtins"
 import { hasPreSuppliedImport } from "./pre-supplied-imports"
-import { parseNpmSpecifier } from "lib/utils/npm-cdn-urls"
+import { resolveEntrypointPath } from "./resolveEntrypointPath"
 
 const debug = Debug("tsci:eval:import-eval-path")
 
@@ -108,6 +109,22 @@ export async function importEvalPath(
 
   if (hasPreSuppliedImport(preSuppliedImports, importName)) {
     ctx.logger.info(`Import "${importName}" in preSuppliedImports[1]`)
+    return
+  }
+  if (importName.startsWith("node:")) {
+    const bareName = importName.slice(5)
+    if (hasPreSuppliedImport(preSuppliedImports, bareName)) {
+      preSuppliedImports[importName] = preSuppliedImports[bareName]
+      ctx.logger.info(
+        `Import "${importName}" resolved from preSuppliedImports["${bareName}"]`,
+      )
+      return
+    }
+  } else if (hasPreSuppliedImport(preSuppliedImports, `node:${importName}`)) {
+    preSuppliedImports[importName] = preSuppliedImports[`node:${importName}`]
+    ctx.logger.info(
+      `Import "${importName}" resolved from preSuppliedImports["node:${importName}"]`,
+    )
     return
   }
   if (
@@ -284,6 +301,28 @@ export async function importEvalPath(
     !importName.startsWith("/") &&
     !importName.startsWith("@tsci/")
   ) {
+    if (isNodeBuiltin(importName)) {
+      const isBareBuiltinDeclaredInPackageJson =
+        !importName.startsWith("node:") &&
+        isPackageDeclaredInPackageJson(importName, ctx.fsMap, {
+          cwd: opts.cwd,
+        })
+
+      if (!isBareBuiltinDeclaredInPackageJson) {
+        const importingFile =
+          ctx.importStack[ctx.importStack.length - 1] ||
+          opts.cwd ||
+          ctx.entrypoint
+        throw new Error(
+          getNodeBuiltinUnavailableError(
+            importName,
+            importingFile,
+            ctx.logger.stringifyLogs(),
+          ),
+        )
+      }
+    }
+
     if (platform?.nodeModulesResolver) {
       ctx.logger.info(
         `importNodeModule("${importName}") via nodeModulesResolver`,

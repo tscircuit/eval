@@ -1,13 +1,14 @@
+import Debug from "debug"
 import { resolveNodeModule } from "lib/utils/resolve-node-module"
 import type { ExecutionContext } from "./execution-context"
-import { importLocalFile } from "./import-local-file"
-import Debug from "debug"
-import { isPackageDeclaredInPackageJson } from "./isPackageDeclaredInPackageJson"
 import { getNodeModuleDirectory } from "./getNodeModuleDirectory"
 import { getPackageJsonEntrypoint } from "./getPackageJsonEntrypoint"
+import { importLocalFile } from "./import-local-file"
 import { isDistDirEmpty } from "./isDistDirEmpty"
-import { resolveEntrypointPath } from "./resolveEntrypointPath"
+import { isPackageDeclaredInPackageJson } from "./isPackageDeclaredInPackageJson"
+import { getNodeBuiltinUnavailableError, isNodeBuiltin } from "./node-builtins"
 import { hasPreSuppliedImport } from "./pre-supplied-imports"
+import { resolveEntrypointPath } from "./resolveEntrypointPath"
 
 const debug = Debug("tsci:eval:import-node-module")
 
@@ -25,8 +26,39 @@ export const importNodeModule = async (
     return
   }
 
+  if (importName.startsWith("node:")) {
+    const bareName = importName.slice(5)
+    if (hasPreSuppliedImport(preSuppliedImports, bareName)) {
+      preSuppliedImports[importName] = preSuppliedImports[bareName]
+      return
+    }
+  } else if (hasPreSuppliedImport(preSuppliedImports, `node:${importName}`)) {
+    preSuppliedImports[importName] = preSuppliedImports[`node:${importName}`]
+    return
+  }
+
   // Only run validation if package.json exists (can't validate without it)
   const hasPackageJson = !!fsMap["package.json"]
+
+  if (isNodeBuiltin(importName)) {
+    const isBareBuiltinDeclaredInPackageJson =
+      !importName.startsWith("node:") &&
+      isPackageDeclaredInPackageJson(importName, fsMap, opts)
+
+    if (!isBareBuiltinDeclaredInPackageJson) {
+      const importingFile =
+        ctx.importStack[ctx.importStack.length - 1] ||
+        opts.cwd ||
+        ctx.entrypoint
+      throw new Error(
+        getNodeBuiltinUnavailableError(
+          importName,
+          importingFile,
+          ctx.logger.stringifyLogs(),
+        ),
+      )
+    }
+  }
 
   if (hasPackageJson) {
     // Step 1: Check if the package is declared in package.json

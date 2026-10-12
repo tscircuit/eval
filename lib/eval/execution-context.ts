@@ -1,15 +1,15 @@
 import { RootCircuit } from "@tscircuit/core"
-import type { WebWorkerConfiguration } from "lib/shared/types"
 import * as tscircuitCore from "@tscircuit/core"
-import * as React from "react"
-import * as ReactJsxRuntime from "react/jsx-runtime"
 import * as tscircuitMathUtils from "@tscircuit/math-utils"
 import * as tscircuitMm from "@tscircuit/mm"
 import type { PlatformConfig } from "@tscircuit/props"
+import Debug from "debug"
 import { getPlatformConfig } from "lib/getPlatformConfig"
 import type { TsConfig } from "lib/runner/tsconfigPaths"
+import type { WebWorkerConfiguration } from "lib/shared/types"
+import * as React from "react"
+import * as ReactJsxRuntime from "react/jsx-runtime"
 import * as tslib from "tslib"
-import Debug from "debug"
 
 const debug = Debug("tsci:eval:execution-context")
 
@@ -89,6 +89,7 @@ export function createExecutionContext(
       // This is usually used as a type import, we can remove the shim when we
       // ignore type imports in getImportsFromCode
       "@tscircuit/props": {},
+      ...webWorkerConfiguration.preSuppliedImports,
     },
     circuit,
     tsConfig: null,
