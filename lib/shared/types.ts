@@ -1,9 +1,17 @@
 import type { AnyCircuitElement } from "circuit-json"
 import type { RootCircuitEventName as CoreRootCircuitEventName } from "@tscircuit/core"
 import type { PlatformConfig } from "@tscircuit/props"
-import type { EasyEdaProxyConfig } from "@tscircuit/parts-engine"
+import type {
+  EasyEdaProxyConfig,
+  JlcPcbPartsEngineOptions,
+} from "@tscircuit/parts-engine"
 
 export type RootCircuitEventName = CoreRootCircuitEventName | "debug:logOutput"
+
+export type PartsEngineOptions = Pick<
+  JlcPcbPartsEngineOptions,
+  "jlcSearchBaseUrl" | "datasheetApiBaseUrl"
+>
 
 export interface CircuitRunnerConfiguration {
   snippetsApiBaseUrl: string
@@ -21,6 +29,8 @@ export interface CircuitRunnerConfiguration {
    * when fetching part circuit JSON (e.g. for connector footprints).
    */
   easyEdaProxyConfig?: EasyEdaProxyConfig
+  /** Serializable base URLs for the default parts engine. */
+  partsEngineOptions?: PartsEngineOptions
 }
 
 export interface WebWorkerConfiguration extends CircuitRunnerConfiguration {
@@ -73,6 +83,7 @@ export interface CircuitRunnerApi {
   setProjectConfigProperty: (property: string, value: any) => Promise<void>
   setTscircuitSessionToken: (token: string) => Promise<void>
   setEasyEdaProxyConfig: (config: EasyEdaProxyConfig) => Promise<void>
+  setPartsEngineOptions: (options: PartsEngineOptions) => Promise<void>
   enableDebug: (namespace: string) => Promise<void>
   on: (event: RootCircuitEventName, callback: (...args: any[]) => void) => void
   clearEventListeners: () => void

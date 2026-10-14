@@ -15,6 +15,7 @@ import {
 } from "kicad-to-circuit-json"
 import type { AnyCircuitElement } from "circuit-json"
 import * as React from "react"
+import type { PartsEngineOptions } from "../shared/types"
 
 const KICAD_FOOTPRINT_CACHE_URL = "https://kicad-mod-cache.tscircuit.com"
 
@@ -112,12 +113,17 @@ export const getPlatformConfig = (
   overrides: Partial<PlatformConfig> = {},
   options: {
     easyEdaProxyConfig?: EasyEdaProxyConfig
+    partsEngineOptions?: PartsEngineOptions
   } = {},
 ): PlatformConfig => {
   let partsEngine = overrides.partsEngine ?? jlcPartsEngine
 
-  if (!overrides.partsEngine && options.easyEdaProxyConfig) {
+  if (
+    !overrides.partsEngine &&
+    (options.easyEdaProxyConfig || options.partsEngineOptions)
+  ) {
     partsEngine = new JlcPcbPartsEngine({
+      ...options.partsEngineOptions,
       platformFetch: overrides.platformFetch,
       easyEdaProxyConfig: options.easyEdaProxyConfig,
     })

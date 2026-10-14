@@ -40,6 +40,7 @@ export const getPlatformConfigForTscircuitConfig = (
   const platform = {
     ...getPlatformConfig(mergedConfigPlatform, {
       easyEdaProxyConfig: webWorkerConfiguration.easyEdaProxyConfig,
+      partsEngineOptions: webWorkerConfiguration.partsEngineOptions,
     }),
     ...mergedConfigPlatform,
   }
