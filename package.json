@@ -161,6 +161,6 @@
     "zod": "3"
   },
   "dependencies": {
-    "@tscircuit/core": "https://pkg.pr.new/tscircuit/core/@tscircuit/core@409ef29"
+    "@tscircuit/core": "https://pkg.pr.new/tscircuit/core/@tscircuit/core@8c9eebf"
   }
 }
