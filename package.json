@@ -157,7 +157,6 @@
   },
   "peerDependencies": {
     "typescript": "^5.0.0",
-    "@tscircuit/core": ">=0.0.1906",
     "circuit-json": "*",
     "zod": "3"
   },
