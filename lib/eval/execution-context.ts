@@ -43,6 +43,7 @@ export function createExecutionContext(
 
   const basePlatform = getPlatformConfig(opts.platform, {
     easyEdaProxyConfig: webWorkerConfiguration.easyEdaProxyConfig,
+    partsEngineOptions: webWorkerConfiguration.partsEngineOptions,
   })
   const platform = opts.projectConfig
     ? { ...basePlatform, ...opts.projectConfig }

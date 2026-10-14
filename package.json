@@ -88,7 +88,7 @@
     "@tscircuit/miniflex": "^0.0.4",
     "@tscircuit/mm": "^0.0.9",
     "@tscircuit/ngspice-spice-engine": "^0.0.20",
-    "@tscircuit/parts-engine": "^0.0.37",
+    "@tscircuit/parts-engine": "^0.0.39",
     "@tscircuit/props": "^0.0.701",
     "@tscircuit/schematic-autolayout": "^0.0.6",
     "@tscircuit/schematic-match-adapt": "^0.0.18",

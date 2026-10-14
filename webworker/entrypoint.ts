@@ -3,6 +3,7 @@ import * as Comlink from "comlink"
 import type {
   InternalWebWorkerApi,
   WebWorkerConfiguration,
+  PartsEngineOptions,
 } from "lib/shared/types"
 import * as React from "react"
 import type { PlatformConfig } from "@tscircuit/props"
@@ -124,6 +125,10 @@ const webWorkerApi = {
     headers?: Record<string, string>
   }) => {
     circuitRunnerConfiguration.easyEdaProxyConfig = config
+  },
+
+  setPartsEngineOptions: async (options: PartsEngineOptions) => {
+    circuitRunnerConfiguration.partsEngineOptions = options
   },
 
   setTscircuitSessionToken: async (token: string) => {

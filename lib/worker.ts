@@ -4,11 +4,12 @@ import type {
   InternalWebWorkerApi,
   WebWorkerConfiguration,
   CircuitWebWorker,
+  PartsEngineOptions,
 } from "./shared/types"
 import type { RootCircuitEventName } from "./shared/types"
 import { getObjectPaths, getValueAtPath } from "./shared/obj-path"
 
-export type { CircuitWebWorker, WebWorkerConfiguration }
+export type { CircuitWebWorker, WebWorkerConfiguration, PartsEngineOptions }
 
 declare global {
   interface Window {
@@ -222,6 +223,10 @@ export const createCircuitWebWorker = async (
 
   if (configuration.easyEdaProxyConfig) {
     await comlinkWorker.setEasyEdaProxyConfig(configuration.easyEdaProxyConfig)
+  }
+
+  if (configuration.partsEngineOptions) {
+    await comlinkWorker.setPartsEngineOptions(configuration.partsEngineOptions)
   }
 
   const maybeProxy = (value: any) => {

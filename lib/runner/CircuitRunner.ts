@@ -2,6 +2,7 @@ import type { AnyCircuitElement } from "circuit-json"
 import type {
   CircuitRunnerApi,
   CircuitRunnerConfiguration,
+  PartsEngineOptions,
 } from "lib/shared/types"
 import type { PlatformConfig } from "@tscircuit/props"
 import { createExecutionContext, importEvalPath } from "lib/eval"
@@ -253,6 +254,10 @@ export class CircuitRunner implements CircuitRunnerApi {
     headers?: Record<string, string>
   }) {
     this._circuitRunnerConfiguration.easyEdaProxyConfig = config
+  }
+
+  async setPartsEngineOptions(options: PartsEngineOptions) {
+    this._circuitRunnerConfiguration.partsEngineOptions = options
   }
 
   async enableDebug(namespace: string) {
