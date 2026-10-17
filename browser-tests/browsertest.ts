@@ -1,6 +1,7 @@
 import { createCircuitWebWorker } from "lib/worker"
 import { runCopperPourTest } from "./runCopperPourTest"
 import { runUsbCConnectorTest } from "./runUsbCConnectorTest"
+import { runCustomSymbolSizingTest } from "./runCustomSymbolSizingTest"
 // @ts-ignore
 import blobUrl from "../dist/blob-url"
 
@@ -112,7 +113,9 @@ window.addEventListener("DOMContentLoaded", () => {
   const urlParams = new URLSearchParams(window.location.search)
   const test_to_run = urlParams.get("test_to_run")
 
-  if (test_to_run === "ngspice") {
+  if (test_to_run === "custom_symbol_sizing") {
+    runCustomSymbolSizingTest(blobUrl)
+  } else if (test_to_run === "ngspice") {
     runNgspiceTest()
   } else if (test_to_run === "copperpour") {
     runCopperPourTest(blobUrl)
