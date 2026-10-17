@@ -8,6 +8,10 @@ import { getPackageJsonEntrypoint } from "./getPackageJsonEntrypoint"
 import { isDistDirEmpty } from "./isDistDirEmpty"
 import { resolveEntrypointPath } from "./resolveEntrypointPath"
 import { hasPreSuppliedImport } from "./pre-supplied-imports"
+import {
+  createUnavailableNodeBuiltinError,
+  isNodeBuiltinSpecifier,
+} from "./node-builtin-modules"
 
 const debug = Debug("tsci:eval:import-node-module")
 
@@ -25,10 +29,12 @@ export const importNodeModule = async (
     return
   }
 
+  const isNodeBuiltin = isNodeBuiltinSpecifier(importName)
+
   // Only run validation if package.json exists (can't validate without it)
   const hasPackageJson = !!fsMap["package.json"]
 
-  if (hasPackageJson) {
+  if (hasPackageJson && !isNodeBuiltin) {
     // Step 1: Check if the package is declared in package.json
     if (!isPackageDeclaredInPackageJson(importName, fsMap, opts)) {
       throw new Error(
@@ -116,6 +122,10 @@ export const importNodeModule = async (
       } catch (error) {
         debug(`nodeModulesResolver failed for "${importName}":`, error)
       }
+    }
+
+    if (isNodeBuiltin) {
+      throw createUnavailableNodeBuiltinError(importName, ctx, opts)
     }
 
     throw new Error(`Node module "${importName}" not found`)

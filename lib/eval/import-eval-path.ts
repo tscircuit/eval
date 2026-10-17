@@ -18,6 +18,10 @@ import { resolveEntrypointPath } from "./resolveEntrypointPath"
 import { resolveRelativePath } from "lib/utils/resolveRelativePath"
 import { hasPreSuppliedImport } from "./pre-supplied-imports"
 import { parseNpmSpecifier } from "lib/utils/npm-cdn-urls"
+import {
+  createUnavailableNodeBuiltinError,
+  isNodeBuiltinSpecifier,
+} from "./node-builtin-modules"
 
 const debug = Debug("tsci:eval:import-eval-path")
 
@@ -289,9 +293,12 @@ export async function importEvalPath(
         `importNodeModule("${importName}") via nodeModulesResolver`,
       )
       try {
-        await importNodeModule(importName, ctx, depth)
+        await importNodeModule(importName, ctx, depth, { cwd: opts.cwd })
         return
       } catch (error) {
+        if (isNodeBuiltinSpecifier(importName)) {
+          throw error
+        }
         ctx.logger.info(
           `nodeModulesResolver failed for "${importName}", falling back to npm CDN`,
         )
@@ -310,6 +317,10 @@ export async function importEvalPath(
   }
 
   if (!importName.startsWith(".") && !importName.startsWith("/")) {
+    if (isNodeBuiltinSpecifier(importName)) {
+      throw createUnavailableNodeBuiltinError(importName, ctx, opts)
+    }
+
     // Step 1: Check if package is declared in package.json
     if (
       !isPackageDeclaredInPackageJson(importName, ctx.fsMap, {
