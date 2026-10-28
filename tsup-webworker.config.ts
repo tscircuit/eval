@@ -18,6 +18,10 @@ export default defineConfig({
     "@tscircuit/mm",
     "zod",
   ],
+  // Node-only paths in core's 3D dependencies: circuit-json-to-gltf lazily
+  // imports native resvg outside the DOM and falls back to a browser renderer,
+  // and occt-import-js only touches node builtins when running under Node
+  external: ["@resvg/resvg-js", "fs", "os", "path"],
   clean: true,
   dts: true,
   esbuildOptions(options) {
