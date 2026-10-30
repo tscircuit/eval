@@ -26,8 +26,10 @@ export async function importSnippet(
     .catch((e) => ({ error: e, cjs: null }))
 
   if (error) {
-    console.error("Error fetching import", importName, error)
-    return
+    throw new Error(
+      `Error fetching "${importName}": ${error instanceof Error ? error.message : String(error)}`,
+      { cause: error },
+    )
   }
 
   // Check if the response is a JSON error (package not built)
@@ -105,6 +107,9 @@ export async function importSnippet(
       preSuppliedImports,
     ).exports
   } catch (e) {
-    console.error("Error importing snippet", e)
+    throw new Error(
+      `Error importing "${importName}": ${e instanceof Error ? e.message : String(e)}`,
+      { cause: e },
+    )
   }
 }

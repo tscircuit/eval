@@ -5,6 +5,7 @@ import * as React from "react"
 import * as ReactJsxRuntime from "react/jsx-runtime"
 import * as tscircuitMathUtils from "@tscircuit/math-utils"
 import * as tscircuitMm from "@tscircuit/mm"
+import * as tscircuitProps from "@tscircuit/props"
 import type { PlatformConfig } from "@tscircuit/props"
 import { getPlatformConfig } from "lib/getPlatformConfig"
 import type { TsConfig } from "lib/runner/tsconfigPaths"
@@ -87,9 +88,7 @@ export function createExecutionContext(
       debug: Debug,
       tslib,
 
-      // This is usually used as a type import, we can remove the shim when we
-      // ignore type imports in getImportsFromCode
-      "@tscircuit/props": {},
+      "@tscircuit/props": tscircuitProps,
     },
     circuit,
     tsConfig: null,

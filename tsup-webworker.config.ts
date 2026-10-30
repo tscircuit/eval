@@ -10,6 +10,7 @@ export default defineConfig({
   minify: false,
   noExternal: [
     "@tscircuit/core",
+    "@tscircuit/props",
     "circuit-json",
     "@tscircuit/parts-engine",
     "@tscircuit/fabricator-drc",
