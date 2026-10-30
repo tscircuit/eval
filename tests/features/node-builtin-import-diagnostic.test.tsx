@@ -1,5 +1,6 @@
 import { describe, expect, test } from "bun:test"
 import { createExecutionContext } from "lib/eval/execution-context"
+import { importEvalPath } from "lib/eval/import-eval-path"
 import { importNodeModule } from "lib/eval/import-node-module"
 import { CircuitRunner } from "lib/runner/CircuitRunner"
 
@@ -45,13 +46,15 @@ describe("Node built-in import diagnostics (#5179)", () => {
 
   test("importNodeModule also reports built-in unavailability instead of package.json error", async () => {
     const ctx = createExecutionContext({
-      fsMap: {
-        "package.json": JSON.stringify({
-          name: "test-project",
-          dependencies: {},
-        }),
-      },
+      snippetsApiBaseUrl: "https://registry-api.tscircuit.com",
+      cjsRegistryUrl: "https://cjs.tscircuit.com",
     })
+    ctx.fsMap = {
+      "package.json": JSON.stringify({
+        name: "test-project",
+        dependencies: {},
+      }),
+    }
     ctx.importStack.push("index.tsx")
 
     let thrownError: Error | undefined
@@ -98,31 +101,26 @@ describe("Node built-in import diagnostics (#5179)", () => {
       width = "15mm"
     }
 
-    const runner = new CircuitRunner({
-      preSuppliedImports: {
-        events: {
-          EventEmitter: MockEventEmitter,
-        },
-      },
+    const ctx = createExecutionContext({
+      snippetsApiBaseUrl: "https://registry-api.tscircuit.com",
+      cjsRegistryUrl: "https://cjs.tscircuit.com",
     })
-    await runner.executeWithFsMap({
-      fsMap: {
-        "package.json": JSON.stringify({
-          name: "test-project",
-          dependencies: {},
-        }),
-        "index.tsx": `
-          import { EventEmitter } from "node:events"
-          const emitter = new EventEmitter()
-          circuit.add(<board width={emitter.width} height="10mm" />)
-        `,
-      },
-      entrypoint: "index.tsx",
-    })
+    ctx.fsMap = {
+      "package.json": JSON.stringify({
+        name: "test-project",
+        dependencies: {},
+      }),
+      "index.tsx": `
+        import { EventEmitter } from "node:events"
+        const emitter = new EventEmitter()
+        export const resolvedWidth = emitter.width
+      `,
+    }
+    ctx.preSuppliedImports.events = {
+      EventEmitter: MockEventEmitter,
+    }
 
-    await runner.renderUntilSettled()
-    const circuitJson = await runner.getCircuitJson()
-    const board = circuitJson.find((el) => el.type === "pcb_board")
-    expect(board).toBeDefined()
+    await importEvalPath("./index.tsx", ctx)
+    expect(ctx.preSuppliedImports["index.tsx"]?.resolvedWidth).toBe("15mm")
   })
 })
