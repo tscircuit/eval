@@ -1,23 +1,29 @@
-import type { ExecutionContext } from "./execution-context"
-import { importLocalFile } from "./import-local-file"
-import { importSnippet } from "./import-snippet"
+import Debug from "debug"
 import { resolveFilePath } from "lib/runner/resolveFilePath"
-import { resolveNodeModule } from "lib/utils/resolve-node-module"
-import { importNodeModule } from "./import-node-module"
-import { importNpmPackageFromCdn } from "./import-npm-package-from-cdn"
 import {
   getTsConfig,
   matchesTsconfigPathPattern,
 } from "lib/runner/tsconfigPaths"
-import Debug from "debug"
-import { isPackageDeclaredInPackageJson } from "./isPackageDeclaredInPackageJson"
+import { parseNpmSpecifier } from "lib/utils/npm-cdn-urls"
+import { resolveNodeModule } from "lib/utils/resolve-node-module"
+import { resolveRelativePath } from "lib/utils/resolveRelativePath"
+import type { ExecutionContext } from "./execution-context"
 import { getNodeModuleDirectory } from "./getNodeModuleDirectory"
 import { getPackageJsonEntrypoint } from "./getPackageJsonEntrypoint"
+import { importLocalFile } from "./import-local-file"
+import { importNodeModule } from "./import-node-module"
+import { importNpmPackageFromCdn } from "./import-npm-package-from-cdn"
+import { importSnippet } from "./import-snippet"
 import { isDistDirEmpty } from "./isDistDirEmpty"
-import { resolveEntrypointPath } from "./resolveEntrypointPath"
-import { resolveRelativePath } from "lib/utils/resolveRelativePath"
+import { isPackageDeclaredInPackageJson } from "./isPackageDeclaredInPackageJson"
+import {
+  createUnsupportedNodeBuiltinError,
+  isNodeBuiltinSpecifier,
+  normalizeNodeBuiltinSpecifier,
+  resolvePreSuppliedNodeBuiltin,
+} from "./node-builtins"
 import { hasPreSuppliedImport } from "./pre-supplied-imports"
-import { parseNpmSpecifier } from "lib/utils/npm-cdn-urls"
+import { resolveEntrypointPath } from "./resolveEntrypointPath"
 
 const debug = Debug("tsci:eval:import-eval-path")
 
@@ -106,7 +112,7 @@ export async function importEvalPath(
   const disableCdnLoading =
     ctx.disableCdnLoading || (globalThis as any).__DISABLE_CDN_LOADING__
 
-  if (hasPreSuppliedImport(preSuppliedImports, importName)) {
+  if (resolvePreSuppliedNodeBuiltin(preSuppliedImports, importName)) {
     ctx.logger.info(`Import "${importName}" in preSuppliedImports[1]`)
     return
   }
@@ -237,11 +243,15 @@ export async function importEvalPath(
   }
 
   // Try to resolve from node_modules
-  const resolvedNodeModulePath = resolveNodeModule(
-    importName,
-    ctx.fsMap,
-    opts.cwd || "",
-  )
+  const resolvedNodeModulePath =
+    resolveNodeModule(importName, ctx.fsMap, opts.cwd || "") ??
+    (isNodeBuiltinSpecifier(importName)
+      ? resolveNodeModule(
+          normalizeNodeBuiltinSpecifier(importName),
+          ctx.fsMap,
+          opts.cwd || "",
+        )
+      : null)
   if (resolvedNodeModulePath) {
     ctx.logger.info(`resolvedNodeModulePath="${resolvedNodeModulePath}"`)
     ctx.logger.info(`importNodeModule("${importName}")`)
@@ -289,9 +299,12 @@ export async function importEvalPath(
         `importNodeModule("${importName}") via nodeModulesResolver`,
       )
       try {
-        await importNodeModule(importName, ctx, depth)
+        await importNodeModule(importName, ctx, depth, { cwd: opts.cwd })
         return
       } catch (error) {
+        if (isNodeBuiltinSpecifier(importName)) {
+          throw error
+        }
         ctx.logger.info(
           `nodeModulesResolver failed for "${importName}", falling back to npm CDN`,
         )
@@ -310,6 +323,10 @@ export async function importEvalPath(
   }
 
   if (!importName.startsWith(".") && !importName.startsWith("/")) {
+    if (isNodeBuiltinSpecifier(importName)) {
+      throw createUnsupportedNodeBuiltinError(importName, ctx, opts)
+    }
+
     // Step 1: Check if package is declared in package.json
     if (
       !isPackageDeclaredInPackageJson(importName, ctx.fsMap, {

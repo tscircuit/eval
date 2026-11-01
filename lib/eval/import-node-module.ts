@@ -1,13 +1,19 @@
+import Debug from "debug"
 import { resolveNodeModule } from "lib/utils/resolve-node-module"
 import type { ExecutionContext } from "./execution-context"
-import { importLocalFile } from "./import-local-file"
-import Debug from "debug"
-import { isPackageDeclaredInPackageJson } from "./isPackageDeclaredInPackageJson"
 import { getNodeModuleDirectory } from "./getNodeModuleDirectory"
 import { getPackageJsonEntrypoint } from "./getPackageJsonEntrypoint"
+import { importLocalFile } from "./import-local-file"
 import { isDistDirEmpty } from "./isDistDirEmpty"
-import { resolveEntrypointPath } from "./resolveEntrypointPath"
+import { isPackageDeclaredInPackageJson } from "./isPackageDeclaredInPackageJson"
+import {
+  createUnsupportedNodeBuiltinError,
+  isNodeBuiltinSpecifier,
+  normalizeNodeBuiltinSpecifier,
+  resolvePreSuppliedNodeBuiltin,
+} from "./node-builtins"
 import { hasPreSuppliedImport } from "./pre-supplied-imports"
+import { resolveEntrypointPath } from "./resolveEntrypointPath"
 
 const debug = Debug("tsci:eval:import-node-module")
 
@@ -20,15 +26,17 @@ export const importNodeModule = async (
   } = {},
 ) => {
   const { preSuppliedImports, fsMap } = ctx
+  const isNodeBuiltin = isNodeBuiltinSpecifier(importName)
+  const normalizedSpecifier = normalizeNodeBuiltinSpecifier(importName)
 
-  if (hasPreSuppliedImport(preSuppliedImports, importName)) {
+  if (resolvePreSuppliedNodeBuiltin(preSuppliedImports, importName)) {
     return
   }
 
   // Only run validation if package.json exists (can't validate without it)
   const hasPackageJson = !!fsMap["package.json"]
 
-  if (hasPackageJson) {
+  if (hasPackageJson && !isNodeBuiltin) {
     // Step 1: Check if the package is declared in package.json
     if (!isPackageDeclaredInPackageJson(importName, fsMap, opts)) {
       throw new Error(
@@ -37,18 +45,19 @@ export const importNodeModule = async (
     }
   }
 
-  const nodeModuleDir = hasPackageJson
-    ? getNodeModuleDirectory(importName, fsMap)
-    : null
+  const nodeModuleDir =
+    hasPackageJson && !isNodeBuiltin
+      ? getNodeModuleDirectory(importName, fsMap)
+      : null
 
-  const resolvedNodeModulePath = resolveNodeModule(
-    importName,
-    ctx.fsMap,
-    opts.cwd || "",
-  )
+  const resolvedNodeModulePath =
+    resolveNodeModule(importName, ctx.fsMap, opts.cwd || "") ??
+    (isNodeBuiltin
+      ? resolveNodeModule(normalizedSpecifier, ctx.fsMap, opts.cwd || "")
+      : null)
 
   // Only run Steps 2-4 if package exists in node_modules (after resolver attempts)
-  if (hasPackageJson && resolvedNodeModulePath) {
+  if (hasPackageJson && !isNodeBuiltin && resolvedNodeModulePath) {
     // Step 2: Check if node_modules directory exists for the package
     if (!nodeModuleDir) {
       throw new Error(
@@ -68,7 +77,7 @@ export const importNodeModule = async (
   }
 
   if (!resolvedNodeModulePath) {
-    if (hasPackageJson && nodeModuleDir) {
+    if (hasPackageJson && !isNodeBuiltin && nodeModuleDir) {
       const entrypoint = getPackageJsonEntrypoint(importName, fsMap)
       if (entrypoint?.startsWith("dist/")) {
         if (isDistDirEmpty(importName, fsMap)) {
@@ -89,14 +98,18 @@ export const importNodeModule = async (
       debug(`Attempting to resolve "${importName}" using nodeModulesResolver`)
 
       try {
-        const fileContent = await platform.nodeModulesResolver(importName)
+        const fileContent =
+          (await platform.nodeModulesResolver(importName)) ??
+          (isNodeBuiltin
+            ? await platform.nodeModulesResolver(normalizedSpecifier)
+            : null)
 
         if (fileContent) {
           debug(`Successfully resolved "${importName}" via nodeModulesResolver`)
 
           // Add the resolved content to fsMap with a synthetic path
           // Add .ts extension to ensure it's treated as a module file
-          const syntheticPath = `node_modules/${importName}.ts`
+          const syntheticPath = `node_modules/${normalizedSpecifier}.ts`
           ctx.fsMap[syntheticPath] = fileContent
 
           // Import the file using the normal flow
@@ -104,6 +117,8 @@ export const importNodeModule = async (
 
           // Map the import name to the resolved module
           preSuppliedImports[importName] = preSuppliedImports[syntheticPath]
+          preSuppliedImports[normalizedSpecifier] =
+            preSuppliedImports[syntheticPath]
 
           // Also map without node_modules prefix
           const unprefixedPath = syntheticPath.replace(/^node_modules\//, "")
@@ -116,6 +131,10 @@ export const importNodeModule = async (
       } catch (error) {
         debug(`nodeModulesResolver failed for "${importName}":`, error)
       }
+    }
+
+    if (isNodeBuiltin) {
+      throw createUnsupportedNodeBuiltinError(importName, ctx, opts)
     }
 
     throw new Error(`Node module "${importName}" not found`)
