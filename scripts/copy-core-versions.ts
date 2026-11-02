@@ -3,7 +3,13 @@ import corePackageJson from "@tscircuit/core/package.json"
 import currentPackageJson from "../package.json"
 import { join } from "node:path"
 
-const DONT_SYNC_FROM_CORE: string[] = []
+// Core bundles the collision algorithm/adapter; its 3D debugger is fixture-only.
+// Keep @tscircuit/manifold-2d synced: it is the shared runtime used by the worker.
+const DONT_SYNC_FROM_CORE = [
+  "@tscircuit/cad-collision-checking",
+  "jscad-to-manifold",
+  "@tscircuit/graphics-debug-3d",
+]
 
 const coreDeps: any = {
   ...corePackageJson.devDependencies,
