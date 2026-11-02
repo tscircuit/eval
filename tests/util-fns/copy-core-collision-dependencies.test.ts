@@ -11,7 +11,7 @@ test("core sync updates the shared runtime without installing bundled collision 
     await writeFile(
       join(root, "scripts/copy-core-versions.ts"),
       await readFile(
-        new URL("../scripts/copy-core-versions.ts", import.meta.url),
+        new URL("../../scripts/copy-core-versions.ts", import.meta.url),
       ),
     )
     await writeFile(
