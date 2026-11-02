@@ -15,6 +15,16 @@ const depsToUpdate: any = {}
 
 let modifiedDeps = false
 
+// Bun needs the consumer's root overrides to resolve wildcard peers published
+// outside npm, even when their concrete URLs are also development dependencies.
+const currentOverrides = (currentPackageJson as any).overrides || {}
+const overridesToSync = {
+  ...currentOverrides,
+  ...(corePackageJson as any).overrides,
+}
+const modifiedOverrides =
+  JSON.stringify(currentOverrides) !== JSON.stringify(overridesToSync)
+
 // Update existing dependencies to match core
 for (const [packageName, currentVersion] of Object.entries(currentDeps)) {
   if (packageName in coreDeps && coreDeps[packageName] !== currentVersion) {
@@ -40,7 +50,7 @@ for (const [packageName, version] of Object.entries(
   }
 }
 
-if (modifiedDeps) {
+if (modifiedDeps || modifiedOverrides) {
   // Use regex to replace the dependencies in the package.json
   const packageJsonPath = join(import.meta.dirname, "../package.json")
   let packageJson = await Bun.file(packageJsonPath).text()
@@ -75,6 +85,12 @@ if (modifiedDeps) {
         `"devDependencies": {${updatedDevDeps}}`,
       )
     }
+  }
+
+  if (modifiedOverrides) {
+    const manifest = JSON.parse(packageJson)
+    manifest.overrides = overridesToSync
+    packageJson = `${JSON.stringify(manifest, null, 2)}\n`
   }
 
   await Bun.write(packageJsonPath, packageJson)
