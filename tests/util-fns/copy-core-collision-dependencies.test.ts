@@ -3,7 +3,7 @@ import { mkdtemp, mkdir, readFile, rm, writeFile } from "node:fs/promises"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 
-test("core sync updates the shared runtime without installing bundled collision tools", async () => {
+test("core sync includes collision dependencies using their published package locations", async () => {
   const root = await mkdtemp(join(tmpdir(), "eval-collision-dependencies-"))
   try {
     await mkdir(join(root, "scripts"), { recursive: true })
@@ -26,7 +26,7 @@ test("core sync updates the shared runtime without installing bundled collision 
         devDependencies: {
           "@tscircuit/manifold-2d": "^0.0.8",
           "@tscircuit/cad-collision-checking":
-            "github:tscircuit/cad-collision-checking#6e86d19",
+            "https://jscdn.tscircuit.com/@tscircuit/cad-collision-checking/0.0.5.tgz",
           "jscad-to-manifold": "github:tscircuit/jscad-to-manifold#6db5a7b",
           "@tscircuit/graphics-debug-3d":
             "https://jscdn.tscircuit.com/@tscircuit/graphics-debug-3d/0.0.1.tgz",
@@ -44,6 +44,11 @@ test("core sync updates the shared runtime without installing bundled collision 
     )
     expect(devDependencies).toEqual({
       "@tscircuit/manifold-2d": "^0.0.8",
+      "@tscircuit/cad-collision-checking":
+        "https://jscdn.tscircuit.com/@tscircuit/cad-collision-checking/0.0.5.tgz",
+      "jscad-to-manifold": "github:tscircuit/jscad-to-manifold#6db5a7b",
+      "@tscircuit/graphics-debug-3d":
+        "https://jscdn.tscircuit.com/@tscircuit/graphics-debug-3d/0.0.1.tgz",
       "new-runtime": "1.0.0",
     })
   } finally {
