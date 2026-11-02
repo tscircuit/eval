@@ -1,7 +1,7 @@
 {
   "name": "@tscircuit/eval",
   "main": "dist/lib/index.js",
-  "version": "0.0.1691",
+  "version": "0.0.1692",
   "repository": {
     "type": "git",
     "url": "https://github.com/tscircuit/eval"
@@ -161,7 +161,8 @@
     "@tscircuit/cad-collision-checking": "https://jscdn.tscircuit.com/@tscircuit/cad-collision-checking/0.0.6.tgz",
     "@tscircuit/graphics-debug-3d": "https://jscdn.tscircuit.com/@tscircuit/graphics-debug-3d/0.0.1.tgz",
     "typescript": "^5.9.3",
-    "@tscircuit/jscad-to-manifold": "https://jscdn.tscircuit.com/@tscircuit/jscad-to-manifold/0.0.1.tgz"},
+    "@tscircuit/jscad-to-manifold": "https://jscdn.tscircuit.com/@tscircuit/jscad-to-manifold/0.0.1.tgz"
+  },
   "peerDependencies": {
     "typescript": "^5.0.0",
     "@tscircuit/core": ">=0.0.1906",
