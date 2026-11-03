@@ -24,3 +24,20 @@ test("should throw: Node module imported but not in package.json", async () => {
     /Node module imported but not in package\.json "undeclared-package"/,
   )
 })
+
+test("undeclared package error suggests how to add it", async () => {
+  const runner = new CircuitRunner()
+
+  await expect(
+    runner.executeWithFsMap({
+      entrypoint: "index.tsx",
+      fsMap: {
+        "package.json": JSON.stringify({ name: "test", dependencies: {} }),
+        "index.tsx": `
+          import { something } from "@scope/undeclared-package/subpath"
+          export default () => <div>Test</div>
+        `,
+      },
+    }),
+  ).rejects.toThrow(/bun add @scope\/undeclared-package`/)
+})

@@ -2,7 +2,10 @@ import { resolveNodeModule } from "lib/utils/resolve-node-module"
 import type { ExecutionContext } from "./execution-context"
 import { importLocalFile } from "./import-local-file"
 import Debug from "debug"
-import { isPackageDeclaredInPackageJson } from "./isPackageDeclaredInPackageJson"
+import {
+  getUndeclaredPackageErrorMessage,
+  isPackageDeclaredInPackageJson,
+} from "./isPackageDeclaredInPackageJson"
 import { getNodeModuleDirectory } from "./getNodeModuleDirectory"
 import { getPackageJsonEntrypoint } from "./getPackageJsonEntrypoint"
 import { isDistDirEmpty } from "./isDistDirEmpty"
@@ -32,7 +35,7 @@ export const importNodeModule = async (
     // Step 1: Check if the package is declared in package.json
     if (!isPackageDeclaredInPackageJson(importName, fsMap, opts)) {
       throw new Error(
-        `Node module imported but not in package.json "${importName}"\n\n${ctx.logger.stringifyLogs()}`,
+        `${getUndeclaredPackageErrorMessage(importName)}\n\n${ctx.logger.stringifyLogs()}`,
       )
     }
   }

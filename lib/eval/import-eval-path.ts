@@ -10,7 +10,10 @@ import {
   matchesTsconfigPathPattern,
 } from "lib/runner/tsconfigPaths"
 import Debug from "debug"
-import { isPackageDeclaredInPackageJson } from "./isPackageDeclaredInPackageJson"
+import {
+  getUndeclaredPackageErrorMessage,
+  isPackageDeclaredInPackageJson,
+} from "./isPackageDeclaredInPackageJson"
 import { getNodeModuleDirectory } from "./getNodeModuleDirectory"
 import { getPackageJsonEntrypoint } from "./getPackageJsonEntrypoint"
 import { isDistDirEmpty } from "./isDistDirEmpty"
@@ -317,7 +320,7 @@ export async function importEvalPath(
       })
     ) {
       throw new Error(
-        `Node module imported but not in package.json "${importName}"\n\n${ctx.logger.stringifyLogs()}`,
+        `${getUndeclaredPackageErrorMessage(importName)}\n\n${ctx.logger.stringifyLogs()}`,
       )
     }
 

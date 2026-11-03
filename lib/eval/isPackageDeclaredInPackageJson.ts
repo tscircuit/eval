@@ -78,3 +78,8 @@ export function isPackageDeclaredInPackageJson(
 
   return rootManifestResult === true
 }
+
+export function getUndeclaredPackageErrorMessage(packageName: string) {
+  const basePackageName = extractBasePackageName(packageName)
+  return `Node module imported but not in package.json "${packageName}"\n\nAdd it to package.json, e.g. \`bun add ${basePackageName}\``
+}
