@@ -1,3 +1,4 @@
+import { importUrlForDynamicImport, isUrlSpecifier } from "./import-url-module"
 import { resolveFilePath } from "lib/runner/resolveFilePath"
 import { resolveNodeModule } from "lib/utils/resolve-node-module"
 import { hasPreSuppliedImport } from "./pre-supplied-imports"
@@ -22,6 +23,9 @@ export function evalCompiledJs(
       !hasPreSuppliedImport(preSuppliedImports, name) &&
       !hasResolvedFilePath
     ) {
+      if (isUrlSpecifier(name)) {
+        return importUrlForDynamicImport(name)
+      }
       throw new Error(`Import "${name}" not found ${cwd ? `in "${cwd}"` : ""}`)
     }
 
