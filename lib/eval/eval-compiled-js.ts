@@ -2,6 +2,31 @@ import { resolveFilePath } from "lib/runner/resolveFilePath"
 import { resolveNodeModule } from "lib/utils/resolve-node-module"
 import { hasPreSuppliedImport } from "./pre-supplied-imports"
 
+const AsyncFunction = Object.getPrototypeOf(async () => {}).constructor
+
+/**
+ * Builds the module function. Code with top-level await (common in
+ * tscircuit.config.ts, e.g. `spiceEngineMap: { ngspice: await create() }`)
+ * only parses inside an async function, so we fall back to one.
+ */
+const createModuleFunction = (functionBody: string) => {
+  try {
+    return Function(functionBody)
+  } catch (syncError) {
+    if (
+      !(syncError instanceof SyntaxError) ||
+      !/\bawait\b/.test(functionBody)
+    ) {
+      throw syncError
+    }
+    try {
+      return AsyncFunction(functionBody)
+    } catch {
+      throw syncError
+    }
+  }
+}
+
 export function evalCompiledJs(
   compiledCode: string,
   preSuppliedImports: Record<string, any>,
@@ -111,5 +136,7 @@ export function evalCompiledJs(
   var circuit = globalThis.__tscircuit_circuit;
   ${compiledCode};
   return module;`.trim()
-  return Function(functionBody).call(globalThis)
+  return createModuleFunction(functionBody).call(globalThis) as
+    | { exports: any }
+    | Promise<{ exports: any }>
 }

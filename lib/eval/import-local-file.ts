@@ -178,7 +178,7 @@ export const importLocalFile = async (
           dirname: dirname(fsPath),
         })
         const typeExports = getTypeExportsFromCode(fileContent)
-        const importRunResult = evalCompiledJs(
+        const importRunResult = await evalCompiledJs(
           transformedCode,
           preSuppliedImports,
           dirname(fsPath),
@@ -215,10 +215,12 @@ export const importLocalFile = async (
       }
 
       // Then transform and evaluate
-      preSuppliedImports[fsPath] = evalCompiledJs(
-        transformWithSucrase(fileContent, fsPath),
-        preSuppliedImports,
-        dirname(fsPath),
+      preSuppliedImports[fsPath] = (
+        await evalCompiledJs(
+          transformWithSucrase(fileContent, fsPath),
+          preSuppliedImports,
+          dirname(fsPath),
+        )
       ).exports
     } else {
       throw new Error(
