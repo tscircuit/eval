@@ -47,6 +47,30 @@ function isPackageDeclaredInManifest(
 }
 
 /**
+ * Packages that tscircuit depends on (e.g. @tscircuit/ngspice-spice-engine)
+ * are always installed alongside it, so a project that declares tscircuit may
+ * import them without declaring them itself, the same as `tsci build`.
+ * Reads the project's installed node_modules/tscircuit/package.json.
+ */
+function isPackageProvidedByTscircuit(
+  packageName: string,
+  fsMap: Record<string, string>,
+): boolean {
+  if (!isPackageDeclaredInManifest("tscircuit", fsMap["package.json"])) {
+    return false
+  }
+  const tscircuitPackageJson = fsMap["node_modules/tscircuit/package.json"]
+  if (!tscircuitPackageJson) return false
+
+  try {
+    const { dependencies = {} } = JSON.parse(tscircuitPackageJson)
+    return extractBasePackageName(packageName) in dependencies
+  } catch {
+    return false
+  }
+}
+
+/**
  * Check if a package is declared in package.json (dependencies, devDependencies, or peerDependencies)
  */
 export function isPackageDeclaredInPackageJson(
@@ -70,6 +94,13 @@ export function isPackageDeclaredInPackageJson(
     packageName,
     fsMap["package.json"],
   )
+
+  if (
+    rootManifestResult === false &&
+    isPackageProvidedByTscircuit(packageName, fsMap)
+  ) {
+    return true
+  }
 
   if (rootManifestResult === null && packageManifestResult === null) {
     // No package.json means we can't validate - allow the import
