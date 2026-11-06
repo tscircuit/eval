@@ -1,7 +1,7 @@
 {
   "name": "@tscircuit/eval",
   "main": "dist/lib/index.js",
-  "version": "0.0.1701",
+  "version": "0.0.1702",
   "repository": {
     "type": "git",
     "url": "https://github.com/tscircuit/eval"
@@ -174,7 +174,8 @@
     "circuit-json-to-tscircuit": "^0.0.50",
     "dsn-converter": "^0.0.90",
     "easyeda": "^0.0.389",
-    "circuit-json-to-pnp-csv": "^0.0.20"},
+    "circuit-json-to-pnp-csv": "^0.0.20"
+  },
   "peerDependencies": {
     "typescript": "^5.0.0",
     "@tscircuit/core": ">=0.0.1906",
