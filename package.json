@@ -1,7 +1,7 @@
 {
   "name": "@tscircuit/eval",
   "main": "dist/lib/index.js",
-  "version": "0.0.1705",
+  "version": "0.0.1707",
   "repository": {
     "type": "git",
     "url": "https://github.com/tscircuit/eval"
@@ -175,7 +175,8 @@
     "dsn-converter": "^0.0.90",
     "easyeda": "^0.0.389",
     "circuit-json-to-pnp-csv": "^0.0.20",
-    "@tscircuit/core-ddr-benchmark": "github:ShiboSoftwareDev/core-ddr-benchmark#9a7f3b9ff4e37b5d11c8572b75c5b83339a97168"},
+    "@tscircuit/core-ddr-benchmark": "github:ShiboSoftwareDev/core-ddr-benchmark#9a7f3b9ff4e37b5d11c8572b75c5b83339a97168"
+  },
   "peerDependencies": {
     "typescript": "^5.0.0",
     "@tscircuit/core": ">=0.0.1906",
