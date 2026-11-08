@@ -9,7 +9,9 @@ test(
   async () => {
     const runner = new CircuitRunner({
       platform: {
-        ...getPlatformConfig(),
+        ...getPlatformConfig({
+          partsEngine: { findPart: async () => ({}) },
+        }),
       },
     })
 
