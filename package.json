@@ -1,7 +1,7 @@
 {
   "name": "@tscircuit/eval",
   "main": "dist/lib/index.js",
-  "version": "0.0.1715",
+  "version": "0.0.1716",
   "repository": {
     "type": "git",
     "url": "https://github.com/tscircuit/eval"
