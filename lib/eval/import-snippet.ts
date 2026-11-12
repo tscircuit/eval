@@ -100,9 +100,8 @@ export async function importSnippet(
   }
 
   try {
-    preSuppliedImports[importName] = evalCompiledJs(
-      cjs!,
-      preSuppliedImports,
+    preSuppliedImports[importName] = (
+      await evalCompiledJs(cjs!, preSuppliedImports)
     ).exports
   } catch (e) {
     console.error("Error importing snippet", e)
