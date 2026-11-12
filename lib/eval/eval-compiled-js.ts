@@ -108,6 +108,10 @@ export function evalCompiledJs(
             return target.__typeOnlyExports__ || []
           }
 
+          if (prop === "then" || typeof prop === "symbol") {
+            return undefined
+          }
+
           const typeExports: string[] = target.__typeOnlyExports__ || []
           const propName = String(prop)
           if (typeExports.includes(propName)) {

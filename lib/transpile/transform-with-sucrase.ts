@@ -144,7 +144,7 @@ export const transformWithSucrase = (code: string, filePath: string) => {
   const patchAsyncInteropRequireWildcard = (compiled: string) =>
     compiled.replace(
       /function (_interopRequireWildcard\w*)\(obj\) \{/g,
-      'function $1(obj) { if (obj && (typeof obj === "object" || typeof obj === "function") && typeof obj.then === "function") { return obj.then($1); }',
+      "function $1(obj) { if (obj instanceof Promise) { return obj.then($1); }",
     )
 
   const transformCode = (codeToTransform: string) =>
