@@ -260,6 +260,29 @@ export class CircuitRunner implements CircuitRunnerApi {
     this._circuitRunnerConfiguration.partsEngineOptions = options
   }
 
+  addPreSuppliedImport(name: string, value: any) {
+    if (!this._circuitRunnerConfiguration.preSuppliedImports) {
+      this._circuitRunnerConfiguration.preSuppliedImports = {}
+    }
+    this._circuitRunnerConfiguration.preSuppliedImports[name] = value
+    if (this._executionContext) {
+      this._executionContext.preSuppliedImports[name] = value
+    }
+  }
+
+  setPreSuppliedImports(imports: Record<string, any>) {
+    this._circuitRunnerConfiguration.preSuppliedImports = {
+      ...this._circuitRunnerConfiguration.preSuppliedImports,
+      ...imports,
+    }
+    if (this._executionContext) {
+      this._executionContext.preSuppliedImports = {
+        ...this._executionContext.preSuppliedImports,
+        ...imports,
+      }
+    }
+  }
+
   async enableDebug(namespace: string) {
     this._debugNamespace = namespace
     if (this._executionContext) {

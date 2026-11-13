@@ -25,6 +25,10 @@ export interface CircuitRunnerConfiguration {
    */
   tscircuitSessionToken?: string
   /**
+   * Optional pre-supplied imports provided directly by the environment.
+   */
+  preSuppliedImports?: Record<string, any>
+  /**
    * Configuration for proxying EasyEDA API requests, used by the parts engine
    * when fetching part circuit JSON (e.g. for connector footprints).
    */
