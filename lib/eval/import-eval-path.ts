@@ -16,7 +16,11 @@ import { getPackageJsonEntrypoint } from "./getPackageJsonEntrypoint"
 import { isDistDirEmpty } from "./isDistDirEmpty"
 import { resolveEntrypointPath } from "./resolveEntrypointPath"
 import { resolveRelativePath } from "lib/utils/resolveRelativePath"
-import { hasPreSuppliedImport } from "./pre-supplied-imports"
+import {
+  getPreSuppliedImport,
+  hasPreSuppliedImport,
+  isNodeBuiltinModule,
+} from "./pre-supplied-imports"
 import { parseNpmSpecifier } from "lib/utils/npm-cdn-urls"
 
 const debug = Debug("tsci:eval:import-eval-path")
@@ -107,6 +111,12 @@ export async function importEvalPath(
     ctx.disableCdnLoading || (globalThis as any).__DISABLE_CDN_LOADING__
 
   if (hasPreSuppliedImport(preSuppliedImports, importName)) {
+    if (!(importName in preSuppliedImports)) {
+      preSuppliedImports[importName] = getPreSuppliedImport(
+        preSuppliedImports,
+        importName,
+      )
+    }
     ctx.logger.info(`Import "${importName}" in preSuppliedImports[1]`)
     return
   }
@@ -295,7 +305,13 @@ export async function importEvalPath(
         ctx.logger.info(
           `nodeModulesResolver failed for "${importName}", falling back to npm CDN`,
         )
-        if (disableCdnLoading) {
+        const isUnresolvedBuiltin =
+          importName.startsWith("node:") ||
+          (!isPackageDeclaredInPackageJson(importName, ctx.fsMap, {
+            cwd: opts.cwd,
+          }) &&
+            isNodeBuiltinModule(importName))
+        if (disableCdnLoading && !isUnresolvedBuiltin) {
           throw new Error(
             `Cannot find module "${importName}". The package is not available in the local environment and automatic npm resolution is disabled.\n\n${ctx.logger.stringifyLogs()}`,
           )
@@ -310,12 +326,21 @@ export async function importEvalPath(
   }
 
   if (!importName.startsWith(".") && !importName.startsWith("/")) {
-    // Step 1: Check if package is declared in package.json
+    const isDeclaredInPkgJson = isPackageDeclaredInPackageJson(
+      importName,
+      ctx.fsMap,
+      { cwd: opts.cwd },
+    )
     if (
-      !isPackageDeclaredInPackageJson(importName, ctx.fsMap, {
-        cwd: opts.cwd,
-      })
+      importName.startsWith("node:") ||
+      (!isDeclaredInPkgJson && isNodeBuiltinModule(importName))
     ) {
+      throw new Error(
+        `Node.js built-in module "${importName}" is not available in the tscircuit execution environment${opts.cwd ? ` (imported from "${opts.cwd}")` : ""}. Use a browser-compatible alternative instead.\n\n${ctx.logger.stringifyLogs()}`,
+      )
+    }
+    // Step 1: Check if package is declared in package.json
+    if (!isDeclaredInPkgJson) {
       throw new Error(
         `Node module imported but not in package.json "${importName}"\n\n${ctx.logger.stringifyLogs()}`,
       )
