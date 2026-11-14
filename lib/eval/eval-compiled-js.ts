@@ -2,12 +2,31 @@ import { resolveFilePath } from "lib/runner/resolveFilePath"
 import { resolveNodeModule } from "lib/utils/resolve-node-module"
 import { hasPreSuppliedImport } from "./pre-supplied-imports"
 
+const AsyncFunction = Object.getPrototypeOf(async function () {})
+  .constructor as FunctionConstructor
+const nativeDynamicImport = new Function("u", "return import(u)") as (
+  url: string,
+) => Promise<Record<string, any>>
+
+const wrapNativeModuleNamespace = (ns: Record<string, any>) => {
+  if (ns && typeof ns === "object" && ns.__esModule === true) return ns
+  const wrapped: Record<string, any> = { __esModule: true }
+  if (ns && (typeof ns === "object" || typeof ns === "function")) {
+    for (const key of Reflect.ownKeys(ns)) {
+      if (typeof key === "string" && key !== "__esModule") {
+        wrapped[key] = ns[key]
+      }
+    }
+  }
+  return wrapped
+}
+
 export function evalCompiledJs(
   compiledCode: string,
   preSuppliedImports: Record<string, any>,
   cwd?: string,
 ) {
-  ;(globalThis as any).__tscircuit_require = (name: string) => {
+  const localRequire = (name: string) => {
     let resolvedFilePath = resolveFilePath(name, preSuppliedImports, cwd)
 
     if (!resolvedFilePath && !name.startsWith(".") && !name.startsWith("/")) {
@@ -22,6 +41,9 @@ export function evalCompiledJs(
       !hasPreSuppliedImport(preSuppliedImports, name) &&
       !hasResolvedFilePath
     ) {
+      if (/^(?:blob|data):/i.test(name)) {
+        return nativeDynamicImport(name).then(wrapNativeModuleNamespace)
+      }
       throw new Error(`Import "${name}" not found ${cwd ? `in "${cwd}"` : ""}`)
     }
 
@@ -86,6 +108,10 @@ export function evalCompiledJs(
             return target.__typeOnlyExports__ || []
           }
 
+          if (prop === "then" || typeof prop === "symbol") {
+            return undefined
+          }
+
           const typeExports: string[] = target.__typeOnlyExports__ || []
           const propName = String(prop)
           if (typeExports.includes(propName)) {
@@ -103,13 +129,24 @@ export function evalCompiledJs(
       },
     })
   }
+  ;(globalThis as any).__tscircuit_require = localRequire
 
   const functionBody = `
   var exports = {};
-  var require = globalThis.__tscircuit_require;
   var module = { exports };
   var circuit = globalThis.__tscircuit_circuit;
   ${compiledCode};
   return module;`.trim()
-  return Function(functionBody).call(globalThis)
+
+  let fn: Function
+  try {
+    fn = Function("require", functionBody)
+  } catch (err) {
+    if (err instanceof SyntaxError) {
+      fn = AsyncFunction("require", functionBody)
+    } else {
+      throw err
+    }
+  }
+  return fn.call(globalThis, localRequire)
 }

@@ -141,13 +141,21 @@ export const transformWithSucrase = (code: string, filePath: string) => {
   const transforms = getTransformsForFilePath(filePath)
   const sanitizedCode = stripTypeStarExports(code)
 
+  const patchAsyncInteropRequireWildcard = (compiled: string) =>
+    compiled.replace(
+      /function (_interopRequireWildcard\w*)\(obj\) \{/g,
+      "function $1(obj) { if (obj instanceof Promise) { return obj.then($1); }",
+    )
+
   const transformCode = (codeToTransform: string) =>
-    transform(codeToTransform, {
-      filePath,
-      disableESTransforms: true,
-      production: true,
-      transforms,
-    }).code
+    patchAsyncInteropRequireWildcard(
+      transform(codeToTransform, {
+        filePath,
+        disableESTransforms: true,
+        production: true,
+        transforms,
+      }).code,
+    )
 
   try {
     return transformCode(sanitizedCode)

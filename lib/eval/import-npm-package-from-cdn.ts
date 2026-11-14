@@ -65,10 +65,8 @@ export async function importNpmPackageFromCdn(
         content,
         finalImportName || importName,
       )
-      const exports = evalCompiledJs(
-        transformedCode,
-        preSuppliedImports,
-        cwd,
+      const exports = (
+        await evalCompiledJs(transformedCode, preSuppliedImports, cwd)
       ).exports
 
       preSuppliedImports[importName] = exports
