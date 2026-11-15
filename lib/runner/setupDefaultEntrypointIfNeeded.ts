@@ -69,7 +69,13 @@ export const setupDefaultEntrypointIfNeeded = (opts: {
                : ""
            }
 
-      circuit.add(       
+      if (typeof ComponentToRender !== "function") {
+        throw new Error(
+          \`"${opts.mainComponentPath}" does not export a valid tscircuit component\`
+        );
+      }
+
+      circuit.add(
           <ComponentToRender ${opts.mainComponentProps ? `{...${JSON.stringify(opts.mainComponentProps, null, 2)}}` : ""} /> 
       );
 `
