@@ -1,13 +1,13 @@
 import { dirname } from "./dirname"
 import { normalizePackageEntrypoint } from "./normalize-package-entrypoint"
 
-type ExportValue = string | Record<string, string | Record<string, string>>
+type ExportValue = string | ExportValue[] | { [condition: string]: ExportValue }
 
 interface PackageJson {
   main?: string
   module?: string
   browser?: string | Record<string, string | false>
-  exports?: Record<string, ExportValue>
+  exports?: ExportValue
 }
 
 interface NodeResolutionContext {
@@ -86,16 +86,19 @@ function resolveConditionalExport(exportValue: ExportValue): string | null {
     return exportValue
   }
 
+  if (Array.isArray(exportValue)) {
+    for (const entry of exportValue) {
+      const resolved = resolveConditionalExport(entry)
+      if (resolved) return resolved
+    }
+    return null
+  }
+
   // Handle conditional exports - try common conditions in order of preference
   const conditions = ["import", "default", "require", "node", "browser"]
   for (const condition of conditions) {
     if (exportValue[condition]) {
-      const conditionValue = exportValue[condition]
-      if (typeof conditionValue === "string") {
-        return conditionValue
-      }
-      // Recursively handle nested conditions
-      const resolved = resolveConditionalExport(conditionValue)
+      const resolved = resolveConditionalExport(exportValue[condition])
       if (resolved) return resolved
     }
   }
@@ -111,8 +114,28 @@ function resolvePackageExports(
 ): string | null {
   if (!packageJson.exports) return null
 
+  const exportsField = packageJson.exports
+
+  // Node string shorthand: "exports": "./dist/index.js"
+  if (typeof exportsField === "string") {
+    if (remainingPath !== "") return null
+    const resolved = resolveExportPath(nodeModulesPath, exportsField, ctx)
+    return resolved
+  }
+
+  // Top-level fallback list is treated as the package root export
+  if (Array.isArray(exportsField)) {
+    if (remainingPath !== "") return null
+    const exportPath = resolveConditionalExport(exportsField)
+    if (exportPath) {
+      const resolved = resolveExportPath(nodeModulesPath, exportPath, ctx)
+      if (resolved) return resolved
+    }
+    return null
+  }
+
   // Handle default export condition (when no subpath)
-  const defaultExport = packageJson.exports["."]
+  const defaultExport = exportsField["."]
   if (remainingPath === "" && defaultExport) {
     const exportPath = resolveConditionalExport(defaultExport)
     if (exportPath) {
@@ -123,7 +146,7 @@ function resolvePackageExports(
 
   // Handle subpath exports
   const subpathExport = remainingPath
-    ? packageJson.exports[`./${remainingPath}`]
+    ? exportsField[`./${remainingPath}`]
     : null
   if (subpathExport) {
     const exportPath = resolveConditionalExport(subpathExport)
@@ -134,7 +157,7 @@ function resolvePackageExports(
   }
 
   // Handle top-level conditional exports (legacy format)
-  const importExport = packageJson.exports.import
+  const importExport = exportsField.import
   if (remainingPath === "" && importExport !== undefined) {
     const exportPath = resolveConditionalExport(importExport)
     if (exportPath) {
