@@ -73,7 +73,7 @@
     "@tscircuit/circuit-json-util": "^0.0.131",
     "@tscircuit/common": "^0.0.20",
     "@tscircuit/copper-pour-solver": "^0.0.74",
-    "@tscircuit/core": "^0.0.2383",
+    "@tscircuit/core": "^0.0.2384",
     "@tscircuit/footprinter": "^0.0.451",
     "@tscircuit/import-snippet": "^0.0.4",
     "@tscircuit/infer-cable-insertion-point": "^0.0.5",
@@ -175,7 +175,7 @@
     "dsn-converter": "^0.0.90",
     "easyeda": "^0.0.389",
     "circuit-json-to-pnp-csv": "^0.0.20",
-    "@tscircuit/core-ddr-benchmark": "github:ShiboSoftwareDev/core-ddr-benchmark#7b05251f6e868954adead2275a26c95b163c4813"
+    "@tscircuit/core-ddr-benchmark": "github:ShiboSoftwareDev/core-ddr-benchmark#24dc44c166d4258c3538f8b1f66953f1b6f58690"
   },
   "peerDependencies": {
     "typescript": "^5.0.0",
