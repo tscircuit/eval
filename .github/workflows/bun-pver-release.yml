@@ -14,7 +14,6 @@ permissions:
 env:
   UPSTREAM_REPOS: "runframe,tscircuit.com" # for example: "eval,runframe"
   PACKAGE_NAMES: "@tscircuit/eval" # comma-separated list, e.g. "@tscircuit/core,@tscircuit/props"
-  PACKAGE_NAMES: "@tscircuit/eval"
 
 jobs:
   publish:
