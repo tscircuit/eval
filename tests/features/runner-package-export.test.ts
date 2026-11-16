@@ -26,8 +26,11 @@ test("package.json exports map ./runner and all declared targets to built files"
     }
   }
 
-  const runnerExport = await import("@tscircuit/eval/runner")
-  const evalExport = await import("@tscircuit/eval/eval")
+  type RunnerModule = typeof import("../../lib/runner")
+  const runnerExportName: string = "@tscircuit/eval/runner"
+  const evalExportName: string = "@tscircuit/eval/eval"
+  const runnerExport = (await import(runnerExportName)) as RunnerModule
+  const evalExport = (await import(evalExportName)) as RunnerModule
 
   expect(typeof runnerExport.CircuitRunner).toBe("function")
   expect(typeof runnerExport.runTscircuitCode).toBe("function")
