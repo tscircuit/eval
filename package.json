@@ -54,8 +54,8 @@
       "import": "./dist/eval/index.js"
     },
     "./runner": {
-      "types": "./dist/runner/index.d.ts",
-      "import": "./dist/runner/index.js"
+      "types": "./dist/eval/index.d.ts",
+      "import": "./dist/eval/index.js"
     },
     "./platform-config": {
       "types": "./dist/platform-config/getPlatformConfig.d.ts",
