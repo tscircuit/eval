@@ -90,6 +90,7 @@ export function createExecutionContext(
       // This is usually used as a type import, we can remove the shim when we
       // ignore type imports in getImportsFromCode
       "@tscircuit/props": {},
+      ...webWorkerConfiguration.preSuppliedImports,
     },
     circuit,
     tsConfig: null,

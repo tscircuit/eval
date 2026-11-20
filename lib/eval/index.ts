@@ -19,3 +19,8 @@ export { getNodeModuleDirectory } from "./getNodeModuleDirectory"
 export { getPackageJsonEntrypoint } from "./getPackageJsonEntrypoint"
 export { isTypeScriptEntrypoint } from "./isTypeScriptEntrypoint"
 export { isDistDirEmpty } from "./isDistDirEmpty"
+export {
+  isNodeBuiltin,
+  getNodeBuiltinRemedy,
+  getNodeBuiltinUnavailableError,
+} from "./node-builtins"

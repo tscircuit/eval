@@ -18,8 +18,17 @@ export function evalCompiledJs(
       resolvedFilePath &&
       hasPreSuppliedImport(preSuppliedImports, resolvedFilePath)
 
+    const nodeOrBareAlias = name.startsWith("node:")
+      ? name.slice(5)
+      : `node:${name}`
+    const hasAliasImport = hasPreSuppliedImport(
+      preSuppliedImports,
+      nodeOrBareAlias,
+    )
+
     if (
       !hasPreSuppliedImport(preSuppliedImports, name) &&
+      !hasAliasImport &&
       !hasResolvedFilePath
     ) {
       throw new Error(`Import "${name}" not found ${cwd ? `in "${cwd}"` : ""}`)
@@ -27,7 +36,9 @@ export function evalCompiledJs(
 
     const mod = hasPreSuppliedImport(preSuppliedImports, name)
       ? preSuppliedImports[name]
-      : preSuppliedImports[resolvedFilePath!]
+      : hasAliasImport
+        ? preSuppliedImports[nodeOrBareAlias]
+        : preSuppliedImports[resolvedFilePath!]
 
     // If the module is a simple ES module with only default export (like static assets),
     // return the default value directly for CommonJS interop
