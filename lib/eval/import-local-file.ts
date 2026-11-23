@@ -6,7 +6,7 @@ import { transformWithSucrase } from "lib/transpile/transform-with-sucrase"
 import { dirname } from "lib/utils/dirname"
 import { getImportsFromCode } from "lib/utils/get-imports-from-code"
 import { getTypeExportsFromCode } from "lib/utils/get-type-exports-from-code"
-import { evalCompiledJs } from "./eval-compiled-js"
+import { evalCompiledJsAsync } from "./eval-compiled-js"
 import type { ExecutionContext } from "./execution-context"
 import { importEvalPath } from "./import-eval-path"
 import { hasPreSuppliedImport } from "./pre-supplied-imports"
@@ -178,7 +178,7 @@ export const importLocalFile = async (
           dirname: dirname(fsPath),
         })
         const typeExports = getTypeExportsFromCode(fileContent)
-        const importRunResult = evalCompiledJs(
+        const importRunResult = await evalCompiledJsAsync(
           transformedCode,
           preSuppliedImports,
           dirname(fsPath),
@@ -215,10 +215,12 @@ export const importLocalFile = async (
       }
 
       // Then transform and evaluate
-      preSuppliedImports[fsPath] = evalCompiledJs(
-        transformWithSucrase(fileContent, fsPath),
-        preSuppliedImports,
-        dirname(fsPath),
+      preSuppliedImports[fsPath] = (
+        await evalCompiledJsAsync(
+          transformWithSucrase(fileContent, fsPath),
+          preSuppliedImports,
+          dirname(fsPath),
+        )
       ).exports
     } else {
       throw new Error(

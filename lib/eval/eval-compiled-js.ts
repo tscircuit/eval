@@ -2,12 +2,13 @@ import { resolveFilePath } from "lib/runner/resolveFilePath"
 import { resolveNodeModule } from "lib/utils/resolve-node-module"
 import { hasPreSuppliedImport } from "./pre-supplied-imports"
 
-export function evalCompiledJs(
-  compiledCode: string,
+const AsyncFunction = Object.getPrototypeOf(async () => {}).constructor
+
+function createEvalRequire(
   preSuppliedImports: Record<string, any>,
   cwd?: string,
 ) {
-  ;(globalThis as any).__tscircuit_require = (name: string) => {
+  return (name: string) => {
     let resolvedFilePath = resolveFilePath(name, preSuppliedImports, cwd)
 
     if (!resolvedFilePath && !name.startsWith(".") && !name.startsWith("/")) {
@@ -103,13 +104,61 @@ export function evalCompiledJs(
       },
     })
   }
+}
 
-  const functionBody = `
+function createEvalFunctionBody(compiledCode: string) {
+  return `
   var exports = {};
-  var require = globalThis.__tscircuit_require;
+  var require = __tscircuit_local_require;
   var module = { exports };
-  var circuit = globalThis.__tscircuit_circuit;
+  var circuit = __tscircuit_local_circuit;
   ${compiledCode};
   return module;`.trim()
-  return Function(functionBody).call(globalThis)
+}
+
+export function evalCompiledJs(
+  compiledCode: string,
+  preSuppliedImports: Record<string, any>,
+  cwd?: string,
+) {
+  const localRequire = createEvalRequire(preSuppliedImports, cwd)
+  ;(globalThis as any).__tscircuit_require = localRequire
+
+  const functionBody = createEvalFunctionBody(compiledCode)
+  return Function(
+    "__tscircuit_local_require",
+    "__tscircuit_local_circuit",
+    functionBody,
+  ).call(globalThis, localRequire, (globalThis as any).__tscircuit_circuit)
+}
+
+export async function evalCompiledJsAsync(
+  compiledCode: string,
+  preSuppliedImports: Record<string, any>,
+  cwd?: string,
+) {
+  const localRequire = createEvalRequire(preSuppliedImports, cwd)
+  ;(globalThis as any).__tscircuit_require = localRequire
+  const localCircuit = (globalThis as any).__tscircuit_circuit
+
+  const functionBody = createEvalFunctionBody(compiledCode)
+  let fn: (...args: any[]) => any
+  try {
+    fn = Function(
+      "__tscircuit_local_require",
+      "__tscircuit_local_circuit",
+      functionBody,
+    ) as (...args: any[]) => any
+  } catch (error) {
+    if (error instanceof SyntaxError && /\bawait\b/.test(compiledCode)) {
+      fn = AsyncFunction(
+        "__tscircuit_local_require",
+        "__tscircuit_local_circuit",
+        functionBody,
+      ) as (...args: any[]) => any
+    } else {
+      throw error
+    }
+  }
+  return await fn.call(globalThis, localRequire, localCircuit)
 }

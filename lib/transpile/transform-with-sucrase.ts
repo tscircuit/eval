@@ -145,6 +145,7 @@ export const transformWithSucrase = (code: string, filePath: string) => {
     transform(codeToTransform, {
       filePath,
       disableESTransforms: true,
+      preserveDynamicImport: true,
       production: true,
       transforms,
     }).code
