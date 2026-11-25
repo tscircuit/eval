@@ -1,7 +1,7 @@
 {
   "name": "@tscircuit/eval",
   "main": "dist/lib/index.js",
-  "version": "0.0.1854",
+  "version": "0.0.1855",
   "repository": {
     "type": "git",
     "url": "https://github.com/tscircuit/eval"
@@ -176,7 +176,8 @@
     "easyeda": "^0.0.389",
     "circuit-json-to-pnp-csv": "^0.0.20",
     "@tscircuit/core-ddr-benchmark": "github:ShiboSoftwareDev/core-ddr-benchmark#16b6352dc25e951192d88cb99a7cfe96abf62285",
-    "compute-differential-pair-phase-skew": "github:tscircuit/compute-differential-pair-phase-skew#440d4413a1078ece4bae1632a936bc8ff32bd076"},
+    "compute-differential-pair-phase-skew": "github:tscircuit/compute-differential-pair-phase-skew#440d4413a1078ece4bae1632a936bc8ff32bd076"
+  },
   "peerDependencies": {
     "typescript": "^5.0.0",
     "@tscircuit/core": ">=0.0.1906",
