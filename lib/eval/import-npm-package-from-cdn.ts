@@ -1,12 +1,15 @@
+import Debug from "debug"
+import { transformWithSucrase } from "lib/transpile/transform-with-sucrase"
+import { dirname } from "lib/utils/dirname"
+import { getImportsFromCode } from "lib/utils/get-imports-from-code"
+import { getJscdnPackageUrl } from "lib/utils/npm-cdn-urls"
 import { evalCompiledJs } from "./eval-compiled-js"
 import type { ExecutionContext } from "./execution-context"
-import { dirname } from "lib/utils/dirname"
-import Debug from "debug"
-import { getImportsFromCode } from "lib/utils/get-imports-from-code"
 import { importEvalPath } from "./import-eval-path"
-import { transformWithSucrase } from "lib/transpile/transform-with-sucrase"
-import { getJscdnPackageUrl } from "lib/utils/npm-cdn-urls"
-import { hasPreSuppliedImport } from "./pre-supplied-imports"
+import {
+  hasPreSuppliedImport,
+  markNpmResolvedImport,
+} from "./pre-supplied-imports"
 
 const debug = Debug("tsci:eval:import-npm-package")
 
@@ -74,6 +77,8 @@ export async function importNpmPackageFromCdn(
       preSuppliedImports[importName] = exports
       preSuppliedImports[finalImportName] = exports
       preSuppliedImports[response.url] = exports
+      markNpmResolvedImport(preSuppliedImports, importName)
+      markNpmResolvedImport(preSuppliedImports, finalImportName)
       return
     } catch (error) {
       lastCdnError = error

@@ -1,6 +1,9 @@
 import { resolveFilePath } from "lib/runner/resolveFilePath"
 import { resolveNodeModule } from "lib/utils/resolve-node-module"
-import { hasPreSuppliedImport } from "./pre-supplied-imports"
+import {
+  getPreSuppliedImport,
+  hasPreSuppliedImport,
+} from "./pre-supplied-imports"
 
 export function evalCompiledJs(
   compiledCode: string,
@@ -26,7 +29,7 @@ export function evalCompiledJs(
     }
 
     const mod = hasPreSuppliedImport(preSuppliedImports, name)
-      ? preSuppliedImports[name]
+      ? getPreSuppliedImport(preSuppliedImports, name)
       : preSuppliedImports[resolvedFilePath!]
 
     // If the module is a simple ES module with only default export (like static assets),
