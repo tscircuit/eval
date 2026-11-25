@@ -15,7 +15,10 @@ import { importNodeModule } from "./import-node-module"
 import { importNpmPackageFromCdn } from "./import-npm-package-from-cdn"
 import { importSnippet } from "./import-snippet"
 import { isDistDirEmpty } from "./isDistDirEmpty"
-import { isPackageDeclaredInPackageJson } from "./isPackageDeclaredInPackageJson"
+import {
+  isPackageDeclaredInPackageJson,
+  isPackageExplicitlyDeclaredInPackageJson,
+} from "./isPackageDeclaredInPackageJson"
 import {
   UnsupportedNodeBuiltinError,
   createUnsupportedNodeBuiltinError,
@@ -352,12 +355,18 @@ export async function importEvalPath(
     }
 
     // Step 2: Check if node_modules directory exists (only if not found locally yet)
-    // Only validate if CDN loading is disabled (i.e., no fallback to jsDelivr available)
+    // Diagnose undeclared bare Node built-ins before attempting CDN fallback
     const nodeModuleDir = getNodeModuleDirectory(importName, ctx.fsMap)
+    if (
+      !nodeModuleDir &&
+      !isPackageExplicitlyDeclaredInPackageJson(importName, ctx.fsMap, {
+        cwd: opts.cwd,
+      }) &&
+      isNodeBuiltinModuleName(importName)
+    ) {
+      throw createUnsupportedNodeBuiltinError(importName, ctx)
+    }
     if (!nodeModuleDir && disableCdnLoading) {
-      if (!ctx.fsMap["package.json"] && isNodeBuiltinModuleName(importName)) {
-        throw createUnsupportedNodeBuiltinError(importName, ctx)
-      }
       throw new Error(
         `Node module "${importName}" has no files in the node_modules directory\n\n${ctx.logger.stringifyLogs()}`,
       )

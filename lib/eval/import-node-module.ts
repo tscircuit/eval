@@ -5,7 +5,10 @@ import { getNodeModuleDirectory } from "./getNodeModuleDirectory"
 import { getPackageJsonEntrypoint } from "./getPackageJsonEntrypoint"
 import { importLocalFile } from "./import-local-file"
 import { isDistDirEmpty } from "./isDistDirEmpty"
-import { isPackageDeclaredInPackageJson } from "./isPackageDeclaredInPackageJson"
+import {
+  isPackageDeclaredInPackageJson,
+  isPackageExplicitlyDeclaredInPackageJson,
+} from "./isPackageDeclaredInPackageJson"
 import {
   createUnsupportedNodeBuiltinError,
   isExplicitNodeBuiltinSpecifier,
@@ -75,6 +78,7 @@ export const importNodeModule = async (
               ctx.fsMap[syntheticPath] = fileContent
               await importLocalFile(syntheticPath, ctx, depth)
               preSuppliedImports[importName] = preSuppliedImports[syntheticPath]
+              markNpmResolvedImport(preSuppliedImports, importName)
               return
             }
           } catch (error) {
@@ -157,10 +161,12 @@ export const importNodeModule = async (
 
           // Map the import name to the resolved module
           preSuppliedImports[importName] = preSuppliedImports[syntheticPath]
+          markNpmResolvedImport(preSuppliedImports, importName)
 
           // Also map without node_modules prefix
           const unprefixedPath = syntheticPath.replace(/^node_modules\//, "")
           preSuppliedImports[unprefixedPath] = preSuppliedImports[syntheticPath]
+          markNpmResolvedImport(preSuppliedImports, unprefixedPath)
 
           return
         }
@@ -172,8 +178,7 @@ export const importNodeModule = async (
     }
 
     if (
-      !hasPackageJson &&
-      !platform?.nodeModulesResolver &&
+      !isPackageExplicitlyDeclaredInPackageJson(importName, fsMap, opts) &&
       isNodeBuiltinModuleName(importName)
     ) {
       throw createUnsupportedNodeBuiltinError(importName, ctx)

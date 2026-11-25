@@ -6,7 +6,10 @@ import type { PlatformConfig } from "@tscircuit/props"
 import Debug from "debug"
 import { getPlatformConfig } from "lib/getPlatformConfig"
 import type { TsConfig } from "lib/runner/tsconfigPaths"
-import type { WebWorkerConfiguration } from "lib/shared/types"
+import type {
+  CircuitRunnerConfiguration,
+  WebWorkerConfiguration,
+} from "lib/shared/types"
 import * as React from "react"
 import * as ReactJsxRuntime from "react/jsx-runtime"
 import * as tslib from "tslib"
@@ -31,7 +34,8 @@ export interface ExecutionContext extends WebWorkerConfiguration {
 }
 
 export function createExecutionContext(
-  webWorkerConfiguration: WebWorkerConfiguration,
+  webWorkerConfiguration: WebWorkerConfiguration &
+    Pick<CircuitRunnerConfiguration, "preSuppliedImports">,
   opts: {
     name?: string
     platform?: PlatformConfig

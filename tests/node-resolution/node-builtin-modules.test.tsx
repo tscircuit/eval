@@ -2,6 +2,7 @@ import { describe, expect, test } from "bun:test"
 import { EventEmitter } from "node:events"
 import { createExecutionContext, importNodeModule } from "lib/eval"
 import { CircuitRunner } from "lib/runner/CircuitRunner"
+import type { WebWorkerConfiguration } from "lib/shared/types"
 
 describe("node built-in module resolution and diagnostics", () => {
   test("reports unavailable node:events built-in with importing file and remedy instead of undeclared package.json dependency", async () => {
@@ -390,5 +391,104 @@ describe("node built-in module resolution and diagnostics", () => {
     expect(
       typeof ctxWithResolver.preSuppliedImports["node:events"].EventEmitter,
     ).toBe("function")
+  })
+
+  test("diagnoses bare built-ins before CDN fallback when package.json is absent and CDN loading is enabled", async () => {
+    const originalFetch = globalThis.fetch
+    const requestedUrls: string[] = []
+    globalThis.fetch = (async (input: RequestInfo | URL) => {
+      requestedUrls.push(input.toString())
+      throw new Error(`Unexpected CDN fetch: ${input.toString()}`)
+    }) as unknown as typeof fetch
+
+    const runner = new CircuitRunner()
+    try {
+      let caughtError: Error | undefined
+      try {
+        await runner.executeWithFsMap({
+          entrypoint: "index.tsx",
+          fsMap: {
+            "index.tsx": `
+              import fs from "fs"
+              export default () => <board width={10} height={10} />
+            `,
+          },
+        })
+      } catch (error) {
+        caughtError = error as Error
+      }
+
+      expect(requestedUrls).toEqual([])
+      expect(caughtError).toBeDefined()
+      expect(caughtError!.message).toContain(
+        'Node.js built-in module "fs" (imported by "index.tsx") is not available in this execution environment',
+      )
+    } finally {
+      globalThis.fetch = originalFetch
+      await runner.kill()
+    }
+  })
+
+  test("resolver-loaded bare npm polyfills do not satisfy subsequent node:* imports", async () => {
+    const runner = new CircuitRunner({
+      platform: {
+        nodeModulesResolver: async (moduleName: string) => {
+          if (moduleName === "events") {
+            return "export class EventEmitter {}"
+          }
+          return null as any
+        },
+      },
+    })
+    await runner.setDisableCdnLoading(true)
+
+    try {
+      await expect(
+        runner.executeWithFsMap({
+          mainComponentPath: "index.tsx",
+          fsMap: {
+            "package.json": JSON.stringify({
+              name: "resolver-events-plus-node-events",
+              version: "1.0.0",
+              dependencies: {
+                events: "^3.3.0",
+              },
+            }),
+            "use-npm-events.ts": `
+              import { EventEmitter } from "events"
+              export const npmEmitter = new EventEmitter()
+            `,
+            "use-node-events.ts": `
+              import { EventEmitter } from "node:events"
+              export const nodeEmitter = new EventEmitter()
+            `,
+            "index.tsx": `
+              import "./use-npm-events"
+              import "./use-node-events"
+              export default () => <board width={10} height={10} />
+            `,
+          },
+        }),
+      ).rejects.toThrow(
+        /Node\.js built-in module "node:events" \(imported by "use-node-events\.ts"\) is not available in this execution environment/,
+      )
+    } finally {
+      await runner.kill()
+    }
+  })
+
+  test("keeps in-process preSuppliedImports out of WebWorkerConfiguration", () => {
+    const validWorkerConfig: Partial<WebWorkerConfiguration> = {
+      disableCdnLoading: true,
+    }
+    expect(validWorkerConfig.disableCdnLoading).toBe(true)
+
+    const invalidWorkerConfig: Partial<WebWorkerConfiguration> = {
+      // @ts-expect-error preSuppliedImports cannot be cloned across WebWorker boundaries
+      preSuppliedImports: {
+        "node:events": { EventEmitter },
+      },
+    }
+    expect(invalidWorkerConfig).toBeDefined()
   })
 })

@@ -31,11 +31,12 @@ export interface CircuitRunnerConfiguration {
   easyEdaProxyConfig?: EasyEdaProxyConfig
   /** Serializable base URLs for the default parts engine. */
   partsEngineOptions?: PartsEngineOptions
-  /** Modules pre-supplied by the host execution environment. */
+  /** In-process modules pre-supplied by the host execution environment. */
   preSuppliedImports?: Record<string, any>
 }
 
-export interface WebWorkerConfiguration extends CircuitRunnerConfiguration {
+export interface WebWorkerConfiguration
+  extends Omit<CircuitRunnerConfiguration, "preSuppliedImports"> {
   evalVersion?: string
   /**
    * @deprecated, renamed to webWorkerBlobUrl
