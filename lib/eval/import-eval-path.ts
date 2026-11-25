@@ -295,6 +295,9 @@ export async function importEvalPath(
         return
       }
     } catch (error) {
+      if (error instanceof UnsupportedNodeBuiltinError) {
+        throw error
+      }
       ctx.logger.info(
         `nodeModulesResolver failed for relative import "${importName}" from "${opts.cwd}"`,
       )

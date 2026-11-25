@@ -10,6 +10,7 @@ import {
   isPackageExplicitlyDeclaredInPackageJson,
 } from "./isPackageDeclaredInPackageJson"
 import {
+  UnsupportedNodeBuiltinError,
   createUnsupportedNodeBuiltinError,
   isExplicitNodeBuiltinSpecifier,
   isNodeBuiltinModuleName,
@@ -53,6 +54,9 @@ export const importNodeModule = async (
           return
         }
       } catch (error) {
+        if (error instanceof UnsupportedNodeBuiltinError) {
+          throw error
+        }
         debug(`nodeModulesResolver failed for "${importName}":`, error)
       }
     }
@@ -82,6 +86,9 @@ export const importNodeModule = async (
               return
             }
           } catch (error) {
+            if (error instanceof UnsupportedNodeBuiltinError) {
+              throw error
+            }
             debug(`nodeModulesResolver failed for "${importName}":`, error)
           }
         }
@@ -173,6 +180,9 @@ export const importNodeModule = async (
 
         debug(`nodeModulesResolver returned null for "${importName}"`)
       } catch (error) {
+        if (error instanceof UnsupportedNodeBuiltinError) {
+          throw error
+        }
         debug(`nodeModulesResolver failed for "${importName}":`, error)
       }
     }

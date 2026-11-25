@@ -491,4 +491,54 @@ describe("node built-in module resolution and diagnostics", () => {
     }
     expect(invalidWorkerConfig).toBeDefined()
   })
+
+  test("propagates transitive UnsupportedNodeBuiltinError from resolver-loaded packages instead of falling back to CDN", async () => {
+    const originalFetch = globalThis.fetch
+    const requestedUrls: string[] = []
+    globalThis.fetch = (async (input: RequestInfo | URL) => {
+      requestedUrls.push(input.toString())
+      throw new Error(`Unexpected CDN fetch: ${input.toString()}`)
+    }) as unknown as typeof fetch
+
+    const runner = new CircuitRunner({
+      platform: {
+        nodeModulesResolver: async (moduleName: string) => {
+          if (moduleName === "custom-router-pkg") {
+            return `
+              import fs from "node:fs"
+              export const readBoard = () => fs
+            `
+          }
+          return null as any
+        },
+      },
+    })
+
+    try {
+      let caughtError: Error | undefined
+      try {
+        await runner.executeWithFsMap({
+          entrypoint: "index.tsx",
+          fsMap: {
+            "index.tsx": `
+              import { readBoard } from "custom-router-pkg"
+              readBoard()
+              export default () => <board width={10} height={10} />
+            `,
+          },
+        })
+      } catch (error) {
+        caughtError = error as Error
+      }
+
+      expect(requestedUrls).toEqual([])
+      expect(caughtError).toBeDefined()
+      expect(caughtError!.message).toContain(
+        'Node.js built-in module "node:fs" (imported by "node_modules/custom-router-pkg.ts") is not available in this execution environment',
+      )
+    } finally {
+      globalThis.fetch = originalFetch
+      await runner.kill()
+    }
+  })
 })
