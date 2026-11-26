@@ -25,8 +25,12 @@ test("build:runner emits both dist/eval and dist/runner bundles", () => {
 })
 
 test("@tscircuit/eval/runner and @tscircuit/eval/eval subpath exports resolve and run", async () => {
-  const runnerMod = await import("@tscircuit/eval/runner")
-  const evalMod = await import("@tscircuit/eval/eval")
+  const runnerSpecifier: string = "@tscircuit/eval/runner"
+  const evalSpecifier: string = "@tscircuit/eval/eval"
+  const runnerMod: typeof import("../../lib/runner") = await import(
+    runnerSpecifier
+  )
+  const evalMod: typeof import("../../lib/runner") = await import(evalSpecifier)
 
   expect(typeof runnerMod.CircuitRunner).toBe("function")
   expect(typeof runnerMod.runTscircuitCode).toBe("function")
