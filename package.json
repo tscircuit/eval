@@ -73,7 +73,7 @@
     "@tscircuit/circuit-json-util": "^0.0.135",
     "@tscircuit/common": "^0.0.20",
     "@tscircuit/copper-pour-solver": "^0.0.74",
-    "@tscircuit/core": "^0.0.2488",
+    "@tscircuit/core": "^0.0.2489",
     "@tscircuit/footprinter": "^0.0.451",
     "@tscircuit/import-snippet": "^0.0.4",
     "@tscircuit/infer-cable-insertion-point": "^0.0.5",
@@ -176,7 +176,7 @@
     "easyeda": "^0.0.389",
     "circuit-json-to-pnp-csv": "^0.0.20",
     "@tscircuit/core-ddr-benchmark": "github:ShiboSoftwareDev/core-ddr-benchmark#16b6352dc25e951192d88cb99a7cfe96abf62285",
-    "compute-differential-pair-phase-skew": "github:tscircuit/compute-differential-pair-phase-skew#0fcd80536b2ef8265f2b0c1f7ba0cd11e98c8aa5"
+    "compute-differential-pair-phase-skew": "github:tscircuit/compute-differential-pair-phase-skew#ba2c1bddf82d70bba5b09e3ab1d32cc492b9d4d5"
   },
   "peerDependencies": {
     "typescript": "^5.0.0",
