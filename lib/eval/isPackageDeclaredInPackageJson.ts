@@ -78,3 +78,32 @@ export function isPackageDeclaredInPackageJson(
 
   return rootManifestResult === true
 }
+
+/**
+ * Check if a package is explicitly declared in an existing package.json manifest
+ * (returns false when no package.json exists)
+ */
+export function isPackageExplicitlyDeclaredInPackageJson(
+  packageName: string,
+  fsMap: Record<string, string>,
+  opts: {
+    cwd?: string
+  } = {},
+): boolean {
+  const packageRoot = getNodeModulePackageRoot(opts.cwd)
+  const packageManifestResult = packageRoot
+    ? isPackageDeclaredInManifest(
+        packageName,
+        fsMap[`${packageRoot}/package.json`],
+      )
+    : null
+
+  if (packageManifestResult === true) return true
+
+  const rootManifestResult = isPackageDeclaredInManifest(
+    packageName,
+    fsMap["package.json"],
+  )
+
+  return rootManifestResult === true
+}

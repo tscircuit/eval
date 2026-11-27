@@ -1,23 +1,35 @@
-import type { ExecutionContext } from "./execution-context"
-import { importLocalFile } from "./import-local-file"
-import { importSnippet } from "./import-snippet"
+import Debug from "debug"
 import { resolveFilePath } from "lib/runner/resolveFilePath"
-import { resolveNodeModule } from "lib/utils/resolve-node-module"
-import { importNodeModule } from "./import-node-module"
-import { importNpmPackageFromCdn } from "./import-npm-package-from-cdn"
 import {
   getTsConfig,
   matchesTsconfigPathPattern,
 } from "lib/runner/tsconfigPaths"
-import Debug from "debug"
-import { isPackageDeclaredInPackageJson } from "./isPackageDeclaredInPackageJson"
+import { parseNpmSpecifier } from "lib/utils/npm-cdn-urls"
+import { resolveNodeModule } from "lib/utils/resolve-node-module"
+import { resolveRelativePath } from "lib/utils/resolveRelativePath"
+import type { ExecutionContext } from "./execution-context"
 import { getNodeModuleDirectory } from "./getNodeModuleDirectory"
 import { getPackageJsonEntrypoint } from "./getPackageJsonEntrypoint"
+import { importLocalFile } from "./import-local-file"
+import { importNodeModule } from "./import-node-module"
+import { importNpmPackageFromCdn } from "./import-npm-package-from-cdn"
+import { importSnippet } from "./import-snippet"
 import { isDistDirEmpty } from "./isDistDirEmpty"
+import {
+  isPackageDeclaredInPackageJson,
+  isPackageExplicitlyDeclaredInPackageJson,
+} from "./isPackageDeclaredInPackageJson"
+import {
+  UnsupportedNodeBuiltinError,
+  createUnsupportedNodeBuiltinError,
+  isExplicitNodeBuiltinSpecifier,
+  isNodeBuiltinModuleName,
+} from "./node-builtin-modules"
+import {
+  getPreSuppliedImport,
+  hasPreSuppliedImport,
+} from "./pre-supplied-imports"
 import { resolveEntrypointPath } from "./resolveEntrypointPath"
-import { resolveRelativePath } from "lib/utils/resolveRelativePath"
-import { hasPreSuppliedImport } from "./pre-supplied-imports"
-import { parseNpmSpecifier } from "lib/utils/npm-cdn-urls"
 
 const debug = Debug("tsci:eval:import-eval-path")
 
@@ -123,7 +135,8 @@ export async function importEvalPath(
   if (
     importName.includes("/") &&
     !importName.startsWith(".") &&
-    !importName.startsWith("/")
+    !importName.startsWith("/") &&
+    !isNodeBuiltinModuleName(importName)
   ) {
     const basePkg = importName.split("/")[0]
     const isScoped = basePkg.startsWith("@")
@@ -165,7 +178,10 @@ export async function importEvalPath(
     )
 
     if (hasPreSuppliedImport(preSuppliedImports, unversionedSpecifier)) {
-      const preSuppliedImport = preSuppliedImports[unversionedSpecifier]
+      const preSuppliedImport = getPreSuppliedImport(
+        preSuppliedImports,
+        unversionedSpecifier,
+      )
       preSuppliedImports[cdnNpmPackageSpecifier] = preSuppliedImport
       preSuppliedImports[importName] = preSuppliedImport
       ctx.logger.info(
@@ -230,10 +246,18 @@ export async function importEvalPath(
   if (!ctx.tsConfig && tsConfig) {
     ctx.tsConfig = tsConfig
   }
-  if (matchesTsconfigPathPattern(importName, tsConfig)) {
+  if (
+    !isExplicitNodeBuiltinSpecifier(importName) &&
+    matchesTsconfigPathPattern(importName, tsConfig)
+  ) {
     throw new Error(
       `Import "${importName}" matches a tsconfig path alias but could not be resolved to an existing file${opts.cwd ? ` from directory "${opts.cwd}"` : ""}\n\n${ctx.logger.stringifyLogs()}`,
     )
+  }
+
+  if (isExplicitNodeBuiltinSpecifier(importName)) {
+    ctx.logger.info(`importNodeModule("${importName}")`)
+    return importNodeModule(importName, ctx, depth, { cwd: opts.cwd })
   }
 
   // Try to resolve from node_modules
@@ -271,6 +295,9 @@ export async function importEvalPath(
         return
       }
     } catch (error) {
+      if (error instanceof UnsupportedNodeBuiltinError) {
+        throw error
+      }
       ctx.logger.info(
         `nodeModulesResolver failed for relative import "${importName}" from "${opts.cwd}"`,
       )
@@ -289,13 +316,19 @@ export async function importEvalPath(
         `importNodeModule("${importName}") via nodeModulesResolver`,
       )
       try {
-        await importNodeModule(importName, ctx, depth)
+        await importNodeModule(importName, ctx, depth, { cwd: opts.cwd })
         return
       } catch (error) {
+        if (error instanceof UnsupportedNodeBuiltinError) {
+          throw error
+        }
         ctx.logger.info(
           `nodeModulesResolver failed for "${importName}", falling back to npm CDN`,
         )
         if (disableCdnLoading) {
+          if (isNodeBuiltinModuleName(importName)) {
+            throw createUnsupportedNodeBuiltinError(importName, ctx)
+          }
           throw new Error(
             `Cannot find module "${importName}". The package is not available in the local environment and automatic npm resolution is disabled.\n\n${ctx.logger.stringifyLogs()}`,
           )
@@ -316,14 +349,26 @@ export async function importEvalPath(
         cwd: opts.cwd,
       })
     ) {
+      if (isNodeBuiltinModuleName(importName)) {
+        throw createUnsupportedNodeBuiltinError(importName, ctx)
+      }
       throw new Error(
         `Node module imported but not in package.json "${importName}"\n\n${ctx.logger.stringifyLogs()}`,
       )
     }
 
     // Step 2: Check if node_modules directory exists (only if not found locally yet)
-    // Only validate if CDN loading is disabled (i.e., no fallback to jsDelivr available)
+    // Diagnose undeclared bare Node built-ins before attempting CDN fallback
     const nodeModuleDir = getNodeModuleDirectory(importName, ctx.fsMap)
+    if (
+      !nodeModuleDir &&
+      !isPackageExplicitlyDeclaredInPackageJson(importName, ctx.fsMap, {
+        cwd: opts.cwd,
+      }) &&
+      isNodeBuiltinModuleName(importName)
+    ) {
+      throw createUnsupportedNodeBuiltinError(importName, ctx)
+    }
     if (!nodeModuleDir && disableCdnLoading) {
       throw new Error(
         `Node module "${importName}" has no files in the node_modules directory\n\n${ctx.logger.stringifyLogs()}`,

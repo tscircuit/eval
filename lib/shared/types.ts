@@ -1,10 +1,10 @@
-import type { AnyCircuitElement } from "circuit-json"
 import type { RootCircuitEventName as CoreRootCircuitEventName } from "@tscircuit/core"
-import type { PlatformConfig } from "@tscircuit/props"
 import type {
   EasyEdaProxyConfig,
   JlcPcbPartsEngineOptions,
 } from "@tscircuit/parts-engine"
+import type { PlatformConfig } from "@tscircuit/props"
+import type { AnyCircuitElement } from "circuit-json"
 
 export type RootCircuitEventName = CoreRootCircuitEventName | "debug:logOutput"
 
@@ -31,9 +31,12 @@ export interface CircuitRunnerConfiguration {
   easyEdaProxyConfig?: EasyEdaProxyConfig
   /** Serializable base URLs for the default parts engine. */
   partsEngineOptions?: PartsEngineOptions
+  /** In-process modules pre-supplied by the host execution environment. */
+  preSuppliedImports?: Record<string, any>
 }
 
-export interface WebWorkerConfiguration extends CircuitRunnerConfiguration {
+export interface WebWorkerConfiguration
+  extends Omit<CircuitRunnerConfiguration, "preSuppliedImports"> {
   evalVersion?: string
   /**
    * @deprecated, renamed to webWorkerBlobUrl

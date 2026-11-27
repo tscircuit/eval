@@ -1,13 +1,25 @@
+import Debug from "debug"
 import { resolveNodeModule } from "lib/utils/resolve-node-module"
 import type { ExecutionContext } from "./execution-context"
-import { importLocalFile } from "./import-local-file"
-import Debug from "debug"
-import { isPackageDeclaredInPackageJson } from "./isPackageDeclaredInPackageJson"
 import { getNodeModuleDirectory } from "./getNodeModuleDirectory"
 import { getPackageJsonEntrypoint } from "./getPackageJsonEntrypoint"
+import { importLocalFile } from "./import-local-file"
 import { isDistDirEmpty } from "./isDistDirEmpty"
+import {
+  isPackageDeclaredInPackageJson,
+  isPackageExplicitlyDeclaredInPackageJson,
+} from "./isPackageDeclaredInPackageJson"
+import {
+  UnsupportedNodeBuiltinError,
+  createUnsupportedNodeBuiltinError,
+  isExplicitNodeBuiltinSpecifier,
+  isNodeBuiltinModuleName,
+} from "./node-builtin-modules"
+import {
+  hasPreSuppliedImport,
+  markNpmResolvedImport,
+} from "./pre-supplied-imports"
 import { resolveEntrypointPath } from "./resolveEntrypointPath"
-import { hasPreSuppliedImport } from "./pre-supplied-imports"
 
 const debug = Debug("tsci:eval:import-node-module")
 
@@ -25,12 +37,65 @@ export const importNodeModule = async (
     return
   }
 
+  const platform = ctx.circuit?.platform
+
+  if (isExplicitNodeBuiltinSpecifier(importName)) {
+    if (platform?.nodeModulesResolver) {
+      debug(`Attempting to resolve "${importName}" using nodeModulesResolver`)
+      try {
+        const fileContent = await platform.nodeModulesResolver(importName)
+        if (fileContent) {
+          debug(`Successfully resolved "${importName}" via nodeModulesResolver`)
+          const bareName = importName.slice("node:".length)
+          const syntheticPath = `node_modules/__node_builtin__/${bareName}.ts`
+          ctx.fsMap[syntheticPath] = fileContent
+          await importLocalFile(syntheticPath, ctx, depth)
+          preSuppliedImports[importName] = preSuppliedImports[syntheticPath]
+          return
+        }
+      } catch (error) {
+        if (error instanceof UnsupportedNodeBuiltinError) {
+          throw error
+        }
+        debug(`nodeModulesResolver failed for "${importName}":`, error)
+      }
+    }
+
+    throw createUnsupportedNodeBuiltinError(importName, ctx)
+  }
+
   // Only run validation if package.json exists (can't validate without it)
   const hasPackageJson = !!fsMap["package.json"]
 
   if (hasPackageJson) {
     // Step 1: Check if the package is declared in package.json
     if (!isPackageDeclaredInPackageJson(importName, fsMap, opts)) {
+      if (isNodeBuiltinModuleName(importName)) {
+        if (platform?.nodeModulesResolver) {
+          debug(
+            `Attempting to resolve "${importName}" using nodeModulesResolver`,
+          )
+          try {
+            const fileContent = await platform.nodeModulesResolver(importName)
+            if (fileContent) {
+              const syntheticPath = `node_modules/${importName}.ts`
+              ctx.fsMap[syntheticPath] = fileContent
+              await importLocalFile(syntheticPath, ctx, depth)
+              preSuppliedImports[importName] = preSuppliedImports[syntheticPath]
+              markNpmResolvedImport(preSuppliedImports, importName)
+              return
+            }
+          } catch (error) {
+            if (error instanceof UnsupportedNodeBuiltinError) {
+              throw error
+            }
+            debug(`nodeModulesResolver failed for "${importName}":`, error)
+          }
+        }
+
+        throw createUnsupportedNodeBuiltinError(importName, ctx)
+      }
+
       throw new Error(
         `Node module imported but not in package.json "${importName}"\n\n${ctx.logger.stringifyLogs()}`,
       )
@@ -84,7 +149,6 @@ export const importNodeModule = async (
       }
     }
 
-    const platform = ctx.circuit?.platform
     if (platform?.nodeModulesResolver) {
       debug(`Attempting to resolve "${importName}" using nodeModulesResolver`)
 
@@ -104,18 +168,30 @@ export const importNodeModule = async (
 
           // Map the import name to the resolved module
           preSuppliedImports[importName] = preSuppliedImports[syntheticPath]
+          markNpmResolvedImport(preSuppliedImports, importName)
 
           // Also map without node_modules prefix
           const unprefixedPath = syntheticPath.replace(/^node_modules\//, "")
           preSuppliedImports[unprefixedPath] = preSuppliedImports[syntheticPath]
+          markNpmResolvedImport(preSuppliedImports, unprefixedPath)
 
           return
         }
 
         debug(`nodeModulesResolver returned null for "${importName}"`)
       } catch (error) {
+        if (error instanceof UnsupportedNodeBuiltinError) {
+          throw error
+        }
         debug(`nodeModulesResolver failed for "${importName}":`, error)
       }
+    }
+
+    if (
+      !isPackageExplicitlyDeclaredInPackageJson(importName, fsMap, opts) &&
+      isNodeBuiltinModuleName(importName)
+    ) {
+      throw createUnsupportedNodeBuiltinError(importName, ctx)
     }
 
     throw new Error(`Node module "${importName}" not found`)
@@ -126,11 +202,13 @@ export const importNodeModule = async (
 
   // Map the original import name to the resolved module's exports
   preSuppliedImports[importName] = preSuppliedImports[resolvedNodeModulePath]
+  markNpmResolvedImport(preSuppliedImports, importName)
 
   // Map without node_modules prefix for direct imports
   const unprefixedPath = resolvedNodeModulePath.replace(/^node_modules\//, "")
   preSuppliedImports[unprefixedPath] =
     preSuppliedImports[resolvedNodeModulePath]
+  markNpmResolvedImport(preSuppliedImports, unprefixedPath)
 
   // Handle index files specially
   if (
@@ -142,6 +220,7 @@ export const importNodeModule = async (
     const unprefixedDirPath = dirPath.replace(/^node_modules\//, "")
     preSuppliedImports[unprefixedDirPath] =
       preSuppliedImports[resolvedNodeModulePath]
+    markNpmResolvedImport(preSuppliedImports, unprefixedDirPath)
 
     // Handle scoped packages
     if (unprefixedDirPath.startsWith("@")) {

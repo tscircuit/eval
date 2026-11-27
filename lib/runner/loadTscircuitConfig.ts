@@ -1,6 +1,9 @@
 import type { PlatformConfig } from "@tscircuit/props"
 import { createExecutionContext, importEvalPath } from "lib/eval"
-import type { WebWorkerConfiguration } from "lib/shared/types"
+import type {
+  CircuitRunnerConfiguration,
+  WebWorkerConfiguration,
+} from "lib/shared/types"
 import { getTsConfig } from "./tsconfigPaths"
 
 const TSCIRCUIT_CONFIG_PATHS = ["tscircuit.config.ts", "tscircuit.config.js"]
@@ -13,7 +16,8 @@ interface LoadedTscircuitConfig {
 
 export const loadTscircuitConfig = async (
   fsMap: Record<string, string>,
-  webWorkerConfiguration: WebWorkerConfiguration,
+  webWorkerConfiguration: WebWorkerConfiguration &
+    Pick<CircuitRunnerConfiguration, "preSuppliedImports">,
   opts: {
     debugNamespace?: string
   } = {},
