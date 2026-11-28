@@ -1,12 +1,22 @@
-import { defineConfig } from "tsup"
+import { type Options, defineConfig } from "tsup"
 
-export default defineConfig({
-  entry: ["./lib/runner/index.ts"], // Assuming index.ts is the entrypoint within the runner directory
+const sharedRunnerConfig: Options = {
+  entry: ["./lib/runner/index.ts"],
   format: ["esm"],
   platform: "browser",
-  sourcemap: "inline", // Added for consistency
-  outDir: "dist/eval",
+  sourcemap: "inline",
   noExternal: ["@tscircuit/parts-engine", "@tscircuit/fabricator-drc"],
-  clean: true, // Added for consistency
+  clean: true,
   dts: true,
-})
+}
+
+export default defineConfig([
+  {
+    ...sharedRunnerConfig,
+    outDir: "dist/eval",
+  },
+  {
+    ...sharedRunnerConfig,
+    outDir: "dist/runner",
+  },
+])
